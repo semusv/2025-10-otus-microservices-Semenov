@@ -104,6 +104,22 @@
 6.  **И** показывает их текущий статус ("Открыто", "Закрыто")
 7.  **И** предлагает выбрать магазин
 
+#### Сценарий U-02-03: Получение маршрута до магазина
+
+**Как** пользователь выбравший магазин **Я хочу** увидеть маршрут от моего местоположения до магазина **Чтобы** понять как добраться и сколько времени займет.
+
+**Сценарий:**
+
+1. **Дано** что пользователь выбрал магазин "Сэндвичная №42"
+2. **И** у пользователя включена геолокация
+3. **Когда** он нажимает "Как добраться"
+4. **Тогда** система определяет текущее местоположение пользователя
+5. **И** рассчитывает маршрут до выбранного магазина
+6. **И** показывает:
+    - Общее расстояние и время в пути
+    - Пошаговые инструкции (опционально)
+    - Примерное время прибытия
+
 ### Формирование заказа
 
 #### Сценарий U-03-01: Просмотр меню с акциями и наличием
@@ -353,7 +369,7 @@
 5.  **Способом оплаты и статусом оплаты**
 5.  **И** позволяет отметить заказ как "Готов к выдаче**"**
 
-#### Сценарий M-01-05: Отметка заказа как выданного
+#### Сценарий M-01-06: Отметка заказа как выданного
 
 **Как** менеджер магазина **Я хочу** отмечать заказы которые выданы **Чтобы** сохранять информацию о завершенных заказах
 
@@ -362,7 +378,7 @@
 1.  **Дано** что менеджер авторизован
 2.  **Когда** он открывает "Текущие заказы"
 3.  **Тогда** система показывает заказы для его магазина
-4.  **И** позволяет отметить заказ как "Выдан"
+4.  **И** позволяет отметить заказ как "Завершен"
 
 ## Сценарии для администратора сети франшизы
 
@@ -430,20 +446,22 @@
 5.  **Верификация email** - отправка и проверка confirmation-токенов
 6.  **Валидация токенов** для API Gateway и внутренних сервисов
 
-**Ключевые данные:** JWT-токены, сессии, временные токены верификации
+**Ключевые данные:** Учетные данные, сессии, JWT-токены, временные токены
 ![canvas_auth.png](Images/canvas_auth.png)
 
 ## User Service
 
-**Назначение:** **Агрегирует информацию** о пользователях
+**Назначение:** Управление профилями пользователей, ролями и настройками
 
 **Зона ответственности:**
-
-1.  **Хранение учетных данных** - email, хеши паролей (bcrypt)
-2.  **Профили пользователей** - имена, контакты, дата рождения
+1. **Профили пользователей** - имена, контакты, дата рождения, настройки
+2. **Управление ролями** - назначение ролей (CUSTOMER, SHOP_MANAGER, ADMIN)
+3. **Привязка менеджеров к магазинам** - связь пользователь-магазин для менеджеров
+4. **Обработка событий** - создание и обновление профилей на основе событий Auth Service
+5. **Предоставление профилей** для других сервисов
 
 **Ключевые данные:** Полные профили пользователей
-![canvas_User.png](Images/canvas_User.png)
+![canvas_user.png](Images/canvas_user.png)
 
 ## Shop Service
 
@@ -456,8 +474,10 @@
 3.  **Расписание работы** - ежедневное расписание, праздничные дни
 4.  **Статусы магазинов** - открыт/закрыт, технические перерывы
 5.  **Интеграция с Maps API** - геокодирование, расчет маршрутов
+6.  **Расчет маршрутов** - получение направления от пользователя до магазина
 
 **Ключевые данные:** Локации магазинов, расписания, геоданные
+![canvas_shop.png](Images/canvas_shop.png)
 
 ## Catalog Service
 
@@ -473,6 +493,7 @@
 6.  **Поиск и фильтрация** товаров
 
 **Ключевые данные:** Товары, цены, наличие, резервы
+![canvas_catalog.png](Images/canvas_catalog.png)
 
 ## Cart Service
 
@@ -487,6 +508,7 @@
 5.  **Восстановление корзин** при повторном входе
 
 **Ключевые данные:** Временные корзины, выбранные товары
+![canvas_cart.png](Images/canvas_cart.png)
 
 ## Promotion Service
 
@@ -500,6 +522,7 @@
 4.  **Предоставление акций** для Catalog Service
 
 **Ключевые данные:** Акции, условия
+![canvas_promotion.png](Images/canvas_promotion.png)
 
 ## Order Service
 
@@ -514,6 +537,7 @@
 5.  **Интеграция процессов** - резервирование, оплата, доставка
 
 **Ключевые данные:** Заказы, статусы
+![canvas_order.png](Images/canvas_order.png)
 
 ## Delivery Service
 
@@ -526,6 +550,7 @@
 3.  **Уведомление о статусах** - трансляция изменений в систему
 
 **Ключевые данные:** Заказы доставки, статусы, курьеры
+![canvas_delievery.png](Images/canvas_delievery.png)
 
 ## Payment Service
 
@@ -536,6 +561,7 @@
 1.  **Поддержка платежных шлюзов**.
 
 **Ключевые данные:** Платежи, транзакции, статусы оплат
+![canvas_payment.png](Images/canvas_payment.png)
 
 ## Notification Service
 
@@ -546,13 +572,14 @@
 1.  **Отправка оповещений**
 
 **Ключевые данные:** Оповещения
-
+![canvas_notification.png](Images/canvas_notification.png)
 
 
 # Контракты
 ## Auth Service Contracts
 
 ### 1. REST API Endpoints
+
 #### POST /auth/register
 **Description:** Регистрация нового пользователя
 ```json
@@ -562,8 +589,7 @@
   "profile": {
     "firstName": "John",
     "lastName": "Doe",
-    "phone": "+1234567890",
-    "roles": ["CUSTOMER"]
+    "phone": "+1234567890"
   }
 }
 ```
@@ -573,8 +599,7 @@
 {
   "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "status": "PENDING_VERIFICATION",
-  "message": "Verification email sent",
-  "roles": ["CUSTOMER"]
+  "message": "Registration successful. Please check your email for verification."
 }
 ```
 
@@ -597,15 +622,19 @@
 }
 ```
 
-#### POST /auth/logout
-**Description:** Инвалидация токенов
-**Headers:** Authorization: Bearer {token}
+#### POST /auth/verify-email
+**Description:** Подтверждение email
+```json
+{
+  "token": "email-verification-token"
+}
+```
 
 **Response:**
 ```json
 {
   "success": true,
-  "message": "Successfully logged out"
+  "message": "Email successfully verified"
 }
 ```
 
@@ -633,135 +662,46 @@
 ```json
 {
   "valid": true,
-  "userId": "uuid",
-  "roles": ["CUSTOMER"]
-}
-```
-
-### 2. Internal Service Calls
-
-#### User Service Integration
-**Endpoint:** POST /users/authenticate (internal)
-```json
-{
-  "email": "user@example.com",
-  "password": "securePassword123"
-}
-```
-
-**Response:**
-```json
-{
-  "authenticated": true,
   "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "userProfile": {
-    "email": "user@example.com",
+  "email": "user@example.com"
+}
+```
+
+### 2. Events Published (Auth Service публикует)
+
+#### UserRegistered
+```json
+{
+  "eventType": "UserRegistered",
+  "eventId": "evt_123456789",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "email": "user@example.com",
+  "profile": {
     "firstName": "John",
     "lastName": "Doe",
-    "phone": "+1234567890",
-    "roles": ["CUSTOMER"]
-  }
-}
-```
-
-### 3. Error Responses
-```json
-{
-  "error": "INVALID_CREDENTIALS",
-  "message": "Invalid email or password",
+    "phone": "+1234567890"
+  },
   "timestamp": "2024-01-15T10:30:00Z"
 }
 ```
 
-### 4. External Integrations
-
-#### Email Service
-**Protocol:** SMTP
-**Templates:**
-- Email Verification
-- Password Reset
-
-Понял! Восстанавливаю полный формат с описаниями.
+#### UserEmailVerified
+```json
+{
+  "eventType": "UserEmailVerified",
+  "eventId": "evt_123456790",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "email": "user@example.com",
+  "verifiedAt": "2024-01-15T10:35:00Z"
+}
+```
+---
 
 ## User Service Contracts
 
 ### 1. REST API Endpoints
 
-#### POST /users/register
-**Description:** Создание пользователя (вызывается Auth Service)
-```json
-{
-  "email": "user@example.com",
-  "passwordHash": "hashed_password_123",
-  "profile": {
-    "firstName": "John",
-    "lastName": "Doe", 
-    "phone": "+1234567890"
-  },
-  "roles": ["CUSTOMER"]
-}
-```
-
-**Response:**
-```json
-{
-  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "status": "CREATED",
-  "email": "user@example.com",
-  "roles": ["CUSTOMER"]
-}
-```
-
-или вариант для ADMIN при создании Manager 
-```json
-{
-  "email": "user@example.com",
-  "passwordHash": "hashed_password_123",
-  "profile": {
-    "firstName": "John",
-    "lastName": "Doe", 
-    "phone": "+1234567890"
-  },
-  "roles": ["SHOP_MANAGER"],
-  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012"
-}
-```
-**Response:**
-```json
-{
-  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "status": "CREATED",
-  "email": "user@example.com",
-  "roles": ["SHOP_MANAGER"],
-  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012"
-}
-```
-
-#### POST /users/authenticate
-**Description:** Проверка учетных данных (вызывается Auth Service)
-```json
-{
-  "email": "user@example.com",
-  "password": "plain_password_123"
-}
-```
-
-**Response:**
-```json
-{
-  "authenticated": true,
-  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "userProfile": {
-    "email": "user@example.com",
-    "firstName": "John",
-    "lastName": "Doe",
-    "phone": "+1234567890"
-  },
-  "roles": ["CUSTOMER"]
-}
-```
-
-#### GET /users/{userId}
+#### GET /users/{userId}/profile
 **Description:** Получение профиля пользователя
 **Headers:** Authorization: Bearer {token}
 
@@ -773,11 +713,13 @@
   "profile": {
     "firstName": "John",
     "lastName": "Doe",
-    "phone": "+1234567890"
+    "phone": "+1234567890",
+    "dateOfBirth": "1990-01-01"
   },
   "roles": ["CUSTOMER"],
+  "emailVerified": true,
   "createdAt": "2024-01-15T10:30:00Z",
-  "status": "ACTIVE"
+  "updatedAt": "2024-01-15T10:35:00Z"
 }
 ```
 
@@ -788,7 +730,8 @@
 {
   "firstName": "John",
   "lastName": "Smith",
-  "phone": "+1987654321"
+  "phone": "+1987654321",
+  "dateOfBirth": "1990-01-01"
 }
 ```
 
@@ -800,23 +743,6 @@
 }
 ```
 
-#### POST /users/password-reset
-**Description:** Обновление пароля (вызывается Auth Service)
-```json
-{
-  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "newPasswordHash": "new_hashed_password"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "passwordUpdatedAt": "2024-01-15T10:35:00Z"
-}
-```
 
 #### PUT /users/{userId}/roles
 **Description:** Обновление ролей пользователя (только для ADMIN)
@@ -847,54 +773,42 @@
 {
   "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "roles": ["SHOP_MANAGER"],
-  "assignedShopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
-  "permissions": ["MANAGE_ORDERS", "MANAGE_INVENTORY", "CREATE_PROMOTIONS"]
+  "assignedShopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012"
 }
 ```
 
-### 2. Error Responses
-```json
-{
-  "error": "USER_NOT_FOUND",
-  "message": "User with specified ID not found",
-  "timestamp": "2024-01-15T10:30:00Z"
-}
-```
+### 2. Event Subscriptions (User Service подписывается на)
 
+#### UserRegistered
 ```json
 {
-  "error": "EMAIL_ALREADY_EXISTS",
-  "message": "User with this email already registered", 
+  "eventType": "UserRegistered",
+  "eventId": "evt_123456789",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "email": "user@example.com",
+  "profile": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "phone": "+1234567890"
+  },
   "timestamp": "2024-01-15T10:30:00Z"
 }
 ```
+- **User Service Action:** Создает профиль пользователя с полученными данными
 
+#### UserEmailVerified
 ```json
 {
-  "error": "INVALID_PROFILE_DATA",
-  "message": "Provided profile data is invalid",
-  "timestamp": "2024-01-15T10:30:00Z"
+  "eventType": "UserEmailVerified",
+  "eventId": "evt_123456790",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "email": "user@example.com",
+  "verifiedAt": "2024-01-15T10:35:00Z"
 }
 ```
+- **User Service Action:** Обновляет статус `emailVerified` в профиле пользователя
 
-```json
-{
-  "error": "INSUFFICIENT_PERMISSIONS",
-  "message": "User does not have required permissions",
-  "timestamp": "2024-01-15T10:30:00Z"
-}
-```
-
-```json
-{
-  "error": "MANAGER_ALREADY_ASSIGNED",
-  "message": "Shop already has a manager assigned",
-  "timestamp": "2024-01-15T10:30:00Z"
-}
-```
 ---
-
-Отлично! Переходим к **Shop Service**.
 
 ## Shop Service Contracts
 
@@ -1064,6 +978,25 @@
 }
 ```
 
+#### GET /shops/{shopId}/route-simple
+**Description:** Упрощенная версия маршрута (только время и расстояние)
+**Headers:** Authorization: Bearer {token}
+**Query Parameters:**
+- `userLatitude` (required): 55.7558
+- `userLongitude` (required): 37.6173
+- `travelMode` (optional): `walking`, `driving`, `transit` (default: walking)
+
+**Response:**
+```json
+{
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "distance": "850 м",
+  "duration": "10 минут",
+  "travelMode": "walking",
+  "estimatedArrivalTime": "2024-01-15T11:45:00Z"
+}
+```
+
 ### 2. Error Responses
 ```json
 {
@@ -1096,5 +1029,1351 @@
   "timestamp": "2024-01-15T10:30:00Z"
 }
 ```
+---
+
+## Catalog Service Contracts
+
+### 1. REST API Endpoints
+
+#### GET /catalog/menu/{shopId}
+**Description:** Получение меню магазина с актуальными ценами и наличием
+**Headers:** Authorization: Bearer {token}
+
+**Response:**
+```json
+{
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "shopName": "Сэндвичная №42",
+  "items": [
+    {
+      "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+      "name": "BLT Сэндвич",
+      "originalPrice": 350.00,
+      "finalPrice": 280.00,
+      "discount": {
+        "discountId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+        "scope": "LOCAL",
+        "type": "PERCENTAGE",
+        "value": 20
+      },
+      "available": true,
+      "availableQuantity": 15
+    }
+  ],
+  "lastUpdated": "2024-01-15T10:30:00Z"
+}
+```
+
+#### GET /catalog/products/{productId}
+**Description:** Получение детальной информации о товаре
+**Headers:** Authorization: Bearer {token}
+
+**Response:**
+```json
+{
+  "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+  "name": "BLT Сэндвич",
+  "description": "Классический сэндвич с хрустящим беконом, свежим салатом и сочными помидорами",
+  "basePrice": 350.00,
+  "available": true,
+  "availableQuantity": 15,
+  "ingredients": ["Бекон", "Салат Айсберг", "Помидоры", "Белый хлеб", "Майонез"]
+}
+```
+
+#### POST /catalog/reserve
+**Description:** Резервирование товаров на время сборки заказа
+**Headers:** 
+- Authorization: Bearer {token}
+- Idempotency-Key: ik_reserve_123456789 (REQUIRED)
+```json
+{
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "items": [
+    {
+      "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+      "quantity": 2
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "reservationId": "res_123456789",
+  "idempotencyKey": "ik_reserve_123456789"
+}
+```
+
+#### POST /catalog/release
+**Description:** Отмена резервирования товаров
+**Headers:** Authorization: Bearer {token}
+```json
+{
+  "reservationId": "res_123456789"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "reservationId": "res_123456789"
+}
+```
+
+#### POST /catalog/commit
+**Description:** Подтверждение резервирования - окончательное списание товаров
+**Headers:** 
+- Authorization: Bearer {token}
+- Idempotency-Key: ik_commit_123456789 (REQUIRED)
+```json
+{
+  "reservationId": "res_123456789"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "reservationId": "res_123456789"
+}
+```
+
+#### PUT /catalog/availability
+**Description:** Обновление наличия товаров для магазина
+**Headers:** Authorization: Bearer {token}
+```json
+{
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "availabilityUpdates": [
+    {
+      "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+      "availableQuantity": 5
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "updatedItems": [
+    {
+      "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+      "available": true,
+      "availableQuantity": 5,
+      "previousAvailability": false
+    }
+  ]
+}
+```
+
+#### POST /catalog/products
+**Description:** Добавление нового товара в каталог сети (ADMIN only)
+**Headers:** Authorization: Bearer {token}
+```json
+{
+  "name": "Веганский сэндвич",
+  "description": "Сэндвич с овощами и тофу",
+  "basePrice": 320.00,
+  "ingredients": ["Тофу", "Огурцы", "Помидоры", "Салат", "Веганский майонез"]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "productId": "f6g7h8i9-j0k1-2345-fghi-678901234567",
+  "name": "Веганский сэндвич",
+  "status": "CREATED"
+}
+```
+
+### 2. Error Responses
+```json
+{
+  "error": "PRODUCT_NOT_FOUND",
+  "message": "Product with specified ID not found",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "error": "INSUFFICIENT_STOCK",
+  "message": "Not enough stock available for reservation",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "error": "RESERVATION_EXPIRED",
+  "message": "Product reservation has expired",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
 
 ---
+
+
+### 3. Event Subscriptions (Catalog Service подписывается на)
+
+#### OrderStatusChanged
+**Description:** При изменении статуса заказа
+```json
+{
+  "eventType": "OrderStatusChanged",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "previousStatus": "CREATED",
+  "newStatus": "PREPARING",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+- **Catalog Service Action:** 
+  - При статусе "PREPARING" → подтверждает резервирование (commit). 
+  - При "CANCELLED" → отменяет резервирование (release).
+
+#### PromotionCreated
+**Description:** Создана новая акция
+```json
+{
+  "eventType": "PromotionCreated",
+  "eventId": "evt_123456789",
+  "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+  "scope": "GLOBAL",
+  "productIds": ["e5f6g7h8-i9j0-1234-efgh-567890123456"],
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+- **Catalog Service Action:** Очищает кэш меню для affected магазинов.
+
+#### PromotionActivated
+**Description:** Акция активирована
+```json
+{
+  "eventType": "PromotionActivated",
+  "eventId": "evt_123456789",
+  "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+  "scope": "LOCAL",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+- **Catalog Service Action:** Очищает кэш меню для affected магазинов.
+
+#### PromotionDeactivated
+**Description:** Акция деактивирована
+```json
+{
+  "eventType": "PromotionDeactivated",
+  "eventId": "evt_123456789",
+  "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+  "scope": "GLOBAL",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+---
+
+## Cart Service Contracts
+
+### 1. REST API Endpoints
+
+#### GET /cart
+**Description:** Получение корзины пользователя
+**Headers:** Authorization: Bearer {token}
+
+**Response:**
+```json
+{
+  "cartId": "cart_123456789",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "items": [
+    {
+      "cartItemId": "item_123456",
+      "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+      "name": "BLT Сэндвич",
+      "quantity": 2,
+      "unitPrice": 280.00,
+      "totalPrice": 560.00
+    }
+  ],
+  "summary": {
+    "cartTotalPrice": 560.00,
+    "itemCount": 2
+  },
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T10:30:00Z"
+}
+```
+- Наличие корзины по другому магазину приводит к очистке ее
+
+#### POST /cart/items
+**Description:** Добавление товара в корзину
+**Headers:** Authorization: Bearer {token}
+```json
+{
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+  "quantity": 2
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+  "cartItemId": "item_123456",
+  "quantity": 2,
+  "unitPrice": 280.00,
+  "totalPrice": 560.00,
+  "summary": {
+    "cartTotalPrice": 560.00,
+    "itemCount": 2
+  }
+}
+```
+
+#### PUT /cart/items/{cartItemId}
+**Description:** Изменение количества товара в корзине
+**Headers:** Authorization: Bearer {token}
+```json
+{
+  "quantity": 3
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "cartItemId": "item_123456",
+  "previousQuantity": 2,
+  "newQuantity": 1,
+  "unitPrice": 280.00,
+  "totalPrice": 280.00,
+  "summary": {
+    "cartTotalPrice": 560.00,
+    "itemCount": 2
+  }
+}
+```
+
+#### DELETE /cart/items/{cartItemId}
+**Description:** Удаление товара из корзины
+**Headers:** Authorization: Bearer {token}
+
+**Response:**
+```json
+{
+  "success": true,
+  "removedItemId": "item_123456",
+  "removedProduct": "BLT Сэндвич",
+  "summary": {
+    "cartTotalPrice": 280.00,
+    "itemCount": 1
+  }
+}
+```
+
+#### POST /cart/clear
+**Description:** Очистка всей корзины
+**Headers:** Authorization: Bearer {token}
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+### 2. Event Subscriptions (Cart Service подписывается на)
+
+#### OrderCreated
+**Description:** Заказ создан
+```json
+{
+  "eventType": "OrderCreated",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "deliveryType": "DELIVERY",
+  "paymentMethod": "ONLINE",
+  "totalAmount": 560.00,
+  "deliveryAddress": {
+    "street": "ул. Примерная, 123",
+    "city": "Москва"
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+- **Cart Service Action:** Очищает корзину пользователя
+
+
+**Cart Service Action:** Обновляет цены в корзинах
+
+### 3. Events Published (Cart Service публикует)
+
+#### CartUpdated
+**Description:** Корзина была обновлена
+```json
+{
+  "eventType": "CartUpdated",
+  "eventId": "evt_123456789",
+  "cartId": "cart_123456789",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "itemCount": 3,
+  "totalAmount": 946.00,
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+### 4. Error Responses
+```json
+{
+  "error": "CART_NOT_FOUND",
+  "message": "Cart for user not found",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "error": "PRODUCT_UNAVAILABLE",
+  "message": "Product is not available in selected shop",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "error": "SHOP_CHANGE_NOT_ALLOWED",
+  "message": "Cannot add products from different shops to the same cart",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "error": "MAX_QUANTITY_EXCEEDED",
+  "message": "Maximum quantity per product exceeded",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+---
+
+## Order Service Contracts
+
+### 1. REST API Endpoints
+
+#### POST /orders
+**Description:** Создание нового заказа
+**Headers:** 
+- Authorization: Bearer {token}
+- Idempotency-Key: ik_order_123456789 (REQUIRED)
+```json
+{
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "deliveryType": "SELF_PICKUP", 
+  "deliveryAddress": {
+    "street": "ул. Примерная, 123",
+    "city": "Москва",
+    "postalCode": "123456",
+    "apartment": "45"
+  },
+  "paymentMethod": "ONLINE",
+  "items": [
+    {
+      "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+      "quantity": 2,
+      "unitPrice": 280.00
+    }
+  ],
+  "customerNotes": "Пожалуйста, добавьте больше соуса"
+}
+```
+
+**Response:**
+```json
+{
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "status": "CREATED",
+  "estimatedReadyTime": "2024-01-15T11:30:00Z",
+  "totalAmount": 560.00,
+  "orderNumber": "BLT-001234",
+  "idempotencyKey": "ik_order_123456789",
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+#### GET /orders/{orderId}
+**Description:** Получение детальной информации о заказе
+**Headers:** Authorization: Bearer {token}
+
+**Response:**
+```json
+{
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "orderNumber": "BLT-001234",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "shopName": "Сэндвичная №42",
+  "status": "PREPARING",
+  "deliveryType": "SELF_PICKUP",
+  "deliveryAddress": {
+    "street": "ул. Примерная, 123",
+    "city": "Москва",
+    "postalCode": "123456"
+  },
+  "paymentMethod": "ONLINE",
+  "paymentStatus": "PAID",
+  "items": [
+    {
+      "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+      "quantity": 2,
+      "unitPrice": 280.00,
+      "totalPrice": 560.00
+    }
+  ],
+  "summary": {
+    "itemsTotal": 560.00,
+    "deliveryFee": 100.00,
+    "discountAmount": 0.00,
+    "totalAmount": 660.00
+  },
+  "timeline": {
+    "createdAt": "2024-01-15T10:30:00Z",
+    "estimatedReadyTime": "2024-01-15T11:30:00Z",
+    "readyAt": null,
+    "completedAt": null
+  }
+}
+```
+
+#### GET /orders
+**Description:** Получение истории заказов пользователя
+**Headers:** Authorization: Bearer {token}
+**Query Parameters:**
+- `shopId` (optional): Для пользователя - фильтр по магазину
+- `status` (optional): Фильтр по статусу
+- `fromDate` (optional): Дата начала периода
+- `toDate` (optional): Дата окончания периода
+- `page` (optional): Номер страницы (default: 0)
+- `size` (optional): Размер страницы (default: 20)
+
+**Response:**
+```json
+{
+  "orders": [
+    {
+      "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+      "orderNumber": "BLT-001234",
+      "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+      "shopName": "Сэндвичная №42",
+      "status": "PREPARING",
+      "totalAmount": 560.00,
+      "itemCount": 2,
+      "createdAt": "2024-01-15T10:30:00Z",
+      "estimatedReadyTime": "2024-01-15T11:30:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 0,
+    "size": 20,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}
+```
+
+#### PUT /orders/{orderId}/status
+**Description:** Изменение статуса заказа (для менеджеров)
+**Headers:** Authorization: Bearer {token}
+```json
+{
+  "status": "READY_FOR_PICKUP",
+  "notes": "Заказ готов к выдаче"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "previousStatus": "PREPARING",
+  "newStatus": "READY_FOR_PICKUP",
+  "updatedAt": "2024-01-15T11:15:00Z"
+}
+```
+
+#### POST /orders/{orderId}/cancel
+**Description:** Отмена заказа
+**Headers:** Authorization: Bearer {token}
+```json
+{
+  "reason": "Передумал",
+  "cancelledBy": "CUSTOMER" 
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "previousStatus": "CREATED",
+  "newStatus": "CANCELLED",
+  "cancellationReason": "Передумал",
+  "cancelledAt": "2024-01-15T10:35:00Z"
+}
+```
+
+#### GET /orders/shop/{shopId}
+**Description:** Получение истории заказов магазина
+**Headers:** Authorization: Bearer {token}
+**Query Parameters:**
+- `status` (optional): Фильтр по статусу
+- `fromDate` (optional): Дата начала периода
+- `toDate` (optional): Дата окончания периода
+- `page` (optional): Номер страницы (default: 0)
+- `size` (optional): Размер страницы (default: 20)
+
+**Response:**
+```json
+{
+  "orders": [
+    {
+      "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+      "orderNumber": "BLT-001234",
+      "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+      "shopName": "Сэндвичная №42",
+      "status": "PREPARING",
+      "totalAmount": 560.00,
+      "itemCount": 2,
+      "createdAt": "2024-01-15T10:30:00Z",
+      "estimatedReadyTime": "2024-01-15T11:30:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 0,
+    "size": 20,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}
+```
+
+#### GET /orders/shop/{shopId}/current
+**Description:** Получение текущих заказов для магазина
+**Headers:** Authorization: Bearer {token}
+**Query Parameters:**
+- `status` (optional): Фильтр по статусу
+
+**Response:**
+```json
+{
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "shopName": "Сэндвичная №42",
+  "orders": [
+    {
+      "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+      "orderNumber": "BLT-001234",
+      "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "customerName": "Иван Иванов",
+      "customerPhone": "+79161234567",
+      "status": "PREPARING",
+      "deliveryType": "SELF_PICKUP",
+      "items": [
+        {
+          "productId": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+          "name": "BLT Сэндвич",
+          "quantity": 2
+        }
+      ],
+      "totalAmount": 560.00,
+      "createdAt": "2024-01-15T10:30:00Z",
+      "estimatedReadyTime": "2024-01-15T11:30:00Z"
+    }
+  ],
+  "statistics": {
+    "totalOrders": 5,
+    "preparing": 3,
+    "ready": 1,
+    "completed": 1
+  }
+}
+```
+
+
+### 3. Event Subscriptions (Order Service подписывается на)
+
+#### PaymentCompleted
+**Description:** Платеж успешно завершен
+```json
+{
+  "eventType": "PaymentCompleted",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "paymentId": "pay_123456789",
+  "amount": 560.00,
+  "completedAt": "2024-01-15T10:32:00Z",
+  "timestamp": "2024-01-15T10:32:00Z"
+}
+```
+
+- **Order Service Action:** Обновляет статус заказа на "PAID", подтверждает резервирование товаров
+
+#### PaymentFailed
+**Description:** Платеж не прошел
+```json
+{
+  "eventType": "PaymentFailed",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "paymentId": "pay_123456789",
+  "failureReason": "INSUFFICIENT_FUNDS",
+  "failedAt": "2024-01-15T10:32:00Z",
+  "timestamp": "2024-01-15T10:32:00Z"
+}
+```
+
+- **Order Service Action:** Обновляет статус заказа на "PAYMENT_FAILED", отменяет резервирование товаров
+
+#### DeliveryStatusChanged
+**Description:** Изменился статус доставки
+```json
+{
+  "eventType": "DeliveryStatusChanged",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "deliveryId": "del_123456789",
+  "previousStatus": "PICKING_UP",
+  "newStatus": "ON_THE_WAY",
+  "estimatedDeliveryTime": "2024-01-15T11:45:00Z",
+  "timestamp": "2024-01-15T11:15:00Z"
+}
+```
+
+- **Order Service Action:** Обновляет статус доставки в заказе
+
+### 4. Events Published (Order Service публикует)
+
+#### OrderCreated
+**Description:** Заказ создан
+```json
+{
+  "eventType": "OrderCreated",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "deliveryType": "DELIVERY",
+  "paymentMethod": "ONLINE",
+  "totalAmount": 560.00,
+  "deliveryAddress": {
+    "street": "ул. Примерная, 123",
+    "city": "Москва"
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+#### OrderStatusChanged
+**Description:** Статус заказа изменился
+```json
+{
+  "eventType": "OrderStatusChanged",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "previousStatus": "CREATED",
+  "newStatus": "PREPARING",
+  "changedBy": "SYSTEM",
+  "timestamp": "2024-01-15T10:31:00Z"
+}
+```
+
+#### OrderCancelled
+**Description:** Заказ отменен
+```json
+{
+  "eventType": "OrderCancelled",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "previousStatus": "CREATED",
+  "cancellationReason": "Передумал",
+  "cancelledBy": "CUSTOMER",
+  "timestamp": "2024-01-15T10:35:00Z"
+}
+```
+
+### 5. Error Responses
+```json
+{
+  "error": "ORDER_NOT_FOUND",
+  "message": "Order with specified ID not found",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "error": "INSUFFICIENT_STOCK",
+  "message": "Not enough stock available for order",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "error": "INVALID_ORDER_STATUS_TRANSITION",
+  "message": "Cannot change order status from CREATED to COMPLETED",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "error": "SHOP_CLOSED",
+  "message": "Selected shop is currently closed",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "error": "CART_EMPTY",
+  "message": "Cannot create order from empty cart",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+---
+
+**Статусы заказа:**
+- `CREATED` - Заказ создан
+- `PREPARING` - Собирается
+- `READY_FOR_PICKUP` - Готов к выдаче
+- `OUT_FOR_DELIVERY` - В доставке
+- `COMPLETED` - Завершен
+- `CANCELLED` - Отменен
+
+**Статусы оплаты:**
+- `PAID` - Оплачен (для онлайн-оплаты)
+- `PAYMENT_FAILED` - Ошибка оплаты
+
+
+## Promotion Service Contracts
+
+### 1. REST API Endpoints
+
+#### GET /promotions/shop/{shopId}
+**Description:** Получение всех акций для магазина (глобальные + локальные)
+**Headers:** Authorization: Bearer {token}
+
+**Response:**
+```json
+{
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "promotions": [
+    {
+      "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+      "name": "Скидка 20% на BLT",
+      "description": "Специальная скидка на классический BLT сэндвич",
+      "type": "PERCENTAGE",
+      "value": 20,
+      "scope": "GLOBAL",
+      "targetIds": ["e5f6g7h8-i9j0-1234-efgh-567890123456"],
+      "startDate": "2024-01-15T00:00:00Z",
+      "endDate": "2024-01-20T23:59:59Z",
+      "isActive": true
+    },
+    {
+      "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+      "promotionId": "e6f7g8h9-i0j1-3456-hijk-890123456789",
+      "name": "Скидка 15% на Сыр&Ветчина",
+      "description": "Специальная скидка на Сыр&Ветчина",
+      "type": "PERCENTAGE", 
+      "value": 15,
+      "scope": "LOCAL",
+      "targetIds": ["e5f6g7h8-i9j0-1234-zcva-567890123456"],
+      "startDate": "2024-01-10T00:00:00Z",
+      "endDate": "2024-12-31T23:59:59Z",
+      "isActive": true
+    }
+  ]
+}
+```
+
+#### POST /promotions/global
+**Description:** Создание глобальной акции (ADMIN only)
+**Headers:** Authorization: Bearer {token}
+```json
+{
+  "name": "Скидка 20% на BLT",
+  "description": "Специальная скидка на классический BLT сэндвич",
+  "type": "PERCENTAGE",
+  "value": 20,
+  "scope": "GLOBAL",
+  "targetIds": ["e5f6g7h8-i9j0-1234-efgh-567890123456"],
+  "startDate": "2024-01-15T00:00:00Z",
+  "endDate": "2024-01-20T23:59:59Z",
+  "isActive": true
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+  "scope": "GLOBAL",
+  "status": "CREATED"
+}
+```
+
+#### POST /promotions/local
+**Description:** Создание локальной акции (MANAGER only)
+**Headers:** Authorization: Bearer {token}
+```json
+{
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "name": "Скидка 15% на Сыр&Ветчина",
+  "description": "Специальная скидка на Сыр&Ветчина",
+  "type": "PERCENTAGE",
+  "value": 15,
+  "scope": "LOCAL",
+  "targetIds": ["e5f6g7h8-i9j0-1234-zcva-567890123456"],
+  "startDate": "2024-01-10T00:00:00Z",
+  "endDate": "2024-12-31T23:59:59Z",
+  "isActive": true
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "promotionId": "e6f7g8h9-i0j1-3456-hijk-890123456789",
+  "scope": "LOCAL",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "status": "CREATED"
+}
+```
+
+#### PUT /promotions/{promotionId}/activate
+**Description:** Активация акции
+**Headers:** Authorization: Bearer {token}
+
+**Response:**
+```json
+{
+  "success": true,
+  "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+  "previousStatus": false,
+  "newStatus": true,
+  "activatedAt": "2024-01-15T10:30:00Z"
+}
+```
+
+#### PUT /promotions/{promotionId}/deactivate
+**Description:** Деактивация акции
+**Headers:** Authorization: Bearer {token}
+
+**Response:**
+```json
+{
+  "success": true,
+  "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+  "previousStatus": true,
+  "newStatus": false,
+  "deactivatedAt": "2024-01-15T10:35:00Z"
+}
+```
+
+#### GET /promotions/global
+**Description:** Получение списка всех глобальных акций
+**Headers:** Authorization: Bearer {token}
+**Query Parameters:**
+- `activeOnly` (optional): true/false
+- `page` (optional): 0
+- `size` (optional): 20
+
+**Response:**
+```json
+{
+  "promotions": [
+    {
+      "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+      "name": "Скидка 20% на BLT",
+      "description": "Специальная скидка на классический BLT сэндвич",
+      "type": "PERCENTAGE",
+      "value": 20,
+      "scope": "GLOBAL",
+      "targetIds": ["e5f6g7h8-i9j0-1234-efgh-567890123456"],
+      "startDate": "2024-01-15T00:00:00Z",
+      "endDate": "2024-01-20T23:59:59Z",
+      "isActive": true
+    }
+  ],
+  "pagination": {
+    "page": 0,
+    "size": 20,
+    "totalElements": 15,
+    "totalPages": 1
+  }
+}
+```
+
+#### GET /promotions/local
+**Description:** Получение списка локальных акций для менеджера
+**Headers:** Authorization: Bearer {token}
+**Query Parameters:**
+- `shopId` (required): ID магазина
+- `activeOnly` (optional): true/false
+
+**Response:**
+```json
+{
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "promotions": [
+    {
+      "promotionId": "e6f7g8h9-i0j1-3456-hijk-890123456789",
+      "name": "Скидка 15% на Сыр&Ветчина",
+      "description": "Специальная скидка на Сыр&Ветчина",
+      "type": "PERCENTAGE",
+      "value": 15,
+      "scope": "LOCAL",
+      "targetIds": ["e5f6g7h8-i9j0-1234-zcva-567890123456"],
+      "startDate": "2024-01-10T00:00:00Z",
+      "endDate": "2024-12-31T23:59:59Z",
+      "isActive": true
+    }
+  ]
+}
+```
+
+### 2. Events Published (Promotion Service публикует)
+
+#### PromotionCreated
+**Description:** Создана новая акция
+```json
+{
+  "eventType": "PromotionCreated",
+  "eventId": "evt_123456789",
+  "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+  "scope": "GLOBAL",
+  "productIds": ["e5f6g7h8-i9j0-1234-efgh-567890123456"],
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+#### PromotionActivated
+**Description:** Акция активирована
+```json
+{
+  "eventType": "PromotionActivated",
+  "eventId": "evt_123456789",
+  "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+  "scope": "LOCAL",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+#### PromotionDeactivated
+**Description:** Акция деактивирована
+```json
+{
+  "eventType": "PromotionDeactivated",
+  "eventId": "evt_123456789",
+  "promotionId": "d5e6f7g8-h9i0-2345-ghij-789012345678",
+  "scope": "GLOBAL",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+---
+
+## Delivery Service Contracts
+
+### 1. REST API Endpoints
+
+#### POST /webhook/delivery/status
+**Description:** Webhook для получения обновлений статуса от внешних сервисов доставки
+Headers:
+
+### 2. Event Subscriptions (Delivery Service подписывается на)
+
+#### OrderCreated
+**Description:** Создан новый заказ с доставкой
+```json
+{
+  "eventType": "OrderCreated",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "deliveryType": "DELIVERY",
+  "paymentMethod": "ONLINE",
+  "totalAmount": 560.00,
+  "deliveryAddress": {
+    "street": "ул. Примерная, 123",
+    "city": "Москва"
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+- **Delivery Service Action:** Создает доставку во внешнем сервисе
+
+#### OrderCancelled
+**Description:** Заказ отменен
+```json
+{
+  "eventType": "OrderCancelled",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "previousStatus": "CREATED",
+  "cancellationReason": "Передумал",
+  "cancelledBy": "CUSTOMER",
+  "timestamp": "2024-01-15T10:35:00Z"
+}
+```
+
+- **Delivery Service Action:** Отменяет доставку во внешнем сервисе
+
+### 3. Events Published (Delivery Service публикует)
+
+#### DeliveryStatusChanged
+**Description:** Статус доставки изменился
+```json
+{
+  "eventType": "DeliveryStatusChanged",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "deliveryId": "del_123456789",
+  "previousStatus": "PICKING_UP",
+  "newStatus": "ON_THE_WAY",
+  "estimatedDeliveryTime": "2024-01-15T11:45:00Z",
+  "timestamp": "2024-01-15T11:15:00Z"
+}
+```
+
+
+---
+
+## Payment Service Contracts
+
+### 1. REST API Endpoints
+- POST /payments/initiate - инициация платежа
+- POST /payments/{paymentId}/confirm - подтверждение 3DS
+- POST /payments/{paymentId}/cancel - отмена платежа
+
+### 2. Event Subscriptions (Payment Service подписывается на)
+
+#### OrderCreated
+**Description:** Создан новый заказ с онлайн-оплатой
+```json
+{
+  "eventType": "OrderCreated",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "deliveryType": "DELIVERY",
+  "paymentMethod": "ONLINE",
+  "totalAmount": 560.00,
+  "deliveryAddress": {
+    "street": "ул. Примерная, 123",
+    "city": "Москва"
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+- **Payment Service Action:** Инициирует платеж в платежном шлюзе
+
+#### OrderCancelled
+**Description:** Заказ отменен
+```json
+{
+  "eventType": "OrderCancelled",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "previousStatus": "CREATED",
+  "cancellationReason": "Передумал",
+  "cancelledBy": "CUSTOMER",
+  "timestamp": "2024-01-15T10:35:00Z"
+}
+```
+
+- **Payment Service Action:** Инициирует возврат средств если платеж был завершен
+
+### 3. Events Published (Payment Service публикует)
+
+#### PaymentCreated
+**Description:** Платеж создан в шлюзе
+```json
+{
+  "eventType": "PaymentCreated",
+  "eventId": "evt_123456789",
+  "paymentId": "pay_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "amount": 560.00,
+  "status": "PENDING",
+  "timestamp": "2024-01-15T10:31:00Z"
+}
+```
+
+#### PaymentCompleted
+**Description:** Платеж успешно завершен
+```json
+{
+  "eventType": "PaymentCompleted",
+  "eventId": "evt_123456789",
+  "paymentId": "pay_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "amount": 560.00,
+  "gatewayTransactionId": "txn_987654321",
+  "completedAt": "2024-01-15T10:32:00Z",
+  "timestamp": "2024-01-15T10:32:00Z"
+}
+```
+
+#### PaymentFailed
+**Description:** Платеж не прошел
+```json
+{
+  "eventType": "PaymentFailed",
+  "eventId": "evt_123456789",
+  "paymentId": "pay_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "amount": 560.00,
+  "failureReason": "INSUFFICIENT_FUNDS",
+  "failedAt": "2024-01-15T10:32:00Z",
+  "timestamp": "2024-01-15T10:32:00Z"
+}
+```
+
+---
+
+## Notification Service Contracts
+
+### 1. Event Subscriptions (Notification Service подписывается на)
+
+#### OrderCreated
+**Description:** Создан новый заказ
+```json
+{
+  "eventType": "OrderCreated",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "shopId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "deliveryType": "DELIVERY",
+  "paymentMethod": "ONLINE",
+  "totalAmount": 560.00,
+  "deliveryAddress": {
+    "street": "ул. Примерная, 123",
+    "city": "Москва"
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+- **Notification Service Action:** Отправляет подтверждение заказа клиенту и уведомление магазину
+
+#### OrderStatusChanged
+**Description:** Статус заказа изменился
+```json
+{
+  "eventType": "OrderStatusChanged",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "previousStatus": "PREPARING",
+  "newStatus": "READY_FOR_PICKUP",
+  "timestamp": "2024-01-15T11:15:00Z"
+}
+```
+
+- **Notification Service Action:** Уведомляет клиента об изменении статуса
+
+#### PaymentCompleted
+**Description:** Платеж завершен
+```json
+{
+  "eventType": "PaymentCompleted",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "amount": 560.00,
+  "timestamp": "2024-01-15T10:32:00Z"
+}
+```
+
+- **Notification Service Action:** Отправляет подтверждение оплаты
+
+#### DeliveryStatusChanged
+**Description:** Статус доставки изменился
+```json
+{
+  "eventType": "DeliveryStatusChanged",
+  "eventId": "evt_123456789",
+  "orderId": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+  "newStatus": "ON_THE_WAY",
+  "estimatedDeliveryTime": "2024-01-15T11:45:00Z",
+  "timestamp": "2024-01-15T11:15:00Z"
+}
+```
+
+- **Notification Service Action:** Уведомляет клиента о статусе доставки
+
+### 2. REST API Endpoints (для внутреннего использования)
+
+#### POST /notifications/send
+**Description:** Отправка уведомления
+```json
+{
+  "type": "ORDER_CONFIRMATION",
+  "recipient": {
+    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "email": "customer@example.com",
+    "phone": "+79161234567"
+  },
+  "templateData": {
+    "orderNumber": "BLT-001234",
+    "totalAmount": 560.00,
+    "estimatedReadyTime": "2024-01-15T11:30:00Z"
+  },
+  "channels": ["EMAIL", "PUSH"]
+}
+```
+
+**Response:**
+```json
+{
+  "notificationId": "notif_123456789",
+  "status": "SENT",
+  "sentAt": "2024-01-15T10:30:00Z"
+}
+```
