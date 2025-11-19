@@ -1,3 +1,40 @@
+# Архитектурный кейс: "I'll Have the BLT" (Интернет-магазин сэндвичей)
+
+# Оглавление
+
+- [Бизнес постановка](#бизнес-постановка)
+- [Пользовательские сценарии](#пользовательские-сценарии)
+   - [Сценарии пользователя](#сценарии-пользователя)
+      - [Аутентификация](#аутентификация)
+      - [Выбор магазина](#выбор-магазина)
+      - [Формирование заказа](#формирование-заказа)
+      - [История заказов](#история-заказов)
+   - [Сценарии менеджера магазина](#сценарии-менеджера-магазина)
+   - [Сценарии администратора сети франшизы](#сценарии-администратора-сети-франшизы)
+- [C4 Контейнерная диаграмма](#C4-контейнерная-диаграмма)
+- [Описание и назначение сервисов](#описание-и-назначение-сервисов)
+   - [Auth Service](#auth-service)
+   - [User Service](#user-service)
+   - [Shop Service](#shop-service)
+   - [Catalog Service](#catalog-service)
+   - [Cart Service](#cart-service)
+   - [Promotion Service](#promotion-service)
+   - [Order Service](#order-service)
+   - [Delivery Service](#delivery-service)
+   - [Payment Service](#payment-service)
+   - [Notification Service](#notification-service)
+- [Контракты](#контракты)
+   - [Auth Service Contracts](#auth-service-contracts)
+   - [User Service Contracts](#user-service-contracts)
+   - [Shop Service Contracts](#shop-service-contracts)
+   - [Catalog Service Contracts](#catalog-service-contracts)
+   - [Cart Service Contracts](#cart-service-contracts)
+   - [Order Service Contracts](#order-service-contracts)
+   - [Promotion Service Contracts](#promotion-service-contracts)
+   - [Delivery Service Contracts](#delivery-service-contracts)
+   - [Payment Service Contracts](#payment-service-contracts)
+   - [Notification Service Contracts](#notification-service-contracts)
+
 # Бизнес постановка
 **Архитектурный кейс: "I'll Have the BLT" (Интернет-магазин сэндвичей)**
 
@@ -28,7 +65,7 @@
 
 
 
-# Пользовательские сценарии (BDD Format)
+# Пользовательские сценарии
 
 ## Сценарии пользователя
 
@@ -276,7 +313,7 @@
    4. Статусом выполнения
    5. Способом оплаты и статусом оплаты
 
-## Сценарии для менеджера магазина
+## Сценарии менеджера магазина
 
 #### Сценарий M-01-01: Авторизация менеджера магазина
 
@@ -355,7 +392,7 @@
 3.  **Тогда** система показывает заказы для его магазина
 4.  **И** позволяет отметить заказ как "Завершен"
 
-## Сценарии для администратора сети франшизы
+## Сценарии администратора сети франшизы
 
 #### Сценарий A-01-01: Аутентификация
 
@@ -415,7 +452,7 @@
 5.  **И** привязывает его к конкретному магазину
 6.  **Тогда** пользователь получает доступ к системе управления магазином
 
-# Контейнерная диаграмма
+# C4 Контейнерная диаграмма
 ![C4 model контейнерная диаграмма.svg](Images/C4%20model%20%D0%BA%D0%BE%D0%BD%D1%82%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%BD%D0%B0%D1%8F%20%D0%B4%D0%B8%D0%B0%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B0.svg)
 
 # Описание и назначение сервисов
