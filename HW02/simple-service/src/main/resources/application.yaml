@@ -19,7 +19,6 @@ management:
     web:
       exposure:
         include: health,info,logfile,metrics,prometheus,refresh,trace
-      base-path: "/"
   endpoint:
     health:
       show-details: always
