@@ -23,7 +23,7 @@
 - имя репозитория и тэг на Dockerhub
 - ссылку на github c Dockerfile, либо приложить Dockerfile в ДЗ
 
-### Краткая инструкция скомандами
+### Краткая инструкция скомандами для Docker
 ```bash
 # Сборка
 docker build -t vvsem/simple-service:latest -f simple-service/Dockerfile .
@@ -51,3 +51,14 @@ docker push vvsem/simple-service:1.0.0
 docker push vvsem/simple-service:latest
 ```
 
+### Краткая инструкция скомандами для JIB
+```bash
+# Собрать и отправить в DockerHub
+./gradlew jib
+
+# Или с явным указанием тега
+./gradlew jib -Djib.to.tags=latest,v1.0,dev
+
+# Только собрать (без отправки)
+./gradlew jibDockerBuild
+```
