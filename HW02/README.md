@@ -31,6 +31,8 @@ docker build --platform linux/amd64 -t vvsem/simple-service:latest -f simple-ser
 
 # Запускаем контейнер для теста
 docker run -d -p 8000:8000 --name simple-service-test vvsem/simple-service:latest
+## Просто запустить без разворачивания контейнер
+docker start simple-service-test 
 
 # Проверяем логи
 docker logs simple-service-test
