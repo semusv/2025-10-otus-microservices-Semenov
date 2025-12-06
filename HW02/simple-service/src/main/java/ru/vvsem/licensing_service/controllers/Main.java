@@ -16,10 +16,10 @@ public class Main {
         return Map.of(
                 "service", "simple-service",
                 "status", "running",
-                "healthCheck", "http://localhost:8000/health");
+                "healthCheck", "http://localhost:8000/health/");
     }
 
-    @RequestMapping("/health")
+    @RequestMapping(path = {"/health", "/health/"})
     @ResponseStatus(code = HttpStatus.OK)
     public Map<String, String> healthCheck() {
         return Collections.singletonMap("status", "OK");
