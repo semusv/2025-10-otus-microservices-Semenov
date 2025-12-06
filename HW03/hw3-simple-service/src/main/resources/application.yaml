@@ -1,0 +1,44 @@
+server:
+  port: 8000
+
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+
+  application:
+    name: simple-service
+
+  cloud:
+    config:
+      enabled: false
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,logfile,metrics,prometheus,refresh,trace
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+    metrics:
+      enabled: true
+    logfile:
+      enabled: true
+    hystrix:
+      stream:
+        enabled: true
+  health:
+    defaults:
+      enabled: true
+  metrics:
+    export:
+      simple:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true

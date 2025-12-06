@@ -3,7 +3,6 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-.gradle
 
 ### STS ###
 .apt_generated
@@ -36,3 +35,8 @@ build/
 *.env
 *.env.*
 */docker/docker/pgadmin_data/
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
