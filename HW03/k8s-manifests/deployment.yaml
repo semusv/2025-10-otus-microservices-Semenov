@@ -4,7 +4,7 @@ metadata:
   name: simple-service
   namespace: default
   labels:
-    app:  simple-service
+    app: simple-service
 spec:
   selector:
     matchLabels:
@@ -18,36 +18,36 @@ spec:
   template:
     metadata:
       labels:
-        app:  simple-service
+        app: simple-service
     spec:
       containers:
-      - name:  simple-service
-        image:  vvsem/simple-service:latest
+      - name: simple-service
+        image: vvsem/simple-service:1.0.0
         
         resources:
           requests:
-            cpu: 100m
-            memory: 100Mi
-          limits:
-            cpu: 200m
+            cpu: 300m
             memory: 200Mi
+          limits:
+            cpu: 500m
+            memory: 300Mi
 
         livenessProbe:
           httpGet:
-            path: /health
+            path: /health/
             port: 8000
-          initialDelaySeconds: 60
-          periodSeconds: 15
+          initialDelaySeconds: 45
+          periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /health
+            path: /health/
             port: 8000
-          initialDelaySeconds: 60
+          initialDelaySeconds: 45
           periodSeconds: 10
           timeoutSeconds: 3
           failureThreshold: 1
         ports:
-        - containerPort:  8000
-          name:  simple-service
+        - containerPort: 8000
+          name: simple-service
