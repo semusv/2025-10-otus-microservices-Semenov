@@ -50,6 +50,9 @@ docker build --platform linux/amd64 -t tag .
 
 ### Краткая инструкция с kubernetes
 ```bash
+# убедимся что в HOSTS есть запись для корректного перенаправления
+127.0.0.1 		arch.homework
+
 # стартуем кластер
 minikube start
 
@@ -58,6 +61,9 @@ cd k8s-manifests
 
 # применение всех манифестов
 kubectl apply -f .
+
+# стартуем туннель для ингресса
+minikube tunnel
 
 # проверка
 curl http://arch.homework/health/
