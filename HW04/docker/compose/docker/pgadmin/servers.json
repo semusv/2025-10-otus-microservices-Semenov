@@ -1,0 +1,15 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Local PostgreSQL",
+      "Group": "Servers",
+      "Host": "microservices_book.postgres",
+      "Port": 5432,
+      "MaintenanceDB": "oStock_dev",
+      "Username": "postgres",
+      "Password": "postgres",
+      "SSLMode": "prefer",
+      "Visible": true
+    }
+  }
+}

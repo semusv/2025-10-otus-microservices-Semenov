@@ -1,0 +1,73 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: service-user
+  output:
+    ansi:
+      enabled: ALWAYS
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:users_db}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+
+  liquibase:
+    enabled: true
+
+management:
+  springdoc:
+    api-docs:
+      path: /v3/api-docs
+    swagger-ui:
+      path: /swagger-ui.html
+      enabled: true
+    messages:
+      baseName: messages
+      encoding: UTF-8
+      # Не дает свалиться в системную локаль если не найден файл для переданной в MessageSource
+      # Если false то будут браться сообщения из дефолтного файла, если true, то из файла соответствующего системной локали
+      fallbackToSystemLocale: false
+      use-code-as-default-message: true
+    enable-hateoas: false
+
+  # Actuator Configuration
+  endpoints:
+    web:
+      exposure:
+        include: health,info,logfile,metrics,prometheus,refresh,trace
+    endpoint:
+      health:
+        show-details: always
+        show-components: always
+      metrics:
+        enabled: true
+      logfile:
+        enabled: true
+      hystrix:
+        stream:
+          enabled: true
+    health:
+      defaults:
+        enabled: true
+    metrics:
+      export:
+        simple:
+          enabled: true
+      distribution:
+        percentiles-histogram:
+          http:
+            server:
+              requests: true

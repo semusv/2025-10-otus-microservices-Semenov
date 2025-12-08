@@ -1,0 +1,22 @@
+package ru.vvsem.service_user.dto;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import lombok.Value;
+import ru.vvsem.service_user.model.User;
+
+/**
+ * DTO for {@link User}
+ */
+@Value
+public class UserFullDto {
+    Long id;
+    String firstName;
+    String lastName;
+    LocalDate birthDate;
+    String email;
+    String telephone;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
+    Integer version;
+}
