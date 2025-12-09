@@ -33,10 +33,10 @@ services:
     environment:
       SPRING_APPLICATION_NAME: service-user
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      SPRING_DATASOURCE_URL: ${DATABASE_URL}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST:-postgres-shop-db}:5432/${POSTGRES_DB:-users_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${DATABASE_DRIVER}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${DATABASE_DRIVER:-org.postgresql.Driver}
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8085/actuator/health || exit 1" ]
       interval: 30s

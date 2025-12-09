@@ -129,37 +129,63 @@ subprojects {
 
     extensions.configure<com.google.cloud.tools.jib.gradle.JibExtension> {
         from {
-            image = "bellsoft/liberica-openjdk-alpine-musl:21.0.1"
+//            image = "eclipse-temurin:21-jre-jammy"  // Ubuntu 22.04
+            // или
+//             image = "bellsoft/liberica-openjdk-debian:21"  // Debian
+             image = "bellsoft/liberica-openjre-alpine:21-cds"  // Debian
         }
         to {
-            image = "vvsem/${project.name}"  // имя сервиса = имя модуля
-            tags = setOf("latest", project.version.toString())
+            image = "vvsem/${project.name}"
+            tags = setOf("latest", "2.0.0", project.version.toString())
         }
         container {
             creationTime.set("USE_CURRENT_TIMESTAMP")
-
-            // Динамические порты для разных сервисов
-            val port = when (project.name) {
-                "service-user" -> "8085"
-//                "config-server" -> "8071"
-//                "order-service" -> "8002"
-//                "auth-service" -> "8003"
-//                "gateway-service" -> "8000"
-                else -> "8080"
-            }
-            ports = listOf(port)
-
-            // Общие JVM флаги для всех сервисов
+            ports = listOf("8085")
             jvmFlags = listOf(
                 "-Xmx512m",
-                "-Xms256m"
+                "-Xms256m",
+                "-Djava.security.egd=file:/dev/./urandom",
+                "-Dfile.encoding=UTF-8"
             )
-
             environment = mapOf(
-                "JAVA_TOOL_OPTIONS" to "-Dfile.encoding=UTF-8"
+                "TZ" to "UTC",
+                "LANG" to "C.UTF-8"
             )
         }
     }
+//        from {
+////            image = "bellsoft/liberica-openjdk-alpine-musl:21.0.1"
+//            image = "bellsoft/liberica-openjdk-debian:21"
+//        }
+//        to {
+//            image = "vvsem/${project.name}"  // имя сервиса = имя модуля
+//            tags = setOf("latest", project.version.toString())
+//        }
+//        container {
+//            creationTime.set("USE_CURRENT_TIMESTAMP")
+//
+//            // Динамические порты для разных сервисов
+//            val port = when (project.name) {
+//                "service-user" -> "8085"
+////                "config-server" -> "8071"
+////                "order-service" -> "8002"
+////                "auth-service" -> "8003"
+////                "gateway-service" -> "8000"
+//                else -> "8080"
+//            }
+//            ports = listOf(port)
+//
+//            // Общие JVM флаги для всех сервисов
+//            jvmFlags = listOf(
+//                "-Xmx512m",
+//                "-Xms256m"
+//            )
+//
+//            environment = mapOf(
+//                "JAVA_TOOL_OPTIONS" to "-Dfile.encoding=UTF-8"
+//            )
+//        }
+//    }
 }
 
 tasks {
@@ -197,6 +223,7 @@ tasks {
         group = "docker"
         description = "Start with development overrides"
         dependsOn(getSubprojectJibTasks())
+        finalizedBy("cleanDanglingImages")
         doLast {
             exec {
                 workingDir = file("docker/compose")
@@ -252,9 +279,11 @@ tasks {
         doLast {
             exec {
                 workingDir = file("docker/compose")
-                commandLine("docker-compose", "up", "-d",
+                commandLine(
+                    "docker-compose", "up", "-d",
                     "hw04.service-user",
-                    "hw04.postgres" )
+                    "hw04.postgres"
+                )
             }
         }
     }
@@ -265,9 +294,11 @@ tasks {
         doLast {
             exec {
                 workingDir = file("docker/compose")
-                commandLine("docker-compose", "up", "-d",
+                commandLine(
+                    "docker-compose", "up", "-d",
                     "hw04.config-server",
-                    "hw04.postgres")
+                    "hw04.postgres"
+                )
             }
         }
     }
@@ -277,7 +308,21 @@ tasks {
         group = "docker"
         description = "Build Docker images for all services"
         dependsOn(getSubprojectJibTasks())
+        finalizedBy("cleanDanglingImages")
     }
+
+    // Очистка дублирующихся образов
+    register("cleanDanglingImages") {
+        group = "docker"
+        description = "Clean up dangling Docker images"
+        doLast {
+            exec {
+                commandLine("docker", "image", "prune", "-f")
+            }
+            println("Cleaned up dangling images")
+        }
+    }
+
 }
 
 // Функция для получения всех jibDockerBuild задач из субпроектов

@@ -37,7 +37,7 @@ databaseChangeLog:
               - column:
                   constraints:
                     nullable: false
-                  name: telephone
+                  name: phone_number
                   type: varchar(30)
               - column:
                   constraints:
@@ -61,7 +61,7 @@ databaseChangeLog:
       objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
       changes:
         - addUniqueConstraint:
-            columnNames: telephone
-            constraintName: UC_USERS_TELEPHONE
+            columnNames: phone_number
+            constraintName: UC_USERS_PHONE_NUMBER
             tableName: users
 

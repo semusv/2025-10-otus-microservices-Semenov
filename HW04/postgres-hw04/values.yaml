@@ -1,0 +1,11 @@
+postgresql:
+  enabled: true
+  fullnameOverride: postgresql
+  auth:
+    postgresPassword: spec_password
+    username: app_user
+    password: spec_password
+    database: users_db
+
+  volumePermissions:
+    enabled: true

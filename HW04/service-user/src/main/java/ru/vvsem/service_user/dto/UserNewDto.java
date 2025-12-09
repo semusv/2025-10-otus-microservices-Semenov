@@ -13,5 +13,5 @@ public class UserNewDto {
     String lastName;
     LocalDate birthDate;
     String email;
-    String telephone;
+    String phoneNumber;
 }

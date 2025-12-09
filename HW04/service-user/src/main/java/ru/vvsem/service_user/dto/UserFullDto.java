@@ -15,7 +15,7 @@ public class UserFullDto {
     String lastName;
     LocalDate birthDate;
     String email;
-    String telephone;
+    String phoneNumber;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
     Integer version;
