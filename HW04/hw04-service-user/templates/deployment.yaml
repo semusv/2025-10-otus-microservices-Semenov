@@ -62,8 +62,6 @@ spec:
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
               value: "2"
 
-
-
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.profiles }}"
             - name: POSTGRES_USER

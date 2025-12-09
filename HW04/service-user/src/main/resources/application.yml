@@ -1,4 +1,6 @@
 server:
+  servlet:
+    context-path: /user-service
   port: 8085
 
 spring:
