@@ -1,0 +1,48 @@
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "app.fullname" . }}-migration
+  namespace: {{ .Release.Namespace | default "default" }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    component: migration
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: {{ .Values.migration.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.migration.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "app.labels" . | nindent 8 }}
+        component: migration
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migration
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion | default "latest" }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "{{ .Values.migration.env.profiles }}"
+            - name: POSTGRES_USER
+              value: {{ .Values.spring.postgres.user }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.spring.postgres.password }}
+            - name: DB
+              value: {{ .Values.spring.postgres.db }}
+            - name: DB_HOST
+              value: {{ .Values.spring.postgres.db_host }}
+            - name: POSTGRES_DB
+              value: {{ .Values.spring.postgres.db }}
+          resources:
+            requests:
+              cpu: 300m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 300Mi
+{{- end }}

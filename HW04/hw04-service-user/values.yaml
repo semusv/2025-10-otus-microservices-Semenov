@@ -128,3 +128,34 @@ spring:
     db: "users_db"
     db_host: "postgresql"
     db_port: "5432"
+
+# Миграция
+migration:
+  enabled: true
+  image:
+    repository: "{{ .Values.image.repository }}"
+    tag: "{{ .Values.image.tag }}"
+    pullPolicy: "{{ .Values.image.pullPolicy }}"
+  resources:
+    requests:
+      cpu: 300m
+      memory: 200Mi
+    limits:
+      cpu: 500m
+      memory: 300Mi
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 3600
+  failureThreshold: 10
+  env:
+    profiles: "migrate"  # профиль для миграций
+  timeoutSeconds: 300  # таймаут для probe
+  checkDatabase: true  # проверять доступность БД перед запуском
+
+postgresql:
+  enabled: true
+  fullnameOverride: postgresql
+  auth:
+    postgresPassword: spec_password
+    username: app_user
+    password: spec_password
+    database: users_db

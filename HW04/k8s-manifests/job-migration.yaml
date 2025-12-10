@@ -10,9 +10,6 @@ spec:
   backoffLimit: 2
   # Автоматическое удаление Job через час после успешного выполнения
   ttlSecondsAfterFinished: 3600
-
-
-
   template:
     metadata:
       name: user-service-migration
@@ -22,7 +19,6 @@ spec:
       containers:
       - name: migration
         image: vvsem/service-user:4.0.1
-
         resources:
           requests:
             cpu: 300m
@@ -30,11 +26,9 @@ spec:
           limits:
             cpu: 500m
             memory: 300Mi
-
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: migrate
-
         - name: DB_HOST
           value: "postgresql"  # или другое имя вашего сервиса БД
         - name: DB_PORT
