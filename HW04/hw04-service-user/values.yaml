@@ -159,3 +159,10 @@ postgresql:
     username: app_user
     password: spec_password
     database: users_db
+  service:
+    # Для обычного сервиса
+    sessionAffinity: None
+  # Для headless сервиса - убрать sessionAffinity
+  headless:
+    enabled: true
+    # Не указываем sessionAffinity для headle
