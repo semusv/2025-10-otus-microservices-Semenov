@@ -8,13 +8,13 @@ image:
   repository: vvsem/service-user
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "4.0.0"
+  tag: "4.0.1"
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-profiles: ""
+profiles: "app"
 
 serviceAccount:
   # Specifies whether a service account should be created

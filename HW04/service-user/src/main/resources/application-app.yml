@@ -1,0 +1,10 @@
+spring:
+  config:
+    activate:
+      on-profile: app
+
+  main:
+    web-application-type: servlet  # Включаем веб-сервер
+
+  liquibase:
+    enabled: false  # Выключаем миграции при старте приложения

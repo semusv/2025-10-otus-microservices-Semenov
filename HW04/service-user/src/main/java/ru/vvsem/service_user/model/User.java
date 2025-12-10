@@ -36,7 +36,7 @@ public class User {
     @Column(name = "email", nullable = false)
     private String email;
 
-    @Column(name = "phone_number", nullable = false, unique = true, length = 30, columnDefinition = "varchar(30)")
+    @Column(name = "phone_number", nullable = false, length = 30, columnDefinition = "varchar(30)")
     private String phoneNumber;
 
     @CreationTimestamp

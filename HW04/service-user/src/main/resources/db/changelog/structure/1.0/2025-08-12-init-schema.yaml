@@ -54,14 +54,5 @@ databaseChangeLog:
               - column:
                   name: version
                   type: INT
+                  defaultValue: 0
             tableName: users
-  - changeSet:
-      id: 1765217827316-2
-      author: semva (generated)
-      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
-      changes:
-        - addUniqueConstraint:
-            columnNames: phone_number
-            constraintName: UC_USERS_PHONE_NUMBER
-            tableName: users
-

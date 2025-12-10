@@ -136,7 +136,7 @@ subprojects {
         }
         to {
             image = "vvsem/${project.name}"
-            tags = setOf("latest", "4.0.0", project.version.toString())
+            tags = setOf("latest", "4.0.1", project.version.toString())
         }
         container {
             creationTime.set("USE_CURRENT_TIMESTAMP")

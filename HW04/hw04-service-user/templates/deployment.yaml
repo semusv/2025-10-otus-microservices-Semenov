@@ -37,30 +37,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion | default "latest" }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            # Основные переменные логирования Spring Boot
-            # Полное логирование подключения к БД
-            - name: LOGGING_LEVEL_ORG_POSTGRESQL
-              value: "DEBUG"
-            - name: LOGGING_LEVEL_COM_ZAXXER_HIKARI
-              value: "DEBUG"
-            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_JDBC
-              value: "DEBUG"
-            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_TRANSACTION
-              value: "DEBUG"
-
-            # Для отслеживания DNS запросов
-            - name: LOGGING_LEVEL_SUN_NET_INETADDR
-              value: "DEBUG"
-            - name: LOGGING_LEVEL_SUN_NET_RESOLVER
-              value: "DEBUG"
-
-            # HikariCP логирование
-            - name: SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT
-              value: "30000"
-            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
-              value: "5"
-            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
-              value: "2"
 
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.profiles }}"
