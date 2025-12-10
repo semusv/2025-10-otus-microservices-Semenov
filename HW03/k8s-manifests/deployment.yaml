@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: simple-service
-        image: vvsem/simple-service:1.0.0
+        image: vvsem/simple-service:2.0.0
         
         resources:
           requests:
