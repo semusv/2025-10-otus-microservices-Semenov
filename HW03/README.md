@@ -69,6 +69,14 @@ minikube tunnel
 curl http://arch.homework/health/
 curl http://arch.homework/otusapp/vvsemenov/health/
 
+# Идем в директорию с postman и запускаем тесты
+cd ..\postman-tests\
+newman run otus-hw03.postman_collection.json
+
+# удаление за собой
+cd ..\k8s-manifests\
+kubectl delete -f .
+
 ```
 
 
