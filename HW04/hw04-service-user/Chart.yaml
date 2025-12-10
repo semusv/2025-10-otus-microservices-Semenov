@@ -22,5 +22,5 @@ dependencies:
     version: 18.1.13
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: postgresql.enabled
-    tags:
-      - database
+    wait: true
+    timeout: 300s
