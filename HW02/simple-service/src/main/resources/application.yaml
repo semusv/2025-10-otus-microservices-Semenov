@@ -42,3 +42,7 @@ management:
         http:
           server:
             requests: true
+
+logging:
+  level:
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
