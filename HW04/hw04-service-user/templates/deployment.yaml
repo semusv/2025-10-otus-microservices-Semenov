@@ -4,12 +4,6 @@ metadata:
   name: {{ include "app.fullname" . }}
   labels:
     {{- include "app.labels" . | nindent 4 }}
-  {{- if .Values.migration.enabled }}
-  annotations:
-    # Ждем завершения миграций перед развертыванием приложения
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-weight": "5"  # положительный вес = выполняется ПОСЛЕ хуков с отрицательным весом
-  {{- end }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -29,6 +23,32 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- if .Values.migration.enabled }}
+      initContainers:
+        - name: wait-for-migrations
+          image: bitnami/kubectl:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Небольшое ожидание окончания миграций..."
+              for i in $(seq 1 60); do
+                echo "Ждем... ($i/60)"
+                sleep 1
+              done
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+      {{- end }}
+
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -42,23 +62,16 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion | default "latest" }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - -Dspring.config.import=optional:file:/config/application.yml
           env:
-
             - name: SPRING_PROFILES_ACTIVE
-              value: "{{ .Values.profiles }}"
-            - name: POSTGRES_USER
-              value: {{ .Values.spring.postgres.user }}
+              value: "{{ .Values.user_service.profiles }}"
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-postgresql-secret
                   key: password
-            - name: DB
-              value: {{ .Values.spring.postgres.db }}
-            - name: DB_HOST
-              value: {{ .Values.spring.postgres.db_host }}
-            - name: POSTGRES_DB
-              value: {{ .Values.spring.postgres.db }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -79,13 +92,13 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumeMounts }}
+          {{- with .Values.user_service.volumeMounts }}
           volumeMounts:
-            {{- toYaml . | nindent 12 }}
+          {{- toYaml . | nindent 12  }}
           {{- end }}
-      {{- with .Values.volumes }}
+      {{- with .Values.user_service.volumes }}
       volumes:
-        {{- toYaml . | nindent 8 }}
+      {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
