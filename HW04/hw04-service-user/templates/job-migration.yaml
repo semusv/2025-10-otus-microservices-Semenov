@@ -31,7 +31,10 @@ spec:
             - name: POSTGRES_USER
               value: {{ .Values.spring.postgres.user }}
             - name: POSTGRES_PASSWORD
-              value: {{ .Values.spring.postgres.password }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgresql-secret
+                  key: password
             - name: DB
               value: {{ .Values.spring.postgres.db }}
             - name: DB_HOST

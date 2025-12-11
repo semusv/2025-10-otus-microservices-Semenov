@@ -124,7 +124,6 @@ metrics:
 spring:
   postgres:
     user: "app_user"
-    password: "spec_password"
     db: "users_db"
     db_host: "postgresql"
     db_port: "5432"
@@ -143,7 +142,7 @@ migration:
     limits:
       cpu: 500m
       memory: 300Mi
-  backoffLimit: 2
+  backoffLimit: 5
   ttlSecondsAfterFinished: 3600
   failureThreshold: 10
   env:
@@ -151,18 +150,21 @@ migration:
   timeoutSeconds: 300  # таймаут для probe
   checkDatabase: true  # проверять доступность БД перед запуском
 
+# Блок для БД
 postgresql:
   enabled: true
   fullnameOverride: postgresql
   auth:
-    postgresPassword: spec_password
     username: app_user
-    password: spec_password
-    database: users_db
+    existingSecret: "{{ .Release.Name }}-postgresql-secret"
+    secretKeys:
+      adminPasswordKey: "postgres-password"
+      userPasswordKey: "password"
   service:
-    # Для обычного сервиса
     sessionAffinity: None
-  # Для headless сервиса - убрать sessionAffinity
   headless:
     enabled: true
-    # Не указываем sessionAffinity для headle
+
+# Блок для secrets - сливается отдельно из файла или переменных
+secrets:
+  create: true
