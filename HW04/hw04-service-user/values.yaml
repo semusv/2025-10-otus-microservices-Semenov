@@ -113,6 +113,16 @@ metrics:
 # Основное приложение user_service
 user_service:
   profiles: "app" # профиль для приложения
+  initContainer:
+    timeoutSeconds: 300
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
   server:
     port: 8085
   spring:
@@ -133,6 +143,8 @@ user_service:
 # Миграция
 migration:
   enabled: true
+  continueOnFailure: false  # Продолжать ли запуск приложения при ошибке миграции
+  continueOnTimeout: false  # Продолжать ли при таймауте ожидания
   resources:
     requests:
       cpu: 300m

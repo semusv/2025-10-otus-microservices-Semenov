@@ -31,11 +31,9 @@ spec:
             - /bin/sh
             - -c
             - |
-              echo "Небольшое ожидание окончания миграций..."
-              for i in $(seq 1 15); do
-                echo "Ждем... ($i/15)"
-                sleep 1
-              done
+              echo "Ожидание postgresql-0..."
+              kubectl wait --for=condition=ready pod/postgresql-0 --timeout=300s
+              echo "✅ postgresql-0 готов!"
           resources:
             requests:
               cpu: 100m
@@ -46,7 +44,7 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 1001
-
+      serviceAccountName: {{ include "app.serviceAccountName" . }}
       containers:
         - name: migration
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion | default "latest" }}"
