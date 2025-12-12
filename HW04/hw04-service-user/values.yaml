@@ -112,7 +112,7 @@ metrics:
 
 # Основное приложение user_service
 user_service:
-  profiles: "app"
+  profiles: "app" # профиль для приложения
   server:
     port: 8085
   spring:
