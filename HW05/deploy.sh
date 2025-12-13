@@ -1,9 +1,9 @@
 #!/bin/bash
 
-CHART_PATH="./hw04-service-user"
-RELEASE_NAME="hw04-service-user"
-NAMESPACE="hw04"
-SECRETS_FILE="./hw04-service-user/secrets/secret.yaml"
+CHART_PATH="./hw05-service-user"
+RELEASE_NAME="hw05-service-user"
+NAMESPACE="hw05"
+SECRETS_FILE="./hw05-service-user/secrets/secret.yaml"
 ACTION="${1:-upgrade}"  # По умолчанию upgrade
 
 echo "Performing Helm $ACTION for $RELEASE_NAME..."

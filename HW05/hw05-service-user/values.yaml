@@ -170,9 +170,19 @@ migration:
 postgresql:
   primary:
     persistence:
-      size: 1Gi
+      enabled: true
+      size: 2Gi
+#      name: postgresql-data-hw05
+#      existingClaim: ""
+
+#    containerSecurityContext:
+#      runAsUser: 1001
+#      runAsNonRoot: true
+#    podSecurityContext:
+#      fsGroup: 1001
+
   enabled: true
-  fullnameOverride: postgresql
+  fullnameOverride: postgresql-hw05
   auth:
     username: app_user
     existingSecret: "{{ .Release.Name }}-postgresql-secret"
