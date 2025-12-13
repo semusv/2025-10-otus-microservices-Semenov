@@ -129,7 +129,7 @@ user_service:
     postgres:
       user: "app_user"
       db: "users_db"
-      db_host: "postgresql"
+      db_host: "postgresql-hw04"
       db_port: "5432"
   volumeMounts:
     - name: config-volume
@@ -170,11 +170,13 @@ migration:
 postgresql:
   primary:
     persistence:
+      enabled: true
       size: 1Gi
   enabled: true
-  fullnameOverride: postgresql
+  fullnameOverride: postgresql-hw04
   auth:
     username: app_user
+    database: users_db
     existingSecret: "{{ .Release.Name }}-postgresql-secret"
     secretKeys:
       adminPasswordKey: "postgres-password"
@@ -183,7 +185,6 @@ postgresql:
     sessionAffinity: None
   headless:
     enabled: true
-
 # Блок для secrets - сливается отдельно из файла или переменных
 secrets:
   create: true

@@ -16,14 +16,14 @@ rules:
   # Права для проверки PostgreSQL StatefulSet и Pods
   - apiGroups: ["apps"]
     resources: ["statefulSets"]
-    resourceNames: ["postgresql"]
+    resourceNames: ["{{ .Values.postgresql.fullnameOverride }}"]
     verbs: ["get", "watch", "list"]
 
   - apiGroups: [""]  # Core API group
     resources: ["pods"]
     # Можно ограничить конкретными pod'ами PostgreSQL
     resourceNames:
-      - "postgresql-0"
+      - "{{ .Values.postgresql.fullnameOverride }}-0"
     verbs: ["get", "watch", "list"]
 
 ---
