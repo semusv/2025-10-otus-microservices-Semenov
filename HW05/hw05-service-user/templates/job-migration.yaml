@@ -1,0 +1,77 @@
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "app.fullname" . }}-migration
+  namespace: {{ .Release.Namespace | default "default" }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    component: migration
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: {{ .Values.migration.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.migration.ttlSecondsAfterFinished }}
+  activeDeadlineSeconds: {{ .Values.migration.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "app.labels" . | nindent 8 }}
+        component: migration
+    spec:
+      restartPolicy: Never
+
+      initContainers:
+        - name: wait-for-migrations
+          image: bitnami/kubectl:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Ожидание postgresql-0..."
+              kubectl wait --for=condition=ready pod/postgresql-0 --timeout=300s
+              echo "✅ postgresql-0 готов!"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+      serviceAccountName: {{ include "app.serviceAccountName" . }}
+      containers:
+        - name: migration
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion | default "latest" }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - -Dspring.config.import=optional:file:/config/application.yml
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "{{ .Values.migration.env.profiles }}"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgresql-secret
+                  key: password
+          resources:
+            requests:
+              cpu: 300m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 300Mi
+          {{- with .Values.migration.volumeMounts }}
+          volumeMounts:
+          {{- toYaml . | nindent 12  }}
+          {{- end }}
+      {{- with .Values.migration.volumes }}
+      volumes:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

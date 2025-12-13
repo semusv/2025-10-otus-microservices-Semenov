@@ -1,0 +1,85 @@
+name: ${COMPOSE_PROJECT_NAME:-shop}
+
+services:
+  hw04.postgres:
+    image: postgres:17.0
+    container_name: postgres-shop-db
+    restart: "no"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - shop_postgres_data:/var/lib/postgresql/data
+      - ./init-schemas.sql:/docker-entrypoint-initd.d/init-schemas.sql
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - shop-network
+
+
+  hw04.service-user:
+    image: vvsem/service-user:latest
+    container_name: service-user
+    restart: "no"
+    ports:
+      - "${SERVICE_USER_PORT:-8085}:8085"
+    environment:
+      SPRING_APPLICATION_NAME: service-user
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST:-postgres-shop-db}:5432/${POSTGRES_DB:-users_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${DATABASE_DRIVER:-org.postgresql.Driver}
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8085/actuator/health || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    depends_on:
+      hw04.postgres:
+        condition: service_healthy
+    networks:
+      - shop-network
+
+  pgadmin:
+    image: dpage/pgadmin4:9.10.0
+    restart: "no"
+    ports:
+      - "5050:80"
+    volumes:
+      - shop_pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json
+      - ./docker/pgadmin/pgpass:/pgadmin4/pgpass
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:80/misc/ping || exit -1
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    depends_on:
+      - hw04.postgres
+    entrypoint: /bin/sh -c "chmod 600 /pgadmin4/pgpass; /entrypoint.sh;"
+    networks:
+      - shop-network
+
+
+volumes:
+  shop_postgres_data:
+  shop_pgadmin_data:
+
+networks:
+  shop-network:
+    driver: bridge

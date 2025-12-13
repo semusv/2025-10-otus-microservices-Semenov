@@ -1,0 +1,44 @@
+# templates/rbac-migration-watcher.yaml
+{{- if .Values.migration.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "app.fullname" . }}-migration-watcher
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    # Указываем конкретное имя Job для минимальных прав
+    resourceNames: ["{{ include "app.fullname" . }}-migration"]
+    verbs: ["get", "watch", "list"]
+
+  # Права для проверки PostgreSQL StatefulSet и Pods
+  - apiGroups: ["apps"]
+    resources: ["statefulSets"]
+    resourceNames: ["postgresql"]
+    verbs: ["get", "watch", "list"]
+
+  - apiGroups: [""]  # Core API group
+    resources: ["pods"]
+    # Можно ограничить конкретными pod'ами PostgreSQL
+    resourceNames:
+      - "postgresql-0"
+    verbs: ["get", "watch", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "app.fullname" . }}-migration-watcher-binding
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "app.fullname" . }}-migration-watcher
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "app.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace | default "default" }}
+{{- end }}

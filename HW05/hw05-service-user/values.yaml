@@ -1,0 +1,189 @@
+# Default values for app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: vvsem/service-user
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "4.0.1"
+
+replicaCount: 3
+
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8085
+
+headlessService:
+  enabled: false
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: arch.homework
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - arch.homework
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+liveness:
+  delay: 50
+  timeout: 10
+  path: /user-service/actuator/health
+
+readiness:
+  delay: 50
+  timeout: 10
+  path: /user-service/actuator/health
+
+
+
+autoscaling:
+  enabled: false
+  hpa:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPU: 80
+    targetMemory: ""
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+metrics:
+  enabled: false
+  serviceMonitor:
+    path: 
+    jobLabel: ""
+    interval: 15s
+    scrapeTimeout: ""
+
+# Основное приложение user_service
+user_service:
+  profiles: "app" # профиль для приложения
+  initContainer:
+    timeoutSeconds: 120
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
+  server:
+    port: 8085
+  spring:
+    postgres:
+      user: "app_user"
+      db: "users_db"
+      db_host: "postgresql"
+      db_port: "5432"
+  volumeMounts:
+    - name: config-volume
+      mountPath: /config
+      readOnly: true
+  volumes:
+    - name: config-volume
+      configMap:
+        name: user-service-configmap-app
+
+# Миграция
+migration:
+  enabled: true
+  continueOnFailure: false  # Продолжать ли запуск приложения при ошибке миграции
+  continueOnTimeout: true  # Продолжать ли при таймауте ожидания
+  resources:
+    requests:
+      cpu: 300m
+      memory: 200Mi
+    limits:
+      cpu: 500m
+      memory: 300Mi
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 3600
+  activeDeadlineSeconds: 600
+  env:
+    profiles: "migrate"  # профиль для миграций
+  volumeMounts:
+    - name: config-volume
+      mountPath: /config
+      readOnly: true
+  volumes:
+    - name: config-volume
+      configMap:
+        name: user-service-configmap-migration
+
+# Блок для БД
+postgresql:
+  primary:
+    persistence:
+      size: 1Gi
+  enabled: true
+  fullnameOverride: postgresql
+  auth:
+    username: app_user
+    existingSecret: "{{ .Release.Name }}-postgresql-secret"
+    secretKeys:
+      adminPasswordKey: "postgres-password"
+      userPasswordKey: "password"
+  service:
+    sessionAffinity: None
+  headless:
+    enabled: true
+
+# Блок для secrets - сливается отдельно из файла или переменных
+secrets:
+  create: true

@@ -1,0 +1,11 @@
+-- Создаём схемы для каждого сервиса
+-- CREATE SCHEMA IF NOT EXISTS licensing ;
+-- CREATE SCHEMA IF NOT EXISTS users;
+-- CREATE SCHEMA IF NOT EXISTS orders;
+-- CREATE SCHEMA IF NOT EXISTS shared;
+
+-- Опционально: даём права пользователю (если используете не postgres)
+-- GRANT ALL PRIVILEGES ON SCHEMA licensing TO app_user;
+-- GRANT ALL PRIVILEGES ON SCHEMA users TO app_user;
+-- GRANT ALL PRIVILEGES ON SCHEMA orders TO app_user;
+-- GRANT ALL PRIVILEGES ON SCHEMA shared TO app_user;

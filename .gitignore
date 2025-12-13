@@ -36,3 +36,5 @@ build/
 *.env
 *.env.*
 */docker/docker/pgadmin_data/
+
+amplicode.xml
