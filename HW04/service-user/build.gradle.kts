@@ -6,7 +6,7 @@ dependencies {
 
 	// Мониторинг и метрики
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
-	//	implementation("io.micrometer:micrometer-registry-prometheus")
+	implementation("io.micrometer:micrometer-registry-prometheus")
 
 	// Web фреймворк
 	implementation("org.springframework.boot:spring-boot-starter-web")
@@ -41,6 +41,9 @@ dependencies {
 	//hateoas
 	implementation("org.springframework.boot:spring-boot-starter-hateoas")
 
+    //Liquibase
+    implementation("org.liquibase:liquibase-core")
+
 	//mapstruct
 	compileOnly("org.mapstruct:mapstruct:1.6.0")
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.0")
@@ -48,7 +51,7 @@ dependencies {
 
 	//БД
 	runtimeOnly("org.postgresql:postgresql")
-	implementation("org.liquibase:liquibase-core")
+
 }
 
 //jib {

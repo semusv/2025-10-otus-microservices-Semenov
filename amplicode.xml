@@ -4,4 +4,13 @@
   <component name="AmplicodeJpaPluginProjectSettings">
     <option name="lastSelectedLanguage" value="Java" />
   </component>
+  <component name="AmplicodePersistenceUnitSettings">
+    <persistence-units>
+      <persistence-unit moduleName="hw04.service-user.main" name="Default">
+        <packages>
+          <package value="ru.vvsem.service_user" />
+        </packages>
+      </persistence-unit>
+    </persistence-units>
+  </component>
 </project>
