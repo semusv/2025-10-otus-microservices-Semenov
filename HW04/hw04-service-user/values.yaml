@@ -114,7 +114,7 @@ metrics:
 user_service:
   profiles: "app" # профиль для приложения
   initContainer:
-    timeoutSeconds: 300
+    timeoutSeconds: 120
     resources:
       requests:
         cpu: 50m
@@ -144,7 +144,7 @@ user_service:
 migration:
   enabled: true
   continueOnFailure: false  # Продолжать ли запуск приложения при ошибке миграции
-  continueOnTimeout: false  # Продолжать ли при таймауте ожидания
+  continueOnTimeout: true  # Продолжать ли при таймауте ожидания
   resources:
     requests:
       cpu: 300m
