@@ -129,7 +129,7 @@ user_service:
     postgres:
       user: "app_user"
       db: "users_db"
-      db_host: "postgresql"
+      db_host: "postgresql-hw05"
       db_port: "5432"
   volumeMounts:
     - name: config-volume
@@ -172,19 +172,11 @@ postgresql:
     persistence:
       enabled: true
       size: 2Gi
-#      name: postgresql-data-hw05
-#      existingClaim: ""
-
-#    containerSecurityContext:
-#      runAsUser: 1001
-#      runAsNonRoot: true
-#    podSecurityContext:
-#      fsGroup: 1001
-
   enabled: true
   fullnameOverride: postgresql-hw05
   auth:
     username: app_user
+    database: users_db
     existingSecret: "{{ .Release.Name }}-postgresql-secret"
     secretKeys:
       adminPasswordKey: "postgres-password"
