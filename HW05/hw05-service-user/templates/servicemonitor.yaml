@@ -17,7 +17,7 @@ spec:
       {{- include "app.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: metrics
   endpoints:
-    - targetPort: {{ .Values.service.port }}
+    - port: http-metrics
       {{- if .Values.metrics.serviceMonitor.path }}
       path: {{ .Values.metrics.serviceMonitor.path }}
       {{- end }}

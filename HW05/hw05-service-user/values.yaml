@@ -6,7 +6,7 @@ image:
   repository: vvsem/service-user
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "4.0.1"
+  tag: "4.1.0"
 
 replicaCount: 3
 
@@ -103,12 +103,13 @@ tolerations: []
 affinity: {}
 
 metrics:
-  enabled: false
+  enabled: true
   serviceMonitor:
-    path: 
+    path: "/user-service/actuator/prometheus"
     jobLabel: ""
-    interval: 15s
-    scrapeTimeout: ""
+    interval: 30s
+    scrapeTimeout: 15s
+    scheme: http
 
 # Основное приложение user_service
 user_service:
@@ -142,7 +143,7 @@ user_service:
 
 # Миграция
 migration:
-  enabled: true
+  enabled: false
   continueOnFailure: false  # Продолжать ли запуск приложения при ошибке миграции
   continueOnTimeout: true  # Продолжать ли при таймауте ожидания
   resources:
