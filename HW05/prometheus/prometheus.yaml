@@ -1,7 +1,8 @@
 prometheus:
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
     serviceMonitorSelector: {}
-    # Исправьте эти строки:
-    podMonitorNamespaceSelector: {}  # пустой объект выбирает все неймспейсы
-    serviceMonitorNamespaceSelector: {}  # пустой объект выбирает все неймспейсы
+
+#    podMonitorNamespaceSelector: {}  # пустой объект выбирает все неймспейсы
+#    serviceMonitorNamespaceSelector: {}  # пустой объект выбирает все неймспейсы

@@ -43,6 +43,31 @@ $ kubectl delete ns hw04
 
 
 ``` bash
-helm install stack prometheus-community/kube-prometheus-stack -f prometheus.yaml --namespace prometheus --create-namespace
+#установка Nginx с включенным мониторингом
+helm install nginx ingress-nginx/ingress-nginx  `
+--namespace ng                                  `         
+-f nginx-ingress.yaml                           `
+--set controller.metrics.enabled=true           `
+--set controller.metrics.serviceMonitor.enabled=true `
+--set controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
+
+#Обновление Nginx с включенным мониторингом
+helm upgrade nginx ingress-nginx/ingress-nginx `
+--namespace ng `
+-f nginx-ingress.yaml                           `
+--set controller.metrics.enabled=true `
+--set controller.metrics.serviceMonitor.enabled=true `
+--set controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
+
+#Установка Prometheus и Grafana
+helm install stack prometheus-community/kube-prometheus-stack `
+-f prometheus.yaml `
+--namespace prometheus `
+--create-namespace
+
+#Обновление Prometheus и Grafana
+helm upgrade stack prometheus-community/kube-prometheus-stack `
+-f prometheus.yaml `
+--namespace prometheus 
 
 ```
