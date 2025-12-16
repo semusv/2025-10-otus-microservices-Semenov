@@ -6,6 +6,9 @@ metadata:
       {{- include "app.labels" . | nindent 4 }}
 data:
   application.yml: |
+    error-handling:
+      enabled: true      # включить/выключить случайные ошибки
+      probability: 0.10
     spring:
       datasource:
         url: jdbc:postgresql://{{ .Values.user_service.spring.postgres.db_host }}:{{ .Values.user_service.spring.postgres.db_port }}/{{ .Values.user_service.spring.postgres.db }}

@@ -6,7 +6,7 @@ image:
   repository: vvsem/service-user
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "4.1.0"
+  tag: "4.1.1"
 
 replicaCount: 3
 
@@ -63,17 +63,17 @@ ingress:
   #    hosts:
   #      - arch.homework
 
-resources: {}
+resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 100m
+     memory: 500Mi
+   requests:
+     cpu: 100m
+     memory: 500Mi
 
 liveness:
   delay: 50

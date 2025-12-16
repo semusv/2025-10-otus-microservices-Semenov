@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.vvsem.service_user.annotation.RandomError;
 import ru.vvsem.service_user.dto.UserFullDto;
 import ru.vvsem.service_user.dto.UserNewDto;
 import ru.vvsem.service_user.service.UserService;
@@ -29,42 +30,50 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
+    @RandomError
     public PagedModel<UserFullDto> getAll(@ParameterObject Pageable pageable) {
         Page<UserFullDto> userFullDtos = userService.getAll(pageable);
         return new PagedModel<>(userFullDtos);
     }
 
     @GetMapping("/{id}")
+    @RandomError
     public UserFullDto getOne(@PathVariable Long id) {
         return userService.getOne(id);
     }
 
     @GetMapping("/by-ids")
+    @RandomError
     public List<UserFullDto> getMany(@RequestParam List<Long> ids) {
         return userService.getMany(ids);
     }
 
     @PostMapping
+    @RandomError
     public UserFullDto create(@RequestBody UserNewDto dto) {
         return userService.create(dto);
     }
 
     @PatchMapping("/{id}")
+    @RandomError
     public UserFullDto patch(@PathVariable Long id, @RequestBody JsonNode patchNode) throws IOException {
         return userService.patch(id, patchNode);
     }
 
     @PatchMapping
+    @RandomError
     public List<Long> patchMany(@RequestParam List<Long> ids, @RequestBody JsonNode patchNode) throws IOException {
         return userService.patchMany(ids, patchNode);
     }
 
     @DeleteMapping("/{id}")
+    @RandomError
     public UserFullDto delete(@PathVariable Long id) {
         return userService.delete(id);
     }
 
     @DeleteMapping
+    @RandomError
     public void deleteMany(@RequestParam List<Long> ids) {
         userService.deleteMany(ids);
     }

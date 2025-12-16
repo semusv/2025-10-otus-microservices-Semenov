@@ -51,13 +51,13 @@ helm install nginx ingress-nginx/ingress-nginx  `
 --set controller.metrics.serviceMonitor.enabled=true `
 --set controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
 
-#Обновление Nginx с включенным мониторингом
-helm upgrade nginx ingress-nginx/ingress-nginx `
---namespace ng `
--f nginx-ingress.yaml                           `
---set controller.metrics.enabled=true `
---set controller.metrics.serviceMonitor.enabled=true `
---set controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
+    #Обновление Nginx с включенным мониторингом
+    helm upgrade nginx ingress-nginx/ingress-nginx `
+    --namespace ng `
+    -f nginx-ingress.yaml                           `
+    --set controller.metrics.enabled=true `
+    --set controller.metrics.serviceMonitor.enabled=true `
+    --set controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
 
 #Установка Prometheus и Grafana
 helm install stack prometheus-community/kube-prometheus-stack `
@@ -65,9 +65,23 @@ helm install stack prometheus-community/kube-prometheus-stack `
 --namespace prometheus `
 --create-namespace
 
-#Обновление Prometheus и Grafana
-helm upgrade stack prometheus-community/kube-prometheus-stack `
--f prometheus.yaml `
---namespace prometheus 
+    #Обновление Prometheus и Grafana
+    helm upgrade stack prometheus-community/kube-prometheus-stack `
+    -f prometheus.yaml `
+    --namespace prometheus 
+
+#PortForward для Grafana и Prometheus
+port-forward services/prometheus-operated 9090:9090 -n prometheus
+port-forward services/stack-grafana 9000:80 -n prometheus
+
+#Включим туннель для сервиса
+minikube tunnel
+
+#Проверим что сервис доступен 
+curl http://arch.homework/user-service/actuator/health
+
+#Запускаем тесты Newman
+newman run ./postman-tests/otus-hw5.postman_collection.json
+
 
 ```

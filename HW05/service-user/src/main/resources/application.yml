@@ -1,3 +1,7 @@
+error-handling:
+  enabled: false      # включить/выключить случайные ошибки
+  probability: 0.10  # вероятность ошибки
+
 server:
   servlet:
     context-path: /user-service
