@@ -1,0 +1,23 @@
+# Конфигурация для postgres-exporter
+postgres-exporter:
+  enabled: true
+
+  # Настройки подключения к PostgreSQL
+  config:
+    datasource:
+      host: "postgresql-hw05"
+      port: "5432"
+      database: "users_db"
+      user: "app_user"
+      passwordSecret:
+        name: "hw05-service-user-postgresql-secret"
+        key: "password"
+
+  # Настройки сервиса
+  service:
+    type: ClusterIP
+    port: 9187
+
+  # Дополнительные параметры
+  serviceMonitor:
+    enabled: true  # если используете Prometheus Operator

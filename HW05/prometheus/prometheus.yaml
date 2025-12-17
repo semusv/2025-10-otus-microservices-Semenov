@@ -4,5 +4,8 @@ prometheus:
     podMonitorSelectorNilUsesHelmValues: false
     serviceMonitorSelector: {}
 
+grafana:
+  plugins:
+    - grafana-image-renderer
 #    podMonitorNamespaceSelector: {}  # пустой объект выбирает все неймспейсы
 #    serviceMonitorNamespaceSelector: {}  # пустой объект выбирает все неймспейсы

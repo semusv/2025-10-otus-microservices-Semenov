@@ -1,0 +1,12 @@
+apiVersion: v2
+name: postgres-monitoring
+description: Monitoring PostgreSQL
+version: 0.1.0
+
+
+dependencies:
+  - name: prometheus-postgres-exporter
+    version: "7.3.0"  # Используем найденную версию
+    repository: "https://prometheus-community.github.io/helm-charts"
+    # repository: "oci://ghcr.io/prometheus-community/charts"  # Альтернатива через OCI
+    alias: postgres-exporter

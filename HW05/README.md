@@ -61,13 +61,13 @@ helm install nginx ingress-nginx/ingress-nginx  `
 
 #Установка Prometheus и Grafana
 helm install stack prometheus-community/kube-prometheus-stack `
--f prometheus.yaml `
+-f prometheus/prometheus.yaml `
 --namespace prometheus `
 --create-namespace
 
     #Обновление Prometheus и Grafana
     helm upgrade stack prometheus-community/kube-prometheus-stack `
-    -f prometheus.yaml `
+    -f prometheus/prometheus.yaml `
     --namespace prometheus 
 
 #PortForward для Grafana и Prometheus
