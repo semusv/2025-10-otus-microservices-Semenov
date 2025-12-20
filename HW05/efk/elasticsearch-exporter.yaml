@@ -1,0 +1,20 @@
+# exporter-values-correct.yaml
+es:
+  uri: https://elastic:TmBE4TNdw0Cca2Ap@elasticsearch-master:9200
+  all: true
+  sslSkipVerify: true
+  # Указываем CA из secret
+  caSecretName: elasticsearch-master-certs
+  caFilename: ca.crt
+  username: "elastic"
+  password: "TmBE4TNdw0Cca2Ap"
+
+
+# Важно: Helm chart сам монтирует secret если указать caSecretName
+# Не нужно extraVolumes в этом случае
+
+service:
+  port: 9108
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9108"

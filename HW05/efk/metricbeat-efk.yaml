@@ -1,0 +1,56 @@
+metricbeat.yml: |
+  metricbeat.config.modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+  
+  # 1. Системные метрики
+  metricbeat.modules:
+  - module: system
+    metricsets:
+      - cpu
+      - load
+      - memory
+      - network
+      - process
+      - process_summary
+    enabled: true
+    period: 10s
+    processes: ['.*']
+    cpu.metrics: [percentages, normalized_percentages]
+  
+  # 2. Собираем метрики Elasticsearch через exporter (если нужен)
+  - module: prometheus
+    metricsets: ["collector"]
+    period: 30s
+    hosts: ["prometheus-elasticsearch-exporter.efk:9108"]
+    metrics_path: /metrics
+  
+  # 3. Собираем метрики ВАШЕГО ПРИЛОЖЕНИЯ через Prometheus API
+  - module: http
+    name: user_service_prometheus
+    metricsets: ["json"]
+    period: 30s
+    enabled: true
+    hosts: ["http://stack-kube-prometheus-stac-prometheus.prometheus:9090"]
+    path: "/api/v1/query"
+    query:
+      query: "up{job='hw05-service-user-metrics'}"
+  
+  output.elasticsearch:
+    hosts: ["https://elasticsearch-master:9200"]
+    ssl:
+      certificate_authorities: ["/usr/share/metricbeat/certs/ca.crt"]
+      verification_mode: "certificate"
+  
+  setup.kibana:
+    host: "kibana-kibana:5601"
+  
+  setup.dashboards.enabled: true
+  
+  logging.level: info
+  
+  processors:
+    - add_cloud_metadata: ~
+    - add_host_metadata: ~
+    - add_kubernetes_metadata:
+        host: ${NODE_NAME}

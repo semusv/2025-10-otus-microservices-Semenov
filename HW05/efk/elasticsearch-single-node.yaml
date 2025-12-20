@@ -1,0 +1,23 @@
+# elasticsearch-fixed.yaml
+imageTag: 8.5.1
+replicas: 1
+volumeClaimTemplate:
+  resources:
+    requests:
+      storage: 1Gi
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+
+persistence:
+  enabled: false  # Для Minikube
+
+service:
+  type: ClusterIP
+  ports:
+    - port: 9200
+      name: http
+    - port: 9300
+      name: transport
