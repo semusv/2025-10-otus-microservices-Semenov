@@ -53,9 +53,13 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     @Override
     public String generateRefreshToken(UserDetails userDetails, UUID userId) {
+
+        String uniquePart = UUID.randomUUID().toString().substring(0, 8);
+
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId.toString());
         claims.put("tokenType", "refresh");
+        claims.put("jti", uniquePart);
 
         return buildToken(claims, userDetails.getUsername(), refreshTokenExpiration);
     }

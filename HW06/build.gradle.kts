@@ -120,14 +120,23 @@ subprojects {
 
     // Автоматическое версионирование
     //автоматически генерирует версии на основе Git тегов и коммитов.
+//    extensions.configure<JGitverPluginExtension> {
+//        strategy("PATTERN")
+//        nonQualifierBranches("main,master")
+//        tagVersionPattern("\${v}\${<meta.DIRTY_TEXT}")
+//        versionPattern(
+//            "\${v}\${<meta.COMMIT_DISTANCE}\${<meta.GIT_SHA1_8}" +
+//                    "\${<meta.QUALIFIED_BRANCH_NAME}\${<meta.DIRTY_TEXT}-SNAPSHOT"
+//        )
+//    }
     extensions.configure<JGitverPluginExtension> {
         strategy("PATTERN")
         nonQualifierBranches("main,master")
-        tagVersionPattern("\${v}\${<meta.DIRTY_TEXT}")
+        // Более чистый паттерн для версий
         versionPattern(
-            "\${v}\${<meta.COMMIT_DISTANCE}\${<meta.GIT_SHA1_8}" +
-                    "\${<meta.QUALIFIED_BRANCH_NAME}\${<meta.DIRTY_TEXT}-SNAPSHOT"
-        )
+                "\${v}\${<meta.COMMIT_DISTANCE}-SNAPSHOT")
+        // Не добавляем dirty флаг в версию
+        useDirty(false)
     }
 
     extensions.configure<JibExtension> {

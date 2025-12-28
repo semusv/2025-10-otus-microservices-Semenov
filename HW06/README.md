@@ -75,7 +75,7 @@ $ kubectl get po -n hw04
 curl http://arch.homework/user-service/actuator/health
 
 #Запускаем тесты
-$ newman run ./postmans/otus-hw06.postman_collection.json
+$ newman run ./postman-tests/otus-hw4.postman_collection.json
 
 #Чистим за собой Chart
 $ ./deploy.sh uninstall

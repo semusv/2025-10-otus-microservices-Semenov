@@ -49,7 +49,6 @@ public class XrequestFilter implements GlobalFilter, Ordered {
         String finalRequestId = requestId;
         return chain.filter(exchange.mutate().request(mutatedRequest).build())
                 .contextWrite(context -> context.put(securityProperties.getRequestIdHeader(), finalRequestId));
-
     }
 
     @Override
