@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "microservices-app.fullname" . }}-postgresql
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "microservices-app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
+  type: {{ .Values.postgresql.service.type }}
+  ports:
+    - port: {{ .Values.postgresql.service.port }}
+      targetPort: postgresql
+      protocol: TCP
+      name: postgresql
+  selector:
+    {{- include "microservices-app.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+

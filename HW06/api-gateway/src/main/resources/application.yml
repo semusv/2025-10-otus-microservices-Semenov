@@ -1,0 +1,22 @@
+# Локальная конфигурация (используется только если config-service недоступен)
+# Основная конфигурация загружается из config-service
+server:
+  port: 8079
+
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: optional:configserver:http://${CONFIG_SERVICE_HOST:config-service}:${CONFIG_SERVICE_PORT:8888}
+
+  cloud:
+    config:
+      enabled: ${CONFIG_SERVICE_ENABLED:true}
+      uri: http://${CONFIG_SERVICE_HOST:config-service}:${CONFIG_SERVICE_PORT:8888}
+      fail-fast: false
+      retry:
+        initial-interval: 1000
+        max-attempts: 6
+        max-interval: 2000
+        multiplier: 1.1
+

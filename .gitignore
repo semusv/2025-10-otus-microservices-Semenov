@@ -37,6 +37,9 @@ build/
 *.env.*
 */docker/docker/pgadmin_data/
 
+
+amplicode.xml
+
 # Gradle build directories
 .gradle
 **/build/

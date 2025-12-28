@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "microservices-app.fullname" . }}-config-repo
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "microservices-app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config-service
+data:
+  api-gateway.yml: |
+    spring:
+      cloud:
+        gateway:
+          routes:
+            - id: auth-service
+              uri: http://{{ include "microservices-app.fullname" . }}-auth-service:{{ .Values.authService.service.port }}
+              predicates:
+                - Path=/api/auth/**
+              filters:
+                - StripPrefix=0
+            - id: user-service
+              uri: http://{{ include "microservices-app.fullname" . }}-user-service:{{ .Values.userService.service.port }}
+              predicates:
+                - Path=/api/profile/**
+              filters:
+                - StripPrefix=0
+          globalcors:
+            corsConfigurations:
+              '[/**]':
+                allowedOrigins: "*"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders: "*"
+                allowCredentials: false
+                maxAge: 3600
+    server:
+      port: 8080
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info
+    logging:
+      level:
+        com.microservices: INFO
+        org.springframework.cloud.gateway: DEBUG
+
+  auth-service.yml: |
+    spring:
+      application:
+        name: auth-service
+      datasource:
+        url: jdbc:postgresql://{{ include "microservices-app.fullname" . }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.database }}
+        username: ${DB_USER:{{ .Values.postgresql.username }}}
+        password: ${DB_PASSWORD}
+        driver-class-name: org.postgresql.Driver
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        show-sql: false
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+            default_schema: auth
+      liquibase:
+        change-log: classpath:db/changelog/db.changelog-master.xml
+        default-schema: auth
+    server:
+      port: 8081
+    jwt:
+      secret: {{ .Values.jwt.secret }}
+      expiration: 86400000
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info
+    logging:
+      level:
+        com.microservices: INFO
+        org.springframework: WARN
+
+  user-service.yml: |
+    spring:
+      application:
+        name: user-service
+      datasource:
+        url: jdbc:postgresql://{{ include "microservices-app.fullname" . }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.database }}
+        username: ${DB_USER:{{ .Values.postgresql.username }}}
+        password: ${DB_PASSWORD}
+        driver-class-name: org.postgresql.Driver
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        show-sql: false
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+            default_schema: user_service
+      liquibase:
+        change-log: classpath:db/changelog/db.changelog-master.xml
+        default-schema: user_service
+    server:
+      port: 8082
+    jwt:
+      secret: {{ .Values.jwt.secret }}
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info
+    logging:
+      level:
+        com.microservices: INFO
+        org.springframework: WARN
+

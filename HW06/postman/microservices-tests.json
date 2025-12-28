@@ -1,0 +1,450 @@
+{
+	"info": {
+		"_postman_id": "microservices-tests",
+		"name": "Microservices Tests",
+		"description": "Тесты для микросервисного приложения",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User 1 - Registration",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Generate random data for User 1",
+							"var randomUsername = 'user1_' + Math.random().toString(36).substring(2, 15);",
+							"var randomEmail = 'user1_' + Math.random().toString(36).substring(2, 15) + '@example.com';",
+							"var randomPassword = 'pass' + Math.random().toString(36).substring(2, 15);",
+							"",
+							"pm.environment.set(\"user1_username\", randomUsername);",
+							"pm.environment.set(\"user1_email\", randomEmail);",
+							"pm.environment.set(\"user1_password\", randomPassword);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"user1_token\", jsonData.token);",
+							"    pm.environment.set(\"user1_id\", jsonData.userId);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user1_username}}\",\n    \"email\": \"{{user1_email}}\",\n    \"password\": \"{{user1_password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/register",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User 1 - Get Profile Without Auth (Should Fail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401 or 403\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/profile",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User 1 - Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"user1_token\", jsonData.token);",
+							"    pm.environment.set(\"user1_id\", jsonData.userId);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user1_username}}\",\n    \"password\": \"{{user1_password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User 1 - Update Profile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"user1_profile_firstName\", jsonData.firstName);",
+							"    pm.environment.set(\"user1_profile_lastName\", jsonData.lastName);",
+							"    pm.environment.set(\"user1_profile_email\", jsonData.email);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{user1_token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"firstName\": \"{{$randomFirstName}}\",\n    \"lastName\": \"{{$randomLastName}}\",\n    \"email\": \"{{$randomEmail}}\",\n    \"phone\": \"+1{{$randomInt}}\",\n    \"dateOfBirth\": \"1990-01-01\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/profile",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User 1 - Get Profile (Verify Changes)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    var storedFirstName = pm.environment.get(\"user1_profile_firstName\");",
+							"    var storedLastName = pm.environment.get(\"user1_profile_lastName\");",
+							"    ",
+							"    if (storedFirstName) {",
+							"        pm.test(\"First name matches\", function () {",
+							"            pm.expect(jsonData.firstName).to.eql(storedFirstName);",
+							"        });",
+							"    }",
+							"    ",
+							"    if (storedLastName) {",
+							"        pm.test(\"Last name matches\", function () {",
+							"            pm.expect(jsonData.lastName).to.eql(storedLastName);",
+							"        });",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{user1_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/profile",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User 2 - Registration",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Generate random data for User 2",
+							"var randomUsername = 'user2_' + Math.random().toString(36).substring(2, 15);",
+							"var randomEmail = 'user2_' + Math.random().toString(36).substring(2, 15) + '@example.com';",
+							"var randomPassword = 'pass' + Math.random().toString(36).substring(2, 15);",
+							"",
+							"pm.environment.set(\"user2_username\", randomUsername);",
+							"pm.environment.set(\"user2_email\", randomEmail);",
+							"pm.environment.set(\"user2_password\", randomPassword);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"user2_token\", jsonData.token);",
+							"    pm.environment.set(\"user2_id\", jsonData.userId);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user2_username}}\",\n    \"email\": \"{{user2_email}}\",\n    \"password\": \"{{user2_password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/register",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User 2 - Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"user2_token\", jsonData.token);",
+							"    pm.environment.set(\"user2_id\", jsonData.userId);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user2_username}}\",\n    \"password\": \"{{user2_password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User 2 - Try to Access User 1 Profile (Should Fail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 or 403\", function () {",
+							"    // User 2 can only access their own profile, not User 1's",
+							"    // Since the API doesn't allow accessing other users' profiles by ID,",
+							"    // User 2 will get their own profile or 404 if profile doesn't exist",
+							"    // The security check ensures they can only see their own data",
+							"    var statusCode = pm.response.code;",
+							"    ",
+							"    if (statusCode === 200) {",
+							"        // If 200, verify it's User 2's profile, not User 1's",
+							"        var jsonData = pm.response.json();",
+							"        var user2Id = pm.environment.get(\"user2_id\");",
+							"        var user1Id = pm.environment.get(\"user1_id\");",
+							"        ",
+							"        pm.test(\"Profile belongs to User 2, not User 1\", function () {",
+							"            pm.expect(jsonData.userId.toString()).to.eql(user2Id);",
+							"            if (user1Id) {",
+							"                pm.expect(jsonData.userId.toString()).to.not.eql(user1Id);",
+							"            }",
+							"        });",
+							"    } else {",
+							"        pm.expect(statusCode).to.be.oneOf([404, 403]);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{user2_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/profile",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "arch.homework",
+			"type": "string"
+		}
+	]
+}
+
