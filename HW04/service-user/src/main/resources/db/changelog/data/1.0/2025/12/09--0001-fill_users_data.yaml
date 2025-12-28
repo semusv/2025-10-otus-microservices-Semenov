@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2025-12-09--0001-fill_users_data
+      author: vvsemenov
+      context: dev
+      runOnChange: true
+      changes:
+        - loadData:
+            file: csv/2025-09-12--0001-users.csv
+            relativeToChangelogFile: true
+            separator: ";"
+            quotchar: '"'
+            encoding: UTF-8
+            tableName: users
+            columns:
+              - column:
+                  name: first_name
+              - column:
+                  name: last_name
+              - column:
+                  name: birth_date
+              - column:
+                  name: email
+              - column:
+                  name: phone_number

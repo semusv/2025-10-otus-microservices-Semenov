@@ -1,0 +1,103 @@
+server:
+  servlet:
+    context-path: /user-service
+  port: 8085
+
+spring:
+  application:
+    name: service-user
+  output:
+    ansi:
+      enabled: ALWAYS
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:users_db}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+
+  liquibase:
+    enabled: true
+
+# SpringDoc (OpenAPI) конфигурация - исправленный путь
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  messages:
+    baseName: messages
+    encoding: UTF-8
+    fallbackToSystemLocale: false
+    use-code-as-default-message: true
+  enable-hateoas: false
+
+
+# Actuator конфигурация
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,logfile,liquibase,metrics,prometheus
+      base-path: /actuator
+    endpoint:
+      health:
+        show-details: always
+        show-components: always
+      metrics:
+        enabled: true
+      logfile:
+        enabled: true
+      prometheus:
+        enabled: true
+
+  # Метрики конфигурация
+  metrics:
+    enable:
+      http: true
+      jvm: true
+      logback: true
+      processor: true
+      system: true
+    distribution:
+      slo:
+        http.server.requests: 10ms, 50ms, 100ms, 200ms, 300ms, 400ms, 500ms, 600ms, 800ms
+      percentiles-histogram:
+        http.server.requests: true
+
+    # Экспорт метрик в Prometheus
+    export:
+      prometheus:
+        enabled: true
+        step: 1m
+        descriptions: true
+
+    # Тэги для метрик
+    tags:
+      application: ${spring.application.name}
+      region: local
+
+    # Web метрики
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
+          metric-name: http.server.requests
+
+
+logging:
+  level:
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    io.micrometer: DEBUG  # Для отладки метрик

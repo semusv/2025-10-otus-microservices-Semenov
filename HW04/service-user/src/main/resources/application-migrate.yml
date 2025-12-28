@@ -1,0 +1,11 @@
+spring:
+  config:
+    activate:
+      on-profile: migrate
+
+  main:
+    web-application-type: none  # Не запускаем веб-сервер
+
+  liquibase:
+    enabled: true   # Явно включаем (на случай, если где-то выключено)
+    drop-first: false

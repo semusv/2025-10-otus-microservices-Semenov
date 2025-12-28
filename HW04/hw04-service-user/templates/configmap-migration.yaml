@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-configmap-migration
+  labels:
+      {{- include "app.labels" . | nindent 4 }}
+data:
+  application.yml: |
+    spring:
+      datasource:
+        url: jdbc:postgresql://{{ .Values.user_service.spring.postgres.db_host }}:{{ .Values.user_service.spring.postgres.db_port }}/{{ .Values.user_service.spring.postgres.db }}
+        username: {{ .Values.user_service.spring.postgres.user }}
+        password: ${POSTGRES_PASSWORD}
+        driver-class-name: org.postgresql.Driver
+      jpa:
+        hibernate:
+          ddl-auto: update
+        show-sql: true
+
+      pattern:
+        console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
