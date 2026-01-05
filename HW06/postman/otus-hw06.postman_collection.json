@@ -17,9 +17,6 @@
 							"    pm.response.to.have.status(\"Created\");\r",
 							"});\r",
 							"\r",
-							"var responseData = pm.response.json();\r",
-							"pm.environment.set(\"accessToken\", responseData.accessToken);\r",
-							"pm.environment.set(\"refreshToken\", responseData.refreshToken);\r",
 							"\r",
 							"// Получаем сырое тело запроса\r",
 							"var requestBody = pm.request.body.raw;\r",
@@ -29,10 +26,24 @@
 							"    pm.environment.set(\"username\", requestData.username);\r",
 							"    pm.environment.set(\"email\", requestData.email);\r",
 							"    pm.environment.set(\"password\", requestData.password);\r",
+							"    pm.environment.set(\"firstName\", requestData.firstName);\r",
+							"    pm.environment.set(\"lastName\", requestData.lastName);\r",
+							"    pm.environment.set(\"phone\", requestData.phone);\r",
 							"} catch (e) {\r",
 							"    console.log(\"Ошибка парсинга тела запроса:\", e);\r",
 							"}\r",
 							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							" console.log(\"Регистрация пользователя 1\");"
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -69,201 +80,26 @@
 			"response": []
 		},
 		{
-			"name": "Login",
+			"name": "UserName - error",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"  pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"var responseData = pm.response.json();\r",
-							"pm.environment.set(\"accessToken\", responseData.accessToken);\r",
-							"pm.environment.set(\"refreshToken\", responseData.refreshToken);\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"login\": \"{{username}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://{{baseUrl}}/api/v1/auth/login",
-					"protocol": "http",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"auth",
-						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Validate-access",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"  pm.response.to.have.status(200);\r",
+							"pm.test(\"Status code is 401\", function () {\r",
+							"  pm.response.to.have.status(401);\r",
 							"});"
 						],
 						"type": "text/javascript",
 						"packages": {},
 						"requests": {}
 					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"token\": \"{{accessToken}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
 				},
-				"url": {
-					"raw": "http://{{baseUrl}}/api/v1/auth/validate",
-					"protocol": "http",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"auth",
-						"validate"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Validate-refresh",
-			"event": [
 				{
-					"listen": "test",
+					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"  pm.response.to.have.status(200);\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"token\": \"{{refreshToken}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://{{baseUrl}}/api/v1/auth/validate",
-					"protocol": "http",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"auth",
-						"validate"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "me",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"  pm.response.to.have.status(200);\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{accessToken}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://{{baseUrl}}/api/v1/users/me",
-					"protocol": "http",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"users",
-						"me"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "UserName",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"  pm.response.to.have.status(200);\r",
-							"});"
+							" console.log(\"Проверка, что изменение и получение профиля пользователя недоступно без логина\");"
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -302,15 +138,292 @@
 			"response": []
 		},
 		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var responseData = pm.response.json();\r",
+							"pm.environment.set(\"accessToken\", responseData.accessToken);\r",
+							"pm.environment.set(\"refreshToken\", responseData.refreshToken);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							" console.log(\"Вход пользователя 1\");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"login\": \"{{username}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{baseUrl}}/api/v1/auth/login",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Me",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"try {\r",
+							"    var responseData = pm.response.json();\r",
+							"    pm.environment.set(\"emailNew\", responseData.email);\r",
+							"    pm.environment.set(\"phoneNew\", responseData.phone);\r",
+							"} catch (e) {\r",
+							"    console.log(\"Ошибка парсинга тела запроса:\", e);\r",
+							"}\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							" console.log(\"изменение профиля пользователя 1\");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"firstName\": \"{{firstName}}\",\r\n    \"lastName\": \"{{lastName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"phone\": \"{{$randomPhoneNumber}}\",\r\n    \"dateOfBirth\": \"{{$isoTimestamp}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{baseUrl}}/api/v1/users/me",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "me",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"var responseData = pm.response.json();\r",
+							"// Получаем значения переменных из окружения\r",
+							"var phoneNew = pm.environment.get(\"phoneNew\");\r",
+							"var phoneOld = pm.environment.get(\"phone\");\r",
+							"var emailNew = pm.environment.get(\"emailNew\");\r",
+							"var emailOld = pm.environment.get(\"email\");\r",
+							"\r",
+							"pm.test(\"phone changed\", function () {  \r",
+							"    pm.expect(responseData.phone).to.eql(phoneNew);  \r",
+							"    pm.expect(responseData.phone).not.eql(phoneOld)     \r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"email changed\", function () {\r",
+							"    pm.expect(responseData.email).to.eql(emailNew);     \r",
+							"    pm.expect(responseData.email).not.eql(emailOld)     \r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"console.log(\"проверка, что профиль поменялся\");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/api/v1/users/me",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.environment.set(\"accessToken\", null);\r",
+							"pm.environment.set(\"refreshToken\",null);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							" console.log(\"Выход пользователя 1\");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"refreshToken\": \"{{refreshToken}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{baseUrl}}/api/v1/auth/logout",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "CreateRandomUser_2",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var responseData = pm.response.json();\r",
-							"pm.environment.set(\"accessToken_2\", responseData.accessToken);\r",
-							"pm.environment.set(\"refreshToken_2\", responseData.refreshToken);\r",
+							"\r",
 							"\r",
 							"// Получаем сырое тело запроса\r",
 							"var requestBody = pm.request.body.raw;\r",
@@ -327,6 +440,17 @@
 							"pm.test(\"Создан\", function () {\r",
 							"    pm.response.to.have.status(\"Created\");\r",
 							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							" console.log(\"Регистрация пользователя 2\");"
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -363,16 +487,87 @@
 			"response": []
 		},
 		{
-			"name": "UserName_2_with_Token_1",
+			"name": "Login 2",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
 							"\r",
-							"pm.test(\"Ошибка\", function () {\r",
-							"    pm.response.to.be.notFound;\r",
+							"var responseData = pm.response.json();\r",
+							"pm.environment.set(\"accessToken_2\", responseData.accessToken);\r",
+							"pm.environment.set(\"refreshToken_2\", responseData.refreshToken);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							" console.log(\"Вход пользователя 2\");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"login\": \"{{username_2}}\",\r\n    \"password\": \"{{password_2}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{baseUrl}}/api/v1/auth/login",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UserName_1_with_Token_2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 403\", function () {\r",
+							"  pm.response.to.have.status(403);\r",
 							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							" console.log(\"Проверка, что пользователь2 не имеет доступа на чтение и редактирование профиля пользователя1.\");"
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -386,7 +581,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "{{accessToken}}",
+							"value": "{{accessToken_2}}",
 							"type": "string"
 						}
 					]
@@ -394,7 +589,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://{{baseUrl}}/api/v1/users/username/{{username_2}}",
+					"raw": "http://{{baseUrl}}/api/v1/users/username/{{username}}",
 					"protocol": "http",
 					"host": [
 						"{{baseUrl}}"
@@ -404,7 +599,7 @@
 						"v1",
 						"users",
 						"username",
-						"{{username_2}}"
+						"{{username}}"
 					]
 				}
 			},
