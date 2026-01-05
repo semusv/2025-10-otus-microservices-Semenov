@@ -1,7 +1,8 @@
 package com.microservices.auth.config;
 
+import com.microservices.auth.config.properties.SecurityProperties;
+import com.microservices.auth.filter.MdcFilter;
 import com.microservices.auth.filter.ServiceAuthFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,10 +18,23 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final ServiceAuthFilter serviceAuthFilter;
+    private final SecurityProperties securityProperties;
+
+    public SecurityConfig(SecurityProperties securityProperties) {
+        this.securityProperties = securityProperties;
+    }
+
+    @Bean
+    public ServiceAuthFilter serviceAuthFilter() {
+        return new ServiceAuthFilter(securityProperties);
+    }
+
+    @Bean
+    public MdcFilter mdcFilter() {
+        return new MdcFilter(securityProperties);
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -41,7 +55,8 @@ public class SecurityConfig {
     }
 
     private void configureFilters(HttpSecurity http) {
-        http.addFilterBefore(serviceAuthFilter, AuthorizationFilter.class);
+        http.addFilterBefore(serviceAuthFilter(), AuthorizationFilter.class)
+                .addFilterBefore(mdcFilter(), ServiceAuthFilter.class);
     }
 
     private void configureCsrfAndSession(HttpSecurity http) throws Exception {
@@ -54,6 +69,11 @@ public class SecurityConfig {
                 // Внутрисервисные эндпоинты - только для сервисов
                 .requestMatchers("/internal/**")
                 .hasRole("SERVICE")
+
+                //                // Защищенные Эндпоинты
+                //                .requestMatchers("")
+                //                .authenticated()
+
                 // Публичные служебные эндпоинты
                 .requestMatchers(
                         "/v3/api-docs/**",
@@ -65,7 +85,7 @@ public class SecurityConfig {
                         "/actuator/**")
                 .permitAll()
                 // Публичные эндпоинты аутентификации
-                .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/auth/validate")
+                .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/auth/validate", "/auth/logout")
                 .permitAll()
                 .anyRequest()
                 .authenticated());

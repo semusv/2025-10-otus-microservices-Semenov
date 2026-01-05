@@ -5,10 +5,9 @@ import com.microservices.auth.filter.MdcFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Configuration
+// @Configuration
 @RequiredArgsConstructor
 public class ApplConf {
 
