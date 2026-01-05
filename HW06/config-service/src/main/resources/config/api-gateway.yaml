@@ -8,16 +8,28 @@ spring:
     gateway:
       server:
         webflux:
-          routes:
+          httpclient:
+            connect-timeout: 1000
+            response-timeout: 5s
 
-# Authorization-Service
+          routes:
+            # Auth-Service
             # Публичные Endpoints без авторизации
             - id: auth-service-public
               uri: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
               predicates:
                 - Path=/api/v1/auth/register,/api/v1/auth/login,/api/v1/auth/refresh,/api/v1/auth/validate
               filters:
-                - StripPrefix=2 # Удаляет /api/v1 из пути
+                - StripPrefix=2
+
+            # Auth-Service
+            # Endpoints c авторизацией
+            - id: auth-service
+              uri: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
+              predicates:
+                - Path=/api/v1/auth/**
+              filters:
+                - StripPrefix=2
 
             # Actuator — только для внутреннего доступа
             - id: auth-service-actuator
@@ -27,7 +39,7 @@ spring:
               filters:
                 - StripPrefix=1
 
-# User-Service
+            # User-Service
             # Публичные Endpoints c авторизацией
             - id: user-service
               uri: http://${USER_SERVICE_HOST:localhost}:${USER_SERVICE_PORT:8082}
@@ -49,53 +61,28 @@ spring:
 
             # Actuator для самого Gateway
             - id: api-gateway-actuator
-              uri: http://localhost:8080  # самореференс
+              uri: http://localhost:${server.port}  # самореференс
               predicates:
                 - Path=/actuator/**
 
-        # Глобальные настройки
-          default-filters:
-            - DedupeResponseHeader=Access-Control-Allow-Origin, RETAIN_UNIQUE
+      # Глобальные настройки
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin, RETAIN_UNIQUE
 
-          # Настройки HTTP клиента
-          httpclient:
-            connect-timeout: 1000
-            response-timeout: 5s
-
-          globalcors:
-            corsConfigurations:
-              '[/**]':
-                allowedOrigins: "*"
-                allowedMethods:
-                  - GET
-                  - POST
-                  - PUT
-                  - DELETE
-                  - OPTIONS
-                allowedHeaders: "*"
-                allowCredentials: false
-                maxAge: 3600
 
 # Настройки для JWT валидации
 gateway:
   auth:
     auth-service-url: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
     validate-endpoint: /internal/validate
-
     cache-enabled: true
     cache-size: 1000
-    cache-ttl: 300000  # 5 минут в миллисекундах
-
+    cache-ttl: 300000
 
 # Логирование
 logging:
   level:
-    com.example.gateway: DEBUG
+    com.microservices.gateway: DEBUG
     org.springframework.cloud.gateway: DEBUG
-
-#logging:
-#  level:
-#    org.springframework.cloud.gateway: TRACE
-#    reactor.netty.http.client: DEBUG
-#    org.springframework.web.reactive: DEBUG
-#    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: INFO
+    org.springframework.web.server: DEBUG
+    reactor.netty: DEBUG

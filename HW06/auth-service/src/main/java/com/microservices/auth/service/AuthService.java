@@ -7,7 +7,7 @@ import com.microservices.auth.dto.auth.TokenValidationResponse;
 
 public interface AuthService {
 
-    TokenResponse register(RegisterRequest request);
+    void register(RegisterRequest request);
 
     TokenResponse login(LoginRequest request);
 

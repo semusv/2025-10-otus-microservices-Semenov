@@ -3,6 +3,10 @@ spring:
     ansi:
       enabled: ALWAYS
 
+server:
+  error:
+    whitelabel:
+      enabled: false
 
 
 # Настройки сервисов

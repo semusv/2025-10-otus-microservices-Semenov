@@ -46,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public TokenResponse register(RegisterRequest request) {
+    public void register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
@@ -65,8 +65,6 @@ public class AuthServiceImpl implements AuthService {
             log.error("Failed to create user profile, rolling back user registration", e);
             throw new RuntimeException("Failed to create user profile: " + e.getMessage());
         }
-        // Генерация токенов
-        return generateTokens(savedUser);
     }
 
     private User createUser(RegisterRequest request) {

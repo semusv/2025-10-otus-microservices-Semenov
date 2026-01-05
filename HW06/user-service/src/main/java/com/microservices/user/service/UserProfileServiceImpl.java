@@ -9,6 +9,7 @@ import com.microservices.user.repository.UserProfileRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,7 +122,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     public ProfileResponse getProfileResponseByUsername(String username, UUID userId) {
         UserProfile profile = getProfileByUsername(username);
         if (!profile.getUserId().equals(userId)) {
-            throw new ProfileNotFoundException("You can see only your profile, not for user: " + username);
+            throw new AccessDeniedException("You can see only your profile, not for user: " + username);
         }
         return profileResponseMapper.toProfileResponse(getProfileByUsername(username));
     }
