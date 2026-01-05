@@ -39,8 +39,6 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.spring.profiles.active }}"
-            - name: SPRING_PROFILES_ACTIVE
-              value: "{{ .Values.spring.profiles.active }}"
 
             - name: CONFIG_SERVICE_HOST
               value: "{{ .Values.app.services.configService.host }}"

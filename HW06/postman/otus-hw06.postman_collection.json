@@ -419,7 +419,18 @@
 				"packages": {},
 				"requests": {},
 				"exec": [
-					""
+					"// Логируем данные запроса\r",
+					"console.log(\"=== REQUEST DATA ===\");\r",
+					"console.log(\"URL:\", pm.request.url.toString());\r",
+					"console.log(\"Method:\", pm.request.method);\r",
+					"console.log(\"Headers:\", JSON.stringify(pm.request.headers.toObject(), null, 2));\r",
+					"\r",
+					"if (pm.request.body) {\r",
+					"    const jsonrequestBody = pm.request.body.toJSON();\r",
+					"    console.log(\"Body:\", jsonrequestBody);\r",
+					"}\r",
+					"\r",
+					"console.log(\"\\n\");"
 				]
 			}
 		},
@@ -430,6 +441,23 @@
 				"packages": {},
 				"requests": {},
 				"exec": [
+					"// Логируем данные ответа\r",
+					"console.log(\"=== RESPONSE DATA ===\");\r",
+					"console.log(\"Status:\", pm.response.code, pm.response.status);\r",
+					"console.log(\"Response Time:\", pm.response.responseTime, \"ms\");\r",
+					"\r",
+					"// Логируем заголовки ответа\r",
+					"const responseHeadersTest = pm.response.headers.toObject();\r",
+					"console.log(\"Response Headers:\", JSON.stringify(responseHeadersTest, null, 2));\r",
+					"\r",
+					"// Логируем тело ответа\r",
+					"try {\r",
+					"    // Парсим JSON если это возможно\r",
+					"    const jsonResponse = pm.response.json();\r",
+					"    console.log(\"Response Body (json):\", JSON.stringify(jsonResponse, null, 2));\r",
+					"} catch (e) {\r",
+					"    console.log(\"Response Body (text):\", pm.response.text());\r",
+					"}\r",
 					""
 				]
 			}

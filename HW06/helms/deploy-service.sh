@@ -40,7 +40,7 @@ fi
 # Проверим, существует ли чарт
 if [[ ! -d "$CHART_PATH" ]]; then
   echo "❌ Ошибка: Директория чарта не найдена: $CHART_PATH"
-  echo "Убедитесь, что чарт называется 'hw06.$SERVICE_NAME'"
+  echo "Убедитесь, что чарт называется 'hw06-$SERVICE_NAME'"
   exit 1
 fi
 

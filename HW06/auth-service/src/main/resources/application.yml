@@ -18,12 +18,12 @@ spring:
     config:
       enabled: ${CONFIG_SERVICE_ENABLED:true}
       uri: http://${CONFIG_SERVICE_HOST:config-service}:${CONFIG_SERVICE_PORT:8888}
-      fail-fast: false
+      fail-fast: true
       retry:
-        initial-interval: 1000
-        max-attempts: 6
-        max-interval: 2000
-        multiplier: 1.1
+        initial-interval: 1000 # 10 секунд
+        max-attempts: 6 # 6 попыток
+        max-interval: 10000 # 10 секунд
+        multiplier: 1.5 # Увеличение интервала между попытками
 
 
 logging:
