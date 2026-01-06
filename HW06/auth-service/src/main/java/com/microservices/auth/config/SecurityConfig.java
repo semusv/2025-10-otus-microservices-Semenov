@@ -70,10 +70,6 @@ public class SecurityConfig {
                 .requestMatchers("/internal/**")
                 .hasRole("SERVICE")
 
-                //                // Защищенные Эндпоинты
-                //                .requestMatchers("")
-                //                .authenticated()
-
                 // Публичные служебные эндпоинты
                 .requestMatchers(
                         "/v3/api-docs/**",

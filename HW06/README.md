@@ -24,62 +24,100 @@
 - отображение данных запроса и данных ответа при запуске из командной строки с помощью newman.
 
 
-
 # Описание решения
-Все приложение собирается из единого Helm чарта - name: hw04-service-user
-1. В качестве БД используется postgresql, которое ставится как зависимость.
-2. Неймспейс - hw04
-3. Сам user-service, который является простейшим RESTful CRUD сервисом JAVA Spring Boot.
-   1. Приложение работает в двух режимах на базе профилей:
-      - migration - для миграций, в приложении встроен Liquibase, отключен веб сервер
-      - app - для работы приложения  
-   2. migration - запускается как JOB  
-   3. app - запускается как Deployment  
-   4. В секрете лежат пароли от БД 
-   5. В конфигмапе лежат настройки приложения  
-   6. В чарте так же есть папка secrets, в которой лежат секреты для БД. Предполагается, что она исключена из GIT.
-   7. При старте миграция и приложение запускаются с Init контейнером, которые ждет готовности предыдущего шага.  
-4. Коллекция Postman для тестирования лежит в папке postman-tests и скриншот результатов тестов.  
 
+### Обзор системы
+Система представляет собой микросервисную архитектуру, реализующую сценарий регистрации, аутентификации и управления профилем пользователя. Все сервисы написаны на Spring Boot и развернуты в Kubernetes.
 
+### Компоненты системы
+
+1. **API Gateway (api-gateway)** - Единая точка входа для всех клиентских запросов
+    - Маршрутизация запросов к соответствующим сервисам
+    - Валидация JWT токенов через auth-service
+    - Добавление заголовков (X-Request-Id, X-User-Id)
+    - Фильтрация и модификация запросов/ответов
+
+2. **Config Service (config-service)** - Централизованное управление конфигурациями
+    - Хранит конфигурации всех сервисов
+    - Поддержка разных окружений
+    - Обновление конфигураций без перезапуска сервисов
+
+3. **Auth Service (auth-service)** - Сервис аутентификации и авторизации
+    - Регистрация и аутентификация пользователей
+    - Выпуск и валидация JWT токенов
+    - Управление refresh токенами
+    - Создание профиля пользователя в user-service
+
+4. **User Service (user-service)** - Сервис управления профилями пользователей
+    - Создание, чтение, обновление и деактивация профилей
+    - Проверка прав доступа к профилям
+    - Внутренние endpoint'ы для межсервисного взаимодействия
+
+5. **PostgreSQL** - База данных
+    - Раздельные схемы для auth и user сервисов
+    - Использование Liquibase для миграций
+
+![services-drawio.drawio.png](docs/services-drawio.drawio.png)
 ``` bash
-# открываем терминал в папке с проектом /HW04  
+# открываем терминал в папке с проектом /HW06/helms  
+cd helms
 
-# Ставим helm через bash скрипт: deploy.sh
-./deploy.sh {action}
+# Ставим helm через bash скрипт: deploy-service.sh
+./deploy-service.sh {action} {service-name} {namespace}
     где action:
-        install     - Install the chart
-        upgrade     - Upgrade the chart (default)
-        uninstall   - Uninstall the release
-        status      - Show release status
-        list        - List releases in namespace
-        history     - Show release history
-./deploy.sh install
-./deploy.sh upgrade
-./deploy.sh list
-./deploy.sh status
-./deploy.sh uninstall
+        install     - Установить чарт
+        upgrade     - Обновить чарт (по умолчанию)
+        uninstall   - Удалить релиз
+        status      - Показать статус релиза
+        list        - Список релизов в namespace
+        history     - История релиза
+        rollback    - Откатить релиз
+        template    - Показать шаблоны
+        
+# Последовательность установки сервисов
+./deploy-service.sh install postgres hw06
+./deploy-service.sh install config-service hw06
+./deploy-service.sh install auth-service hw06
+./deploy-service.sh install user-service hw06
+./deploy-service.sh install api-gateway hw06
+
+# Альтернативно: быстрая установка всех компонентов
+# Обязательно должен стартовать Config-service и Postgres, у остлньых будет 6 попыток на поиск конфигураций
+for service in postgres config-service auth-service user-service api-gateway; do
+    ./deploy-service.sh install $service hw06
+    sleep 10  # Небольшая пауза между установками
+done
+
+# Альтернативно: быстрое обновление всех компонентов
+# Обязательно должен стартовать Config-service и Postgres, у остлньых будет 6 попыток на поиск конфигураций
+for service in postgres config-service auth-service user-service api-gateway; do
+    ./deploy-service.sh upgrade $service hw06
+    sleep 30  # Небольшая пауза между установками
+done
+
 
 #дожидаемся всех подов. Должно быть 3 пода сервиса, 1 под БД, 1 завершенный JOB 
-$ kubectl get po -n hw04
-    #$ kubectl get po -n hw04
-    #NAME                                 READY   STATUS      RESTARTS   AGE
-    #hw04-service-user-56d45f86fb-6cksp   0/1     Running     0          108s
-    #hw04-service-user-56d45f86fb-lq9n2   0/1     Running     0          108s
-    #hw04-service-user-56d45f86fb-t8cdf   0/1     Running     0          108s
-    #hw04-service-user-migration-s4c4s    0/1     Completed   0          108s
-    #postgresql-0                         1/1     Running     0          108s
-
-#Убеждаемся что все работает
-curl http://arch.homework/user-service/actuator/health
+$ kubectl get po -n hw06
+    #kubectl.exe get po -n hw06 
+    #NAME                                   READY   STATUS    RESTARTS        AGE
+    #hw06-api-gateway-6b5b575679-qsgjd      1/1     Running   6 (3m48s ago)   15h
+    #hw06-auth-service-597764d7df-g7vpp     1/1     Running   5 (6m13s ago)   15h
+    #hw06-config-service-5f55649d55-hgfk7   1/1     Running   3 (5m56s ago)   15h
+    #hw06-postgresql-0                      1/1     Running   2 (11m ago)     8d
+    #hw06-user-service-55c66746db-l8zcj     1/1     Running   5 (6m29s ago)   15
 
 #Запускаем тесты
-$ newman run ./postman-tests/otus-hw4.postman_collection.json
+$ cd .. 
+newman run ./postman/otus-hw06.postman_collection.json
 
 #Чистим за собой Chart
-$ ./deploy.sh uninstall
+$ cd helms
+for service in postgres config-service auth-service user-service api-gateway; do
+    ./deploy-service.sh uninstall $service hw06
+    sleep 1  # Небольшая пауза между установками
+done
 
 #Удаляем неймспейс
-$ kubectl delete ns hw04
+$ kubectl delete ns hw06
 
 ```

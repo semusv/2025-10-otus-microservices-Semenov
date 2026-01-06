@@ -28,24 +28,18 @@ public class XrequestFilter implements GlobalFilter, Ordered {
         if (requestId == null || requestId.isEmpty()) {
             requestId = UUID.randomUUID().toString();
         }
-
         // 2. Логируем (важно делать это на самом раннем этапе)
         log.info(
                 "RequestId: {}, Method: {}, Path: {}",
                 requestId,
                 exchange.getRequest().getMethod(),
                 exchange.getRequest().getPath());
-
         // 3. Добавляем RequestId в заголовки запроса (для downstream сервисов)
         var mutatedRequest = exchange.getRequest()
                 .mutate()
                 .header(securityProperties.getRequestIdHeader(), requestId)
                 .build();
-
-        //        // 4. Добавляем RequestId в заголовки ответа (клиенту)
-        //        exchange.getResponse().getHeaders().add(securityProperties.getRequestIdHeader(), requestId);
-
-        // 5. Продолжаем цепочку фильтров с сохранением в контексте
+        // 4. Продолжаем цепочку фильтров с сохранением в контексте
         String finalRequestId = requestId;
         return chain.filter(exchange.mutate().request(mutatedRequest).build())
                 .contextWrite(context -> context.put(securityProperties.getRequestIdHeader(), finalRequestId));
