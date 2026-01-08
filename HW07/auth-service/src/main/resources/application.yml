@@ -1,0 +1,36 @@
+# Локальная конфигурация (используется только если config-service недоступен)
+# Основная конфигурация загружается из config-service
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+
+  config:
+    import: optional:configserver:http://${CONFIG_SERVICE_HOST:config-service}:${CONFIG_SERVICE_PORT:8888}
+
+  output:
+    ansi:
+      enabled: ALWAYS
+
+  cloud:
+    config:
+      enabled: ${CONFIG_SERVICE_ENABLED:true}
+      uri: http://${CONFIG_SERVICE_HOST:config-service}:${CONFIG_SERVICE_PORT:8888}
+      fail-fast: true
+      retry:
+        initial-interval: 1000 # 10 секунд
+        max-attempts: 6 # 6 попыток
+        max-interval: 10000 # 10 секунд
+        multiplier: 1.5 # Увеличение интервала между попытками
+
+
+logging:
+  level:
+    org.springframework.boot.context.properties: DEBUG
+    org.springframework.context.annotation: DEBUG
+    org.springframework.boot.autoconfigure: DEBUG
+    # или TRACE для детальной информации
+    org.springframework.boot: TRACE
+    org.springframework.context: TRACE

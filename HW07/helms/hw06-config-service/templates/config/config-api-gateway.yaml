@@ -1,0 +1,329 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-server-configs
+  labels:
+    {{- include "hw06-config-service.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config-service
+data:
+  # Общий конфиг для всех сервисов
+  application.yml: |
+    spring:
+      output:
+        ansi:
+          enabled: ALWAYS
+
+    server:
+      error:
+        whitelabel:
+          enabled: false
+
+
+    # Настройки сервисов
+    app:
+      services:
+        user-service:
+          url: http://${USER_SERVICE_HOST:localhost}:${USER_SERVICE_PORT:8082}
+          endpoints:
+            profiles: /internal/profiles
+        auth-service:
+          url: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
+          endpoints:
+            validate: /internal/validate
+
+      security:
+        inter-service:
+          secret: ${INTER_SERVICE_SECRET:inter-service-secret-1gas+1!sda2ga52111}
+          user-id-header: X-User-Id
+          roles-header: X-Roles
+          service-secret-header: X-Service-Secret
+          service-name-header: X-Service-Name
+          request-id-header: X-Request-Id
+          token-header: Authorization
+          token-prefix: "Bearer "
+
+    rest:
+      client:
+        connect-timeout: 5s
+        read-timeout: 10s
+
+
+    # Actuator конфигурация
+    management:
+      tracing:
+        sampling:
+          probability: 1.0
+      endpoint:
+        configprops:
+          enabled: true
+        health:
+          enabled: true
+          probes:
+            enabled: true
+          show-details: ALWAYS
+          show-components: ALWAYS
+        metrics:
+          enabled: true
+        logfile:
+          enabled: true
+        prometheus:
+          enabled: true
+        refresh:
+          enabled: true
+        gateway:
+          enabled: true
+      endpoints:
+        web:
+          exposure:
+            include:
+              - configprops
+              - health
+              - info
+              - logfile
+              - liquibase
+              - metrics
+              - prometheus
+              - refresh
+              - gateway
+          base-path: /actuator
+
+
+
+      # Метрики конфигурация
+      metrics:
+        enable:
+          http: true
+          jvm: true
+          logback: true
+          processor: true
+          system: true
+        distribution:
+          slo:
+            http.server.requests: 10ms, 50ms, 100ms, 200ms, 300ms, 400ms, 500ms, 600ms, 800ms
+          percentiles-histogram:
+            http.server.requests: true
+
+        # Экспорт метрик в Prometheus
+        export:
+          prometheus:
+            enabled: true
+            step: 1m
+            descriptions: true
+
+        # Тэги для метрик
+        tags:
+          application: ${spring.application.name}
+          region: local
+
+        # Web метрики
+        web:
+          server:
+            request:
+              metric-name: http.server.requests
+
+    # SpringDoc (OpenAPI) конфигурация - исправленный путь
+    springdoc:
+      api-docs:
+        path: /v3/api-docs
+      swagger-ui:
+        path: /swagger-ui.html
+        enabled: true
+      messages:
+        baseName: messages
+        encoding: UTF-8
+        fallbackToSystemLocale: false
+        use-code-as-default-message: true
+      enable-hateoas: false
+      show-actuator: true
+
+    logging:
+      level:
+        com.microservices.auth.filter.MdcFilter: DEBUG
+
+        # Spring Security логгирование
+        org.springframework.security: TRACE
+        org.springframework.security.web: DEBUG
+        org.springframework.security.config: DEBUG
+        org.springframework.security.web.FilterChainProxy: DEBUG
+
+        # HTTP запросы
+        org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+        org.apache.coyote.http11: DEBUG
+        org.springframework.web: DEBUG
+
+        # Фильтры
+        com.microservices.user.filter: DEBUG
+
+        # Hibernate/SQL
+        org.hibernate.SQL: DEBUG
+        org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+        # Ваши пакеты
+        com.microservices: DEBUG
+
+        liquibase: INFO
+
+        org.apache.coyote.http11.Http11InputBuffer: TRACE
+        # или для embedded Tomcat:
+        tomcat.util.http.parser: DEBUG
+
+
+
+
+
+  # Конфиг для api-gateway
+  api-gateway.yml: |
+    server:
+      port: 8079
+
+    spring:
+      application:
+        name: api-gateway
+      cloud:
+        gateway:
+          server:
+            webflux:
+              httpclient:
+                connect-timeout: 1000
+                response-timeout: 5s
+
+              routes:
+                # Auth-Service
+                # Публичные Endpoints без авторизации
+                - id: auth-service-public
+                  uri: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
+                  predicates:
+                    - Path=/api/v1/auth/register,/api/v1/auth/login,/api/v1/auth/refresh,/api/v1/auth/validate
+                  filters:
+                    - StripPrefix=2
+
+                # Auth-Service
+                # Endpoints c авторизацией
+                - id: auth-service
+                  uri: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
+                  predicates:
+                    - Path=/api/v1/auth/**
+                  filters:
+                    - StripPrefix=2
+
+                # Actuator — только для внутреннего доступа
+                - id: auth-service-actuator
+                  uri: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
+                  predicates:
+                    - Path=/auth/actuator/**
+                  filters:
+                    - StripPrefix=1
+
+                # User-Service
+                # Публичные Endpoints c авторизацией
+                - id: user-service
+                  uri: http://${USER_SERVICE_HOST:localhost}:${USER_SERVICE_PORT:8082}
+                  predicates:
+                    - Path=/api/v1/users/**
+                  filters:
+                    - StripPrefix=2
+                    - name: JwtValidationFilter
+                      args:
+                        requireAuth: true
+
+                # Actuator — только для внутреннего доступа
+                - id: user-service-actuator
+                  uri: http://${USER_SERVICE_HOST:localhost}:${USER_SERVICE_PORT:8082}
+                  predicates:
+                    - Path=/users/actuator/**
+                  filters:
+                    - StripPrefix=1
+
+                # Actuator для самого Gateway
+                - id: api-gateway-actuator
+                  uri: http://localhost:${server.port}  # самореференс
+                  predicates:
+                    - Path=/actuator/**
+
+          # Глобальные настройки
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin, RETAIN_UNIQUE
+
+
+    # Настройки для JWT валидации
+    gateway:
+      auth:
+        auth-service-url: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
+        validate-endpoint: /internal/validate
+        cache-enabled: true
+        cache-size: 1000
+        cache-ttl: 300000
+
+    # Логирование
+    logging:
+      level:
+        com.microservices.gateway: DEBUG
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.web.server: DEBUG
+        reactor.netty: DEBUG
+
+  # Конфиг для auth-service
+  auth-service.yml: |
+    server:
+      port: 8081
+
+    spring:
+      application:
+        name: auth-service
+
+      datasource:
+        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+        username: ${DB_USER:postgres}
+        password: ${DB_PASSWORD:postgres}
+        driver-class-name: org.postgresql.Driver
+
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        show-sql: false
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+            default_schema: auth
+
+      liquibase:
+        change-log: classpath:db/changelog/auth-service.db.changelog-master.xml
+        default-schema: auth
+        liquibase-schema: public
+
+
+    # Настройки JWT
+    jwt:
+      secret: ${JWT_SECRET:mySuperSecretKeyForJWT256BitSignatureKey123!}
+      access-token-expiration: 900000      # 15 минут в миллисекундах
+      refresh-token-expiration: 604800000  # 7 дней в миллисекундах
+
+
+  # Конфиг для user-service
+  user-service.yml: |
+    server:
+      port: 8082
+
+    spring:
+      application:
+        name: user-service
+
+      datasource:
+        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+        username: ${DB_USER:postgres}
+        password: ${DB_PASSWORD:postgres}
+        driver-class-name: org.postgresql.Driver
+
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        show-sql: false
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+            default_schema: user_service
+
+      liquibase:
+        change-log: classpath:db/changelog/user-service.db.changelog-master.xml
+        default-schema: user_service
+        liquibase-schema: public

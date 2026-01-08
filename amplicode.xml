@@ -12,6 +12,16 @@
           <package value="com.microservices.user" />
         </packages>
       </persistence-unit>
+      <persistence-unit moduleName="hw07.auth-service.main" name="Default">
+        <packages>
+          <package value="com.microservices.auth" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="hw07.user-service.main" name="Default">
+        <packages>
+          <package value="com.microservices.user" />
+        </packages>
+      </persistence-unit>
     </persistence-units>
   </component>
 </project>

@@ -1,0 +1,123 @@
+name: ${COMPOSE_PROJECT_NAME:-o-stock}
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ${PROJECT_NAME}-postgres
+    environment:
+      POSTGRES_DB: microservices_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  config-service:
+#    build:
+#      context: ../..
+#      dockerfile: ../config-service/Dockerfile
+    image: vvsem/${PROJECT_NAME}-config-service:latest
+    container_name: ${PROJECT_NAME}-config-service
+    ports:
+      - "8888:8888"
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Для локальной разработки config-service будет использовать native профиль
+    # и читать конфигурации из classpath:/config (если они там есть)
+    # В Kubernetes конфигурации монтируются из ConfigMap
+
+  auth-service:
+#    build:
+#      context: ../..
+#      dockerfile: ../auth-service/Dockerfile
+    image: vvsem/${PROJECT_NAME}-auth-service:latest
+    container_name: ${PROJECT_NAME}-auth-service
+    environment:
+      CONFIG_SERVICE_HOST: ${CONFIG_SERVICE_HOST:-config-service}
+      CONFIG_SERVICE_PORT: ${CONFIG_SERVICE_PORT:-8888}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: microservices_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: mySecretKeyForJWTTokenGenerationThatShouldBeAtLeast256BitsLong
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  user-service:
+#    build:
+#      context: ../..
+#      dockerfile: ../user-service/Dockerfile
+    image: vvsem/${PROJECT_NAME}-user-service:latest
+    container_name: ${PROJECT_NAME}-user-service
+    environment:
+      CONFIG_SERVICE_HOST: ${CONFIG_SERVICE_HOST:-config-service}
+      CONFIG_SERVICE_PORT: ${CONFIG_SERVICE_PORT:-8888}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: microservices_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: mySecretKeyForJWTTokenGenerationThatShouldBeAtLeast256BitsLong
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  api-gateway:
+#    build:
+#      context: ../..
+#      dockerfile: ../api-gateway/Dockerfile
+    image: vvsem/${PROJECT_NAME}-api-gateway:latest
+    container_name: ${PROJECT_NAME}-api-gateway
+    environment:
+      CONFIG_SERVICE_HOST: ${CONFIG_SERVICE_HOST:-config-service}
+      CONFIG_SERVICE_PORT: ${CONFIG_SERVICE_PORT:-8888}
+      AUTH_SERVICE_HOST: auth-service
+      AUTH_SERVICE_PORT: 8081
+      USER_SERVICE_HOST: user-service
+      USER_SERVICE_PORT: 8082
+    ports:
+      - "8080:8080"
+    depends_on:
+      config-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+    networks:
+      - microservices-network
+
+volumes:
+  postgres_data:
+
+networks:
+  microservices-network:
+    driver: bridge
+

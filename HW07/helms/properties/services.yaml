@@ -1,0 +1,14 @@
+app:
+  services:
+    configService:
+      host: hw06-config-service
+      port: 8888
+    userService:
+      host: hw06-user-service
+      port: 8082
+    authService:
+      host: hw06-auth-service
+      port: 8081
+    apiGateway:
+      host: hw06-api-gateway
+      port: 8079

@@ -1,0 +1,39 @@
+nameOverride: ""
+fullnameOverride: ""
+
+kafka-ui:
+  image:
+    registry: docker.io
+    repository: provectuslabs/kafka-ui
+    tag: latest
+
+  env:
+    # Аутентификация
+#    - name: AUTH_TYPE
+#      value: "DISABLED"
+#    - name: SPRING_SECURITY_USER_NAME
+#      value: "admin"
+#    - name: SPRING_SECURITY_USER_PASSWORD
+#      value: "admin123"
+
+#    # RBAC
+#    - name: RBAC_ENABLED
+#      value: "false"
+#    - name: RBAC_DEFAULT_ROLE
+#      value: "ADMIN"
+
+    # Права
+    - name: DYNAMIC_CONFIG_ENABLED
+      value: "true"
+
+    # Kafka кластер
+    - name: KAFKA_CLUSTERS_0_NAME
+      value: "Kafka-Minikube"
+    - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+      value: "kafka.kafka:9092"
+    - name: KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL
+      value: "SASL_PLAINTEXT"
+    - name: KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM
+      value: "PLAIN"
+    - name: KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG
+      value: 'org.apache.kafka.common.security.scram.ScramLoginModule required username="user1" password="iW9FGlROEC";'
