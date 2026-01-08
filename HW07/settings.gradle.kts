@@ -39,4 +39,5 @@ include("api-gateway")
 include("auth-service")
 include("user-service")
 include("config-service")
+include("billing-service")
 

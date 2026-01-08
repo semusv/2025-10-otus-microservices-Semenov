@@ -22,6 +22,11 @@
           <package value="com.microservices.user" />
         </packages>
       </persistence-unit>
+      <persistence-unit moduleName="hw07.billing-service.main" name="Default">
+        <packages>
+          <package value="com.microservices.billing" />
+        </packages>
+      </persistence-unit>
     </persistence-units>
   </component>
 </project>

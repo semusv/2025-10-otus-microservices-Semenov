@@ -7,6 +7,7 @@ import com.microservices.auth.dto.auth.ProfileCreationRequest;
 import com.microservices.auth.dto.auth.RegisterRequest;
 import com.microservices.auth.dto.auth.TokenResponse;
 import com.microservices.auth.dto.auth.TokenValidationResponse;
+import com.microservices.auth.kafka.UserCreatedEvent;
 import com.microservices.auth.model.RefreshToken;
 import com.microservices.auth.model.Role;
 import com.microservices.auth.model.User;
@@ -15,6 +16,8 @@ import com.microservices.auth.repository.UserRepository;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -44,6 +47,11 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserServiceClient userServiceClient;
 
+    private final KafkaTemplate<String, UserCreatedEvent> kafkaTemplate;
+
+    @Value("${app.kafka.topics.user-created:user.created}")
+    private String userCreatedTopic;
+
     @Transactional
     @Override
     public void register(RegisterRequest request) {
@@ -59,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
         // 2. Создаем профиль в user-service
         try {
             callCreationUserProfile(request, savedUser);
+            sendUserCreatedEvent(savedUser);
         } catch (Exception e) {
             // Если не удалось создать профиль - откатываем регистрацию
             userRepository.delete(savedUser);
@@ -175,6 +184,17 @@ public class AuthServiceImpl implements AuthService {
                 accessToken,
                 refreshToken,
                 jwtTokenProvider.getExpirationDateFromToken(accessToken).getTime());
+    }
+
+    private void sendUserCreatedEvent(User user) {
+        UserCreatedEvent event = UserCreatedEvent.builder()
+                .userId(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .build();
+
+        kafkaTemplate.send(userCreatedTopic, user.getId().toString(), event);
+        log.info("Sent user created event for {}", user.getId());
     }
 
     private void saveRefreshToken(User user, String tokenValue) {

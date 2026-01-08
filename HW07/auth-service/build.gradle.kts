@@ -7,6 +7,7 @@ dependencies {
     implementation ("org.springframework.boot:spring-boot-starter-validation")
     implementation ("org.springframework.boot:spring-boot-starter-actuator")
     implementation ("org.springframework.cloud:spring-cloud-starter-config")
+    implementation ("org.springframework.kafka:spring-kafka")
     implementation ("org.liquibase:liquibase-core")
     implementation ("org.postgresql:postgresql")
 
