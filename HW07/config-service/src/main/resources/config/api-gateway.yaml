@@ -13,7 +13,7 @@ spring:
             response-timeout: 5s
 
           routes:
-            # Auth-Service
+            # Billing-Service
             # Endpoints c авторизацией
             - id: billing-service
               uri: http://${BILLING_SERVICE_HOST:localhost}:${BILLING_SERVICE_PORT:8083}
@@ -25,6 +25,29 @@ spring:
                   args:
                     requireAuth: true
 
+            # Order-Service
+            # Endpoints c авторизацией
+            - id: order-service
+              uri: http://${ORDER_SERVICE_HOST:localhost}:${ORDER_SERVICE_PORT:8084}
+              predicates:
+                - Path=/api/v1/orders/**
+              filters:
+                - StripPrefix=2
+                - name: JwtValidationFilter
+                  args:
+                    requireAuth: true
+
+            # Notification-Service
+            # Endpoints c авторизацией
+            - id: notification-service
+              uri: http://${NOTIFICATION_SERVICE_HOST:localhost}:${NOTIFICATION_SERVICE_PORT:8085}
+              predicates:
+                - Path=/api/v1/notif/**
+              filters:
+                - StripPrefix=2
+                - name: JwtValidationFilter
+                  args:
+                    requireAuth: true
 
             # Auth-Service
             # Публичные Endpoints без авторизации

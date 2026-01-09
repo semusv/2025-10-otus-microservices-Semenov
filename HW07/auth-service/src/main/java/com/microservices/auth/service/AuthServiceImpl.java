@@ -192,7 +192,6 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .username(user.getUsername())
                 .build();
-
         kafkaTemplate.send(userCreatedTopic, user.getId().toString(), event);
         log.info("Sent user created event for {}", user.getId());
     }

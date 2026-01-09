@@ -1,11 +1,13 @@
 package com.microservices.billing.service;
 
 import com.microservices.billing.dto.BalanceResponse;
+import com.microservices.billing.dto.BillingOrderRequest;
 import com.microservices.billing.exception.AccountNotFoundException;
 import com.microservices.billing.exception.InsufficientFundsException;
 import com.microservices.billing.kafka.UserCreatedEvent;
 import com.microservices.billing.model.Account;
 import com.microservices.billing.repository.AccountRepository;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -65,5 +67,16 @@ public class AccountService {
         return accountRepository
                 .findByUserId(userId)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found for user " + userId));
+    }
+
+    public BalanceResponse orderPayment(UUID userId, @Valid BillingOrderRequest orderRequest) {
+        BigDecimal amount = orderRequest.getPrice();
+        Account account = getAccount(userId);
+        if (account.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientFundsException("Not enough funds");
+        }
+        account.setBalance(account.getBalance().subtract(amount));
+        accountRepository.save(account);
+        return new BalanceResponse(userId, account.getBalance());
     }
 }

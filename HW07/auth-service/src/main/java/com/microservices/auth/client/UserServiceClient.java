@@ -30,7 +30,7 @@ public class UserServiceClient {
         try {
             userServiceRestClient
                     .post()
-                    .uri(endpointResolver.getUserServiceUrl("profiles"))
+                    .uri(endpointResolver.getUserServiceUrl("profile"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(
                             securityProperties.getUserIdHeader(),

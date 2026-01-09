@@ -27,6 +27,11 @@
           <package value="com.microservices.billing" />
         </packages>
       </persistence-unit>
+      <persistence-unit moduleName="hw07.order-service.main" name="Default">
+        <packages>
+          <package value="com.microservices.order" />
+        </packages>
+      </persistence-unit>
     </persistence-units>
   </component>
 </project>

@@ -27,19 +27,9 @@ public class UserProfileServiceImpl implements UserProfileService {
      */
     @Transactional
     @Override
-    public void createProfile(CreateProfileRequest request) {
+    public void createProfile(CreateProfileRequest request, UUID userId) {
         log.info("Creating profile for user: {}", request.getUserId());
-        // Проверяем, что профиль еще не существует
-        if (userProfileRepository.existsByUserId(request.getUserId())) {
-            throw new IllegalStateException("Profile already exists for user: " + request.getUserId());
-        }
-        // Проверяем уникальность email и username
-        if (userProfileRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalStateException("Email already exists: " + request.getEmail());
-        }
-        if (userProfileRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalStateException("Username already exists: " + request.getUsername());
-        }
+        checksBeforeCreation(request, userId);
         UserProfile profile = new UserProfile();
         profile.setUserId(request.getUserId());
         profile.setEmail(request.getEmail());
@@ -51,6 +41,24 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         userProfileRepository.save(profile);
         log.info("Profile created successfully for user: {}", request.getUserId());
+    }
+
+    private void checksBeforeCreation(CreateProfileRequest request, UUID userId) {
+        // Проверяем, что ID пользователя совпадает с ID из запроса
+        if (!userId.equals(request.getUserId())) {
+            throw new IllegalStateException(" User ID mismatch : " + userId + " != " + request.getUserId() + " ");
+        }
+        // Проверяем, что профиль еще не существует
+        if (userProfileRepository.existsByUserId(request.getUserId())) {
+            throw new IllegalStateException("Profile already exists for user: " + request.getUserId());
+        }
+        // Проверяем уникальность email и username
+        if (userProfileRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalStateException("Email already exists: " + request.getEmail());
+        }
+        if (userProfileRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalStateException("Username already exists: " + request.getUsername());
+        }
     }
 
     /**

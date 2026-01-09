@@ -3,7 +3,6 @@ import com.google.cloud.tools.jib.gradle.JibExtension
 import fr.brouillard.oss.gradle.plugins.JGitverPluginExtension
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 import org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
-import org.gradle.process.ExecSpec
 
 plugins {
     idea  // Поддержка IntelliJ IDEA
@@ -156,6 +155,9 @@ subprojects {
                 "config-service" -> "8888"
                 "user-service" -> "8082"
                 "auth-service" -> "8081"
+                "billing-service" -> "8083"
+                "order-service" -> "8084"
+                "notification-service" -> "8085"
                 "api-gateway" -> "8000"
                 else -> "8080"
             }
