@@ -41,5 +41,5 @@ include("user-service")
 include("config-service")
 include("billing-service")
 include("order-service")
-//include("notification-service")
+include("notification-service")
 

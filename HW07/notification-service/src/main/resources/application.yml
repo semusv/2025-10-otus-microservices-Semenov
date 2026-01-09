@@ -1,0 +1,43 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: notification-service
+  config:
+    import: optional:configserver:http://${CONFIG_SERVICE_HOST:config-service}:${CONFIG_SERVICE_PORT:8888}
+  cloud:
+    config:
+      enabled: ${CONFIG_SERVICE_ENABLED:true}
+      fail-fast: true
+
+logging:
+  level:
+    com.microservices.notification: DEBUG
+
+#    # Spring Security логгирование
+#    org.springframework.security: TRACE
+#    org.springframework.security.web: DEBUG
+#    org.springframework.security.config: DEBUG
+#    org.springframework.security.web.FilterChainProxy: DEBUG
+#
+#    # HTTP запросы
+#    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+#    org.apache.coyote.http11: DEBUG
+#    org.springframework.web: DEBUG
+#
+#    # Фильтры
+#    com.microservices.user.filter: DEBUG
+#
+#    # Hibernate/SQL
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#
+#    # Ваши пакеты
+#    com.microservices: DEBUG
+#
+#    liquibase: INFO
+#
+#    org.apache.coyote.http11.Http11InputBuffer: TRACE
+#    # или для embedded Tomcat:
+#    tomcat.util.http.parser: DEBUG
