@@ -35,5 +35,10 @@ kafka-ui:
       value: "SASL_PLAINTEXT"
     - name: KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM
       value: "PLAIN"
+    - name: CLIENT_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: kafka-user-passwords
+          key: client-passwords
     - name: KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG
-      value: 'org.apache.kafka.common.security.scram.ScramLoginModule required username="user1" password="iW9FGlROEC";'
+      value: "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"user1\" password=\"$(CLIENT_PASSWORD)\";"

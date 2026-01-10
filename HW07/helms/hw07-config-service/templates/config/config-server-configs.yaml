@@ -343,10 +343,15 @@ data:
       kafka:
         bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
         client-id: "auth-service-producer"
+
         producer:
           key-serializer: org.apache.kafka.common.serialization.StringSerializer
           value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
+        properties:
+          security.protocol: SASL_PLAINTEXT
+          sasl.mechanism: PLAIN
+          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";
 
     # Настройки JWT
     jwt:
@@ -421,6 +426,11 @@ data:
       kafka:
         bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
 
+        properties:
+          security.protocol: SASL_PLAINTEXT
+          sasl.mechanism: PLAIN
+          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";
+
         consumer:
           group-id: billing-service
           key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -472,6 +482,12 @@ data:
       kafka:
         bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
 
+        properties:
+          security.protocol: SASL_PLAINTEXT
+          sasl.mechanism: PLAIN
+          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";
+
+
         producer:
           key-serializer: org.apache.kafka.common.serialization.StringSerializer
           value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -513,6 +529,11 @@ data:
 
       kafka:
         bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+
+        properties:
+          security.protocol: SASL_PLAINTEXT
+          sasl.mechanism: PLAIN
+          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";
 
         consumer:
           group-id: notification-service

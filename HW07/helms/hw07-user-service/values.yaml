@@ -147,3 +147,7 @@ metrics:
 spring:
   profiles:
     active: ""
+
+env:
+  service: []
+  db: []

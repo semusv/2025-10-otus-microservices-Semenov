@@ -1023,7 +1023,15 @@
 	"variable": [
 		{
 			"key": "baseUrl",
+			"value": "arch.homework"
+		},
+		{
+			"key": "loca",
 			"value": "localhost:8079"
+		},
+		{
+			"key": "homework",
+			"value": "arch.homework"
 		}
 	]
 }

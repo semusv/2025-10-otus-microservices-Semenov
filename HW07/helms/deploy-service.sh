@@ -30,6 +30,7 @@ SERVICES_FILE="./properties/services.yaml"
 ENV_SERVICES_FILE="./properties/env.services.yaml"
 DB_CONN_FILE="./properties/db-connection.yaml"
 ENV_DB_CONN_FILE="./properties/env.db-connection.yaml"
+ENV_KAFKA_CONN_FILE="./properties/env.kafka-connection.yaml"
 
 # === Проверка обязательных параметров ===
 if [[ -z "$SERVICE_NAME" ]]; then
@@ -93,6 +94,16 @@ else
   DB_CONN_FLAG="--values $DB_CONN_FILE"
 fi
 
+
+# Найдем файлы с параметрами окружения подключения к Kafka
+if [[ ! -f "$ENV_KAFKA_CONN_FILE" ]]; then
+  echo "⚠️  Файл параметров БД не найден: $ENV_KAFKA_CONN_FILE"
+  echo "    Продолжаем без --values. Убедитесь, что значения в чарте по умолчанию."
+  ENV_KAFKA_CONN_FLAG=""
+else
+  ENV_KAFKA_CONN_FLAG="--values $ENV_KAFKA_CONN_FILE"
+fi
+
 RELEASE_NAME="hw07-$SERVICE_NAME"
 REVISION="${4:-1}"  # для rollback
 
@@ -117,6 +128,7 @@ case $ACTION in
       $ENV_SERVICES_FLAG \
       $DB_CONN_FLAG \
       $ENV_DB_CONN_FLAG \
+      $ENV_KAFKA_CONN_FLAG \
       --render-subchart-notes
     ;;
 
@@ -131,6 +143,7 @@ case $ACTION in
       $ENV_SERVICES_FLAG \
       $DB_CONN_FLAG \
       $ENV_DB_CONN_FLAG \
+      $ENV_KAFKA_CONN_FLAG \
       --render-subchart-notes \
       --install
     ;;
@@ -175,6 +188,7 @@ case $ACTION in
       $SERVICES_FLAG \
       $DB_CONN_FLAG \
       $ENV_DB_CONN_FLAG \
+      $ENV_KAFKA_CONN_FLAG \
       --render-subchart-notes
     ;;
 

@@ -39,20 +39,7 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.spring.profiles.active }}"
-            - name: CONFIG_SERVICE_HOST
-              value: "{{ .Values.app.services.configService.host }}"
-            - name: CONFIG_SERVICE_PORT
-              value: "{{ .Values.app.services.configService.port }}"
-
-            - name: AUTH_SERVICE_HOST
-              value: "{{ .Values.app.services.authService.host }}"
-            - name: AUTH_SERVICE_PORT
-              value: "{{ .Values.app.services.authService.port }}"
-
-            - name: USER_SERVICE_HOST
-              value: "{{ .Values.app.services.userService.host }}"
-            - name: USER_SERVICE_PORT
-              value: "{{ .Values.app.services.userService.port }}"
+            {{ .Values.env.service | toYaml | nindent 12 }}
 
           ports:
             - name: http

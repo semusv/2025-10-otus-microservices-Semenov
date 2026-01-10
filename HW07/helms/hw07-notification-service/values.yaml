@@ -151,3 +151,4 @@ spring:
 env:
   service: []
   db: []
+  kafka: []

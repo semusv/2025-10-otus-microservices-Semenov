@@ -27,6 +27,11 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
 
+    properties:
+      security.protocol: SASL_PLAINTEXT
+      sasl.mechanism: PLAIN
+      sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";
+
     consumer:
       group-id: billing-service
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer

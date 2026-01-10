@@ -41,6 +41,7 @@ spec:
               value: "{{ .Values.spring.profiles.active }}"
             {{ .Values.env.service | toYaml | nindent 12 }}
             {{ .Values.env.db | toYaml | nindent 12 }}
+            {{ .Values.env.kafka | toYaml | nindent 12 }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

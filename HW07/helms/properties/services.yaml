@@ -1,23 +1,23 @@
 app:
   services:
     configService:
-      host: config-service
+      host: hw07-config-service
       port: 8888
     userService:
-      host: user-service
+      host: hw07-user-service
       port: 8082
     authService:
-      host: auth-service
+      host: hw07-auth-service
       port: 8081
     apiGateway:
       host: api-gateway
       port: 8079
     billingService:
-      host: billing-service
+      host: hw07-billing-service
       port: 8083
     orderService:
-      host: order-service
+      host: hw07-order-service
       port: 8084
     notificationService:
-      host: notification-service
+      host: hw07-notification-service
       port: 8085
