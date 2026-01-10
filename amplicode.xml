@@ -34,7 +34,7 @@
       </persistence-unit>
       <persistence-unit moduleName="hw07.notification-service.main" name="Default">
         <packages>
-          <package value="com.microservices.notification.config" />
+          <package value="com.microservices.notification" />
         </packages>
       </persistence-unit>
     </persistence-units>

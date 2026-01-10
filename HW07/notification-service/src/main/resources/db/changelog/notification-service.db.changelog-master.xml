@@ -6,4 +6,5 @@
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <include file="structure/2026/01/10-01-create-notifications.xml" relativeToChangelogFile="true"/>
+    <include file="structure/2026/01/11-01-create-notifications.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

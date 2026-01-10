@@ -59,7 +59,7 @@
 
 ![services-drawio.drawio.png](docs/services-drawio.drawio.png)
 ``` bash
-# открываем терминал в папке с проектом /HW06/helms  
+# открываем терминал в папке с проектом /hw07/helms  
 cd helms
 
 # Ставим helm через bash скрипт: deploy-service.sh
@@ -75,49 +75,49 @@ cd helms
         template    - Показать шаблоны
         
 # Последовательность установки сервисов
-./deploy-service.sh install postgres hw06
-./deploy-service.sh install config-service hw06
-./deploy-service.sh install auth-service hw06
-./deploy-service.sh install user-service hw06
-./deploy-service.sh install api-gateway hw06
+./deploy-service.sh install postgres hw07
+./deploy-service.sh install config-service hw07
+./deploy-service.sh install auth-service hw07
+./deploy-service.sh install user-service hw07
+./deploy-service.sh install api-gateway hw07
 
 # Альтернативно: быстрая установка всех компонентов
 # Обязательно должен стартовать Config-service и Postgres, у остлньых будет 6 попыток на поиск конфигураций
 for service in postgres config-service auth-service user-service api-gateway; do
-    ./deploy-service.sh install $service hw06
+    ./deploy-service.sh install $service hw07
     sleep 10  # Небольшая пауза между установками
 done
 
 # Альтернативно: быстрое обновление всех компонентов
 # Обязательно должен стартовать Config-service и Postgres, у остлньых будет 6 попыток на поиск конфигураций
 for service in postgres config-service auth-service user-service api-gateway; do
-    ./deploy-service.sh upgrade $service hw06
+    ./deploy-service.sh upgrade $service hw07
     sleep 30  # Небольшая пауза между установками
 done
 
 
 #дожидаемся всех подов. Должно быть 3 пода сервиса, 1 под БД, 1 завершенный JOB 
-$ kubectl get po -n hw06
-    #kubectl.exe get po -n hw06 
+$ kubectl get po -n hw07
+    #kubectl.exe get po -n hw07 
     #NAME                                   READY   STATUS    RESTARTS        AGE
-    #hw06-api-gateway-6b5b575679-qsgjd      1/1     Running   6 (3m48s ago)   15h
-    #hw06-auth-service-597764d7df-g7vpp     1/1     Running   5 (6m13s ago)   15h
-    #hw06-config-service-5f55649d55-hgfk7   1/1     Running   3 (5m56s ago)   15h
-    #hw06-postgresql-0                      1/1     Running   2 (11m ago)     8d
-    #hw06-user-service-55c66746db-l8zcj     1/1     Running   5 (6m29s ago)   15
+    #hw07-api-gateway-6b5b575679-qsgjd      1/1     Running   6 (3m48s ago)   15h
+    #hw07-auth-service-597764d7df-g7vpp     1/1     Running   5 (6m13s ago)   15h
+    #hw07-config-service-5f55649d55-hgfk7   1/1     Running   3 (5m56s ago)   15h
+    #hw07-postgresql-0                      1/1     Running   2 (11m ago)     8d
+    #hw07-user-service-55c66746db-l8zcj     1/1     Running   5 (6m29s ago)   15
 
 #Запускаем тесты
 $ cd .. 
-newman run ./postman/otus-hw06.postman_collection.json
+newman run ./postman/otus-hw07.postman_collection.json
 
 #Чистим за собой Chart
 $ cd helms
 for service in postgres config-service auth-service user-service api-gateway; do
-    ./deploy-service.sh uninstall $service hw06
+    ./deploy-service.sh uninstall $service hw07
     sleep 1  # Небольшая пауза между установками
 done
 
 #Удаляем неймспейс
-$ kubectl delete ns hw06
+$ kubectl delete ns hw07
 
 ```

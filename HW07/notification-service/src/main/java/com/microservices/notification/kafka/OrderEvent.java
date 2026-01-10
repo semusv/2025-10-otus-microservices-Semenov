@@ -10,6 +10,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class OrderEvent {
+
+    private String eventId;
+
+    private EventType eventType;
+
+    private String timestamp;
+
     private UUID orderId;
 
     private UUID userId;

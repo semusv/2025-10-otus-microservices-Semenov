@@ -10,7 +10,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class UserCreatedEvent {
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Builder.Default
     private String eventId = UUID.randomUUID().toString();

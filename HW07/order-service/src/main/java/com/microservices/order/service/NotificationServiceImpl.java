@@ -36,13 +36,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     private void sendEvent(Order order, String email) {
         String message = order.getStatus() == Order.Status.PAID ? "Order paid successfully" : "Order payment failed";
-        OrderEvent event = new OrderEvent(
-                order.getId(),
-                order.getUserId(),
-                email,
-                order.getPrice(),
-                order.getStatus().name(),
-                message);
+        OrderEvent event = OrderEvent.builder()
+                .orderId(order.getId())
+                .userId(order.getUserId())
+                .email(email)
+                .price(order.getPrice())
+                .status(order.getStatus().name())
+                .message(message)
+                .build();
         kafkaTemplate.send(orderTopic, order.getUserId().toString(), event);
     }
 }

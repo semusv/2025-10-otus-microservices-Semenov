@@ -26,6 +26,9 @@ public class Notification {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "order_id", nullable = false)
+    private UUID orderId;
+
     @Column(name = "email")
     private String email;
 

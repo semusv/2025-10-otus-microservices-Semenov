@@ -8,17 +8,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/notifications")
+@RequestMapping("notif")
 @RequiredArgsConstructor
 public class NotificationController {
 
     private final NotificationService notificationService;
 
     @GetMapping
-    public List<NotificationResponse> list(@RequestHeader("X-User-Id") UUID userId) {
-        return notificationService.list(userId);
+    public List<NotificationResponse> list(
+            @RequestHeader("X-User-Id") UUID userId, @RequestParam(name = "orderId", required = false) UUID orderId) {
+        if (orderId != null) {
+            return notificationService.getNotifications(userId, orderId);
+        }
+        return notificationService.getNotifications(userId);
     }
 }
