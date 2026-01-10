@@ -2,9 +2,9 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "hw06-auth-service.fullname" . }}
+  name: {{ include "hw07-auth-service.fullname" . }}
   labels:
-    {{- include "hw06-auth-service.labels" . | nindent 4 }}
+    {{- include "hw07-auth-service.labels" . | nindent 4 }}
     app.kubernetes.io/component: metrics
 spec:
   {{- if .Values.metrics.serviceMonitor.jobLabel }}
@@ -14,7 +14,7 @@ spec:
     any: true
   selector:
     matchLabels:
-      {{- include "hw06-auth-service.selectorLabels" . | nindent 6 }}
+      {{- include "hw07-auth-service.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: metrics
   endpoints:
     - targetPort: {{ .Values.service.port }}
@@ -29,6 +29,6 @@ spec:
       {{- end }}
       relabelings:
         - action: replace
-          replacement: {{ include "hw06-auth-service.fullname" . }}
+          replacement: {{ include "hw07-auth-service.fullname" . }}
           targetLabel: application
 {{- end }}

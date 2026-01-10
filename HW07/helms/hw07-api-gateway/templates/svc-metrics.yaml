@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "hw06-api-gateway.fullname" . }}-metrics
+  name: {{ include "hw07-api-gateway.fullname" . }}-metrics
   labels:
-    {{- include "hw06-api-gateway.labels" . | nindent 4 }}
+    {{- include "hw07-api-gateway.labels" . | nindent 4 }}
     app.kubernetes.io/component: metrics
 spec:
   type: ClusterIP
@@ -13,5 +13,5 @@ spec:
       targetPort: http
       name: http-metrics
   selector:
-    {{- include "hw06-api-gateway.selectorLabels" . | nindent 4 }}
+    {{- include "hw07-api-gateway.selectorLabels" . | nindent 4 }}
 {{- end }}

@@ -1,6 +1,6 @@
 apiVersion: v2
-name: hw06-api-gateway
-description: A Helm chart for deploying hw06.api-gateway to Kubernetes
+name: hw07-api-gateway
+description: A Helm chart for deploying hw07.api-gateway to Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
 #

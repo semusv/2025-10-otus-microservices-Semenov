@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "hw06-api-gateway.name" -}}
+{{- define "hw07-api-gateway.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "hw06-api-gateway.fullname" -}}
+{{- define "hw07-api-gateway.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "hw06-api-gateway.chart" -}}
+{{- define "hw07-api-gateway.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "hw06-api-gateway.labels" -}}
-helm.sh/chart: {{ include "hw06-api-gateway.chart" . }}
-{{ include "hw06-api-gateway.selectorLabels" . }}
+{{- define "hw07-api-gateway.labels" -}}
+helm.sh/chart: {{ include "hw07-api-gateway.chart" . }}
+{{ include "hw07-api-gateway.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "hw06-api-gateway.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "hw06-api-gateway.name" . }}
+{{- define "hw07-api-gateway.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "hw07-api-gateway.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "hw06-api-gateway.serviceAccountName" -}}
+{{- define "hw07-api-gateway.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "hw06-api-gateway.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "hw07-api-gateway.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

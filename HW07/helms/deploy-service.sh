@@ -6,11 +6,11 @@
 #   ./deploy-service.sh [ACTION] [SERVICE_NAME] [NAMESPACE]
 #
 # Примеры:
-#   ./deploy-service.sh install api-gateway hw06
-#   ./deploy-service.sh upgrade user-service hw06
-#   ./deploy-service.sh uninstall auth-service hw06
+#   ./deploy-service.sh install api-gateway hw07
+#   ./deploy-service.sh upgrade user-service hw07
+#   ./deploy-service.sh uninstall auth-service hw07
 #
-# Все чарты ожидаются в ./hw06.<service-name>
+# Все чарты ожидаются в ./hw07.<service-name>
 # Секреты — в ./secrets/secret-<namespace>.yaml
 
 
@@ -24,23 +24,25 @@ SERVICE_NAME="${2:-}"
 NAMESPACE="${3:-$DEFAULT_NAMESPACE}"
 
 # === Пути ===
-CHART_PATH="./hw06-$SERVICE_NAME"
+CHART_PATH="./hw07-$SERVICE_NAME"
 SECRETS_FILE="./secrets/secret-pg.yaml"
 SERVICES_FILE="./properties/services.yaml"
+ENV_SERVICES_FILE="./properties/env.services.yaml"
 DB_CONN_FILE="./properties/db-connection.yaml"
+ENV_DB_CONN_FILE="./properties/env.db-connection.yaml"
 
 # === Проверка обязательных параметров ===
 if [[ -z "$SERVICE_NAME" ]]; then
   echo "❌ Ошибка: Не указано имя сервиса."
   echo "Использование: $0 [action] <service-name> [namespace]"
-  echo "Пример: $0 upgrade api-gateway hw06"
+  echo "Пример: $0 upgrade api-gateway hw07"
   exit 1
 fi
 
 # Проверим, существует ли чарт
 if [[ ! -d "$CHART_PATH" ]]; then
   echo "❌ Ошибка: Директория чарта не найдена: $CHART_PATH"
-  echo "Убедитесь, что чарт называется 'hw06-$SERVICE_NAME'"
+  echo "Убедитесь, что чарт называется 'hw07-$SERVICE_NAME'"
   exit 1
 fi
 
@@ -62,6 +64,26 @@ else
   SERVICES_FLAG="--values $SERVICES_FILE"
 fi
 
+
+# Найдем файлы с параметрами окружения сервисов
+if [[ ! -f "$ENV_SERVICES_FILE" ]]; then
+  echo "⚠️  Файл параметров сервисов не найден: $ENV_SERVICES_FILE"
+  echo "    Продолжаем без --values. Убедитесь, что значения в чарте по умолчанию."
+  ENV_SERVICES_FLAG=""
+else
+  ENV_SERVICES_FLAG="--values $ENV_SERVICES_FILE"
+fi
+
+
+# Найдем файлы с параметрами окружения подключения к БД
+if [[ ! -f "$ENV_DB_CONN_FILE" ]]; then
+  echo "⚠️  Файл параметров БД не найден: $ENV_DB_CONN_FILE"
+  echo "    Продолжаем без --values. Убедитесь, что значения в чарте по умолчанию."
+  ENV_DB_CONN_FLAG=""
+else
+  ENV_DB_CONN_FLAG="--values $ENV_DB_CONN_FILE"
+fi
+
 # Найдем файлы с параметрами подключения к БД
 if [[ ! -f "$DB_CONN_FILE" ]]; then
   echo "⚠️  Файл параметров БД не найден: $DB_CONN_FILE"
@@ -71,7 +93,7 @@ else
   DB_CONN_FLAG="--values $DB_CONN_FILE"
 fi
 
-RELEASE_NAME="hw06-$SERVICE_NAME"
+RELEASE_NAME="hw07-$SERVICE_NAME"
 REVISION="${4:-1}"  # для rollback
 
 # === Создаём namespace, если нужно ===
@@ -92,7 +114,9 @@ case $ACTION in
       --create-namespace \
       $SECRETS_FLAG \
       $SERVICES_FLAG \
+      $ENV_SERVICES_FLAG \
       $DB_CONN_FLAG \
+      $ENV_DB_CONN_FLAG \
       --render-subchart-notes
     ;;
 
@@ -104,7 +128,9 @@ case $ACTION in
       --create-namespace \
       $SECRETS_FLAG \
       $SERVICES_FLAG \
+      $ENV_SERVICES_FLAG \
       $DB_CONN_FLAG \
+      $ENV_DB_CONN_FLAG \
       --render-subchart-notes \
       --install
     ;;
@@ -145,8 +171,10 @@ case $ACTION in
       "$CHART_PATH" \
       --namespace "$NAMESPACE" \
       $SECRETS_FLAG \
+      $ENV_SERVICES_FLAG \
       $SERVICES_FLAG \
       $DB_CONN_FLAG \
+      $ENV_DB_CONN_FLAG \
       --render-subchart-notes
     ;;
 

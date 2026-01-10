@@ -4,7 +4,7 @@ fullnameOverride: ""
 
 postgresql:
   enabled: true
-  fullnameOverride: hw06-postgresql
+  fullnameOverride: hw07-postgresql
   auth:
     username: app_user
     database: microservices_db

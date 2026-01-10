@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "hw06-config-service.fullname" . }}
+  name: {{ include "hw07-config-service.fullname" . }}
   labels:
-    {{- include "hw06-config-service.labels" . | nindent 4 }}
+    {{- include "hw07-config-service.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "hw06-config-service.fullname" . }}
+    name: {{ include "hw07-config-service.fullname" . }}
   minReplicas: {{ .Values.autoscaling.hpa.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.hpa.maxReplicas }}
   metrics:

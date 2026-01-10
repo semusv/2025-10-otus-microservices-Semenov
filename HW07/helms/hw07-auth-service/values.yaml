@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: vvsem/hw06-auth-service
+  repository: vvsem/hw07-auth-service
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.0-49-SNAPSHOT"
+  tag: "0.0.0-56-SNAPSHOT"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -162,9 +162,18 @@ app:
     apiGateway:
       host: api-gateway
       port: 8079
+    billingService:
+      host: billing-service
+      port: 8083
+    orderService:
+      host: order-service
+      port: 8084
+    notificationService:
+      host: notification-service
+      port: 8085
 
 postgresql:
-  fullnameOverride: hw06-postgresql
+  fullnameOverride: hw07-postgresql
   auth:
     username: app_user
     database: microservices_db

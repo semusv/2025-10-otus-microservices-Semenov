@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: vvsem/hw06-config-service
+  repository: vvsem/hw07-config-service
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.0-49-SNAPSHOT"
+  tag: "0.0.0-56-SNAPSHOT"
 
 imagePullSecrets: []
 nameOverride: ""

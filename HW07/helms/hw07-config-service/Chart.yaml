@@ -1,6 +1,6 @@
 apiVersion: v2
-name: hw06-config-service
-description: A Helm chart for deploying hw06.config-service to Kubernetes
+name: hw07-config-service
+description: A Helm chart for deploying hw07.config-service to Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
 #

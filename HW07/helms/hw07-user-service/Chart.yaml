@@ -1,6 +1,6 @@
 apiVersion: v2
-name: hw06-user-service
-description: A Helm chart for deploying hw06.user-service to Kubernetes
+name: hw07-user-service
+description: A Helm chart for deploying hw07.user-service to Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
 #

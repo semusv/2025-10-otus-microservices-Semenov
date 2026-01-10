@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: config-server-configs
   labels:
-    {{- include "hw06-config-service.labels" . | nindent 4 }}
+    {{- include "hw07-config-service.labels" . | nindent 4 }}
     app.kubernetes.io/component: config-service
 data:
   # Общий конфиг для всех сервисов
@@ -25,11 +25,25 @@ data:
         user-service:
           url: http://${USER_SERVICE_HOST:localhost}:${USER_SERVICE_PORT:8082}
           endpoints:
-            profiles: /internal/profiles
+            profile: /internal/profile
+            me: /internal/me
+
         auth-service:
           url: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
           endpoints:
             validate: /internal/validate
+
+        billing-service:
+          url: http://${BILLING_SERVICE_HOST:localhost}:${BILLING_SERVICE_PORT:8083}
+          endpoints:
+            order: /internal/order
+
+
+        order-service:
+          url: http://${ORDER_SERVICE_HOST:localhost}:${ORDER_SERVICE_PORT:8084}
+
+        notification-service:
+          url: http://${NOTIFICATION_SERVICE_HOST:localhost}:${NOTIFICATION_SERVICE_PORT:8085}
 
       security:
         inter-service:
@@ -168,9 +182,6 @@ data:
         tomcat.util.http.parser: DEBUG
 
 
-
-
-
   # Конфиг для api-gateway
   api-gateway.yml: |
     server:
@@ -188,6 +199,42 @@ data:
                 response-timeout: 5s
 
               routes:
+                # Billing-Service
+                # Endpoints c авторизацией
+                - id: billing-service
+                  uri: http://${BILLING_SERVICE_HOST:localhost}:${BILLING_SERVICE_PORT:8083}
+                  predicates:
+                    - Path=/api/v1/billing/**
+                  filters:
+                    - StripPrefix=2
+                    - name: JwtValidationFilter
+                      args:
+                        requireAuth: true
+
+                # Order-Service
+                # Endpoints c авторизацией
+                - id: order-service
+                  uri: http://${ORDER_SERVICE_HOST:localhost}:${ORDER_SERVICE_PORT:8084}
+                  predicates:
+                    - Path=/api/v1/orders/**
+                  filters:
+                    - StripPrefix=2
+                    - name: JwtValidationFilter
+                      args:
+                        requireAuth: true
+
+                # Notification-Service
+                # Endpoints c авторизацией
+                - id: notification-service
+                  uri: http://${NOTIFICATION_SERVICE_HOST:localhost}:${NOTIFICATION_SERVICE_PORT:8085}
+                  predicates:
+                    - Path=/api/v1/notif/**
+                  filters:
+                    - StripPrefix=2
+                    - name: JwtValidationFilter
+                      args:
+                        requireAuth: true
+
                 # Auth-Service
                 # Публичные Endpoints без авторизации
                 - id: auth-service-public
@@ -262,6 +309,8 @@ data:
         org.springframework.web.server: DEBUG
         reactor.netty: DEBUG
 
+
+
   # Конфиг для auth-service
   auth-service.yml: |
     server:
@@ -291,12 +340,25 @@ data:
         default-schema: auth
         liquibase-schema: public
 
+      kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+        client-id: "auth-service-producer"
+        producer:
+          key-serializer: org.apache.kafka.common.serialization.StringSerializer
+          value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 
     # Настройки JWT
     jwt:
       secret: ${JWT_SECRET:mySuperSecretKeyForJWT256BitSignatureKey123!}
       access-token-expiration: 900000      # 15 минут в миллисекундах
       refresh-token-expiration: 604800000  # 7 дней в миллисекундах
+
+    app:
+      # Настройки Kafka
+      kafka:
+        topics:
+          user-created: user.created
 
 
   # Конфиг для user-service
@@ -307,7 +369,6 @@ data:
     spring:
       application:
         name: user-service
-
       datasource:
         url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
         username: ${DB_USER:postgres}
@@ -327,3 +388,144 @@ data:
         change-log: classpath:db/changelog/user-service.db.changelog-master.xml
         default-schema: user_service
         liquibase-schema: public
+
+
+  # Конфиг для billing-service
+  billing-service.yml: |
+    server:
+      port: 8083
+
+    spring:
+      application:
+        name: billing-service
+      datasource:
+        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+        username: ${DB_USER:postgres}
+        password: ${DB_PASSWORD:postgres}
+        driver-class-name: org.postgresql.Driver
+
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        show-sql: false
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+            default_schema: billing_service
+
+      liquibase:
+        change-log: classpath:db/changelog/billing-service.db.changelog-master.xml
+        default-schema: billing_service
+        liquibase-schema: public
+
+      kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+
+        consumer:
+          group-id: billing-service
+          key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+          value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+          properties:
+            spring.json.use.type.headers: false
+            spring.json.value.default.type: com.microservices.billing.kafka.UserCreatedEvent
+            spring.json.trusted.packages: "*"
+
+        producer:
+          key-serializer: org.apache.kafka.common.serialization.StringSerializer
+          value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    app:
+      kafka:
+        topics:
+          user-created: user.created
+
+
+
+  # Конфиг для order-service
+  order-service.yml: |
+    server:
+      port: 8084
+
+    spring:
+      application:
+        name: order-service
+      datasource:
+        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+        username: ${DB_USER:postgres}
+        password: ${DB_PASSWORD:postgres}
+        driver-class-name: org.postgresql.Driver
+
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+            default_schema: order_service
+
+      liquibase:
+        change-log: classpath:db/changelog/order-service.db.changelog-master.xml
+        default-schema: order_service
+        liquibase-schema: public
+
+      kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+
+        producer:
+          key-serializer: org.apache.kafka.common.serialization.StringSerializer
+          value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    app:
+      kafka:
+        topics:
+          order-events: order.events
+
+
+
+  # Конфиг для notification-service
+  notification-service.yml: |
+    server:
+      port: 8085
+
+    spring:
+      application:
+        name: notification-service
+      datasource:
+        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+        username: ${DB_USER:postgres}
+        password: ${DB_PASSWORD:postgres}
+        driver-class-name: org.postgresql.Driver
+
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        show-sql: false
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+            default_schema: notification_service
+
+      liquibase:
+        change-log: classpath:db/changelog/notification-service.db.changelog-master.xml
+        default-schema: notification_service
+        liquibase-schema: public
+
+      kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+
+        consumer:
+          group-id: notification-service
+          key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+          value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+          properties:
+            spring.json.use.type.headers: false
+            spring.json.value.default.type: com.microservices.notification.kafka.OrderEvent
+            spring.json.trusted.packages: "*"
+
+    app:
+      kafka:
+        topics:
+          order-events: order.events
+

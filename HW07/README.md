@@ -80,19 +80,46 @@ cd helms
 ./deploy-service.sh install auth-service hw07
 ./deploy-service.sh install user-service hw07
 ./deploy-service.sh install api-gateway hw07
+./deploy-service.sh install billing-service hw07
+./deploy-service.sh install notification-service hw07
+./deploy-service.sh install order-service hw07
 
 # Альтернативно: быстрая установка всех компонентов
 # Обязательно должен стартовать Config-service и Postgres, у остлньых будет 6 попыток на поиск конфигураций
-for service in postgres config-service auth-service user-service api-gateway; do
+services=(
+    auth-service
+    user-service
+    billing-service
+    notification-service
+    order-service
+    api-gateway
+)
+for service in postgres config-service ; do
+    ./deploy-service.sh upgrade $service hw07
+done
+sleep 30
+for service in "${services[@]}"; do
     ./deploy-service.sh install $service hw07
-    sleep 10  # Небольшая пауза между установками
+    sleep 5  # Небольшая пауза между установками
 done
 
 # Альтернативно: быстрое обновление всех компонентов
-# Обязательно должен стартовать Config-service и Postgres, у остлньых будет 6 попыток на поиск конфигураций
-for service in postgres config-service auth-service user-service api-gateway; do
+# Обязательно должен стартовать Config-service и Postgres, у остлньых будет 6 попыток на поиск 
+services=(
+    auth-service
+    user-service
+    billing-service
+    notification-service
+    order-service
+    api-gateway
+)
+for service in postgres config-service ; do
     ./deploy-service.sh upgrade $service hw07
-    sleep 30  # Небольшая пауза между установками
+done
+sleep 30
+for service in "${services[@]}"; do
+    ./deploy-service.sh upgrade $service hw07
+    sleep 5  # Небольшая пауза между установками
 done
 
 

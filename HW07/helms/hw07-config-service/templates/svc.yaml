@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "hw06-config-service.fullname" . }}
+  name: {{ include "hw07-config-service.fullname" . }}
   labels:
-    {{- include "hw06-config-service.labels" . | nindent 4 }}
+    {{- include "hw07-config-service.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -11,4 +11,4 @@ spec:
       targetPort: {{ .Values.service.port }}
       name: http
   selector:
-    {{- include "hw06-config-service.selectorLabels" . | nindent 4 }}
+    {{- include "hw07-config-service.selectorLabels" . | nindent 4 }}

@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "hw06-postgres.name" -}}
+{{- define "hw07-postgres.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "hw06-postgres.fullname" -}}
+{{- define "hw07-postgres.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "hw06-postgres.chart" -}}
+{{- define "hw07-postgres.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "hw06-postgres.labels" -}}
-helm.sh/chart: {{ include "hw06-postgres.chart" . }}
-{{ include "hw06-postgres.selectorLabels" . }}
+{{- define "hw07-postgres.labels" -}}
+helm.sh/chart: {{ include "hw07-postgres.chart" . }}
+{{ include "hw07-postgres.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,7 +45,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "hw06-postgres.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "hw06-postgres.name" . }}
+{{- define "hw07-postgres.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "hw07-postgres.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
