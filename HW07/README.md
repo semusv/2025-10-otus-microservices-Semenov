@@ -100,7 +100,7 @@ done
 sleep 30
 for service in "${services[@]}"; do
     ./deploy-service.sh install $service hw07
-    sleep 5  # Небольшая пауза между установками
+    sleep 15  # Небольшая пауза между установками
 done
 
 # Альтернативно: быстрое обновление всех компонентов
@@ -119,7 +119,7 @@ done
 sleep 30
 for service in "${services[@]}"; do
     ./deploy-service.sh upgrade $service hw07
-    sleep 5  # Небольшая пауза между установками
+    sleep 15  # Небольшая пауза между установками
 done
 
 

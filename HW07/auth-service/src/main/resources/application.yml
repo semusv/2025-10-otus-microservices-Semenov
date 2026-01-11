@@ -26,11 +26,11 @@ spring:
         multiplier: 1.5 # Увеличение интервала между попытками
 
 
-logging:
-  level:
-    org.springframework.boot.context.properties: DEBUG
-    org.springframework.context.annotation: DEBUG
-    org.springframework.boot.autoconfigure: DEBUG
-    # или TRACE для детальной информации
-    org.springframework.boot: TRACE
-    org.springframework.context: TRACE
+#logging:
+#  level:
+#    org.springframework.boot.context.properties: DEBUG
+#    org.springframework.context.annotation: DEBUG
+#    org.springframework.boot.autoconfigure: DEBUG
+#    # или TRACE для детальной информации
+#    org.springframework.boot: TRACE
+#    org.springframework.context: TRACE

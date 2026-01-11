@@ -67,25 +67,31 @@ data:
       tracing:
         sampling:
           probability: 1.0
+
       endpoint:
+        env:
+          show-values: ALWAYS
         configprops:
-          enabled: true
+          access: read-only
+          show-values: ALWAYS
         health:
-          enabled: true
+          access: read-only
           probes:
             enabled: true
           show-details: ALWAYS
           show-components: ALWAYS
         metrics:
-          enabled: true
+          access: read-only
         logfile:
-          enabled: true
+          access: read-only
         prometheus:
-          enabled: true
+          access: read-only
         refresh:
-          enabled: true
+          access: read-only
         gateway:
-          enabled: true
+          access: read-only
+
+
       endpoints:
         web:
           exposure:
@@ -99,9 +105,22 @@ data:
               - prometheus
               - refresh
               - gateway
+              - env
           base-path: /actuator
 
+      # Экспорт метрик в Prometheus
+      prometheus:
+        metrics:
+          export:
+            enabled: true
+            step: 1m
+            descriptions: true
 
+      observations:
+        http:
+          server:
+            requests:
+              name: http.server.requests
 
       # Метрики конфигурация
       metrics:
@@ -117,23 +136,11 @@ data:
           percentiles-histogram:
             http.server.requests: true
 
-        # Экспорт метрик в Prometheus
-        export:
-          prometheus:
-            enabled: true
-            step: 1m
-            descriptions: true
-
         # Тэги для метрик
         tags:
           application: ${spring.application.name}
           region: local
 
-        # Web метрики
-        web:
-          server:
-            request:
-              metric-name: http.server.requests
 
     # SpringDoc (OpenAPI) конфигурация - исправленный путь
     springdoc:
@@ -152,35 +159,34 @@ data:
 
     logging:
       level:
-        com.microservices.auth.filter.MdcFilter: DEBUG
+        #    com.microservices.auth.filter.MdcFilter: DEBUG
 
         # Spring Security логгирование
-        org.springframework.security: TRACE
-        org.springframework.security.web: DEBUG
-        org.springframework.security.config: DEBUG
-        org.springframework.security.web.FilterChainProxy: DEBUG
+        org.springframework.security: INFO
+        org.springframework.security.web: INFO
+        org.springframework.security.config: INFO
+        org.springframework.security.web.FilterChainProxy: INFO
 
-        # HTTP запросы
-        org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
-        org.apache.coyote.http11: DEBUG
-        org.springframework.web: DEBUG
+        #    # HTTP запросы
+        #    org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
+        #    org.apache.coyote.http11: DEBUG
+        #    org.springframework.web: INFO
 
-        # Фильтры
-        com.microservices.user.filter: DEBUG
+        #     Фильтры
+        #    com.microservices.user.filter: DEBUG
 
         # Hibernate/SQL
         org.hibernate.SQL: DEBUG
         org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
-        # Ваши пакеты
+        # Мои пакеты
         com.microservices: DEBUG
 
         liquibase: INFO
 
         org.apache.coyote.http11.Http11InputBuffer: TRACE
-        # или для embedded Tomcat:
-        tomcat.util.http.parser: DEBUG
-
+      #    # или для embedded Tomcat:
+      #    tomcat.util.http.parser: DEBUG
 
   # Конфиг для api-gateway
   api-gateway.yml: |
@@ -343,15 +349,13 @@ data:
       kafka:
         bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
         client-id: "auth-service-producer"
-
         producer:
           key-serializer: org.apache.kafka.common.serialization.StringSerializer
           value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
         properties:
-          security.protocol: SASL_PLAINTEXT
-          sasl.mechanism: PLAIN
-          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";
+          security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
+          sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+          sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
 
     # Настройки JWT
     jwt:
@@ -366,33 +370,6 @@ data:
           user-created: user.created
 
 
-  # Конфиг для user-service
-  user-service.yml: |
-    server:
-      port: 8082
-
-    spring:
-      application:
-        name: user-service
-      datasource:
-        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
-        username: ${DB_USER:postgres}
-        password: ${DB_PASSWORD:postgres}
-        driver-class-name: org.postgresql.Driver
-
-      jpa:
-        hibernate:
-          ddl-auto: validate
-        show-sql: false
-        properties:
-          hibernate:
-            dialect: org.hibernate.dialect.PostgreSQLDialect
-            default_schema: user_service
-
-      liquibase:
-        change-log: classpath:db/changelog/user-service.db.changelog-master.xml
-        default-schema: user_service
-        liquibase-schema: public
 
 
   # Конфиг для billing-service
@@ -427,9 +404,9 @@ data:
         bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
 
         properties:
-          security.protocol: SASL_PLAINTEXT
-          sasl.mechanism: PLAIN
-          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";
+          security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
+          sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+          sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
 
         consumer:
           group-id: billing-service
@@ -449,54 +426,6 @@ data:
       kafka:
         topics:
           user-created: user.created
-
-
-
-  # Конфиг для order-service
-  order-service.yml: |
-    server:
-      port: 8084
-
-    spring:
-      application:
-        name: order-service
-      datasource:
-        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
-        username: ${DB_USER:postgres}
-        password: ${DB_PASSWORD:postgres}
-        driver-class-name: org.postgresql.Driver
-
-      jpa:
-        hibernate:
-          ddl-auto: validate
-        properties:
-          hibernate:
-            dialect: org.hibernate.dialect.PostgreSQLDialect
-            default_schema: order_service
-
-      liquibase:
-        change-log: classpath:db/changelog/order-service.db.changelog-master.xml
-        default-schema: order_service
-        liquibase-schema: public
-
-      kafka:
-        bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
-
-        properties:
-          security.protocol: SASL_PLAINTEXT
-          sasl.mechanism: PLAIN
-          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";
-
-
-        producer:
-          key-serializer: org.apache.kafka.common.serialization.StringSerializer
-          value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
-    app:
-      kafka:
-        topics:
-          order-events: order.events
-
 
 
   # Конфиг для notification-service
@@ -531,9 +460,9 @@ data:
         bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
 
         properties:
-          security.protocol: SASL_PLAINTEXT
-          sasl.mechanism: PLAIN
-          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";
+          security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
+          sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+          sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
 
         consumer:
           group-id: notification-service
@@ -550,3 +479,76 @@ data:
         topics:
           order-events: order.events
 
+
+  # Конфиг для order-service
+  order-service.yml: |
+    server:
+      port: 8084
+
+    spring:
+      application:
+        name: order-service
+      datasource:
+        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+        username: ${DB_USER:postgres}
+        password: ${DB_PASSWORD:postgres}
+        driver-class-name: org.postgresql.Driver
+
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+            default_schema: order_service
+
+      liquibase:
+        change-log: classpath:db/changelog/order-service.db.changelog-master.xml
+        default-schema: order_service
+        liquibase-schema: public
+
+      kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+
+        properties:
+          security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
+          sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+          sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
+
+        producer:
+          key-serializer: org.apache.kafka.common.serialization.StringSerializer
+          value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    app:
+      kafka:
+        topics:
+          order-events: order.events
+
+
+  # Конфиг для user-service
+  user-service.yml: |
+    server:
+      port: 8082
+
+    spring:
+      application:
+        name: user-service
+      datasource:
+        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+        username: ${DB_USER:postgres}
+        password: ${DB_PASSWORD:postgres}
+        driver-class-name: org.postgresql.Driver
+
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        show-sql: false
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+            default_schema: user_service
+
+      liquibase:
+        change-log: classpath:db/changelog/user-service.db.changelog-master.xml
+        default-schema: user_service
+        liquibase-schema: public
