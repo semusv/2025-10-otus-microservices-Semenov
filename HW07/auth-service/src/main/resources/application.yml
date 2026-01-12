@@ -37,7 +37,6 @@ springwolf:
         protocol: kafka
         host: ${spring.kafka.bootstrap-servers}
 
-
 #logging:
 #  level:
 #    org.springframework.boot.context.properties: DEBUG

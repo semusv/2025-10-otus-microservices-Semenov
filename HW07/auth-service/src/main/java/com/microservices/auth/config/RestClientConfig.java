@@ -4,6 +4,7 @@ import com.microservices.auth.config.properties.SecurityProperties;
 import com.microservices.auth.config.properties.ServicesProperties;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,7 @@ import org.springframework.web.client.RestClient;
 @Configuration
 @RequiredArgsConstructor
 @Order(2)
+@Slf4j
 public class RestClientConfig {
 
     private final SecurityProperties securityProperties;
@@ -43,8 +45,11 @@ public class RestClientConfig {
                 .defaultHeader(securityProperties.getServiceSecretHeader(), securityProperties.getSecret())
                 .requestInterceptor((request, body, execution) -> {
                     // Логирование запросов
-                    System.out.println("Sending request to: " + request.getURI());
+                    log.info("Request to : {}", request.getURI());
+                    log.info("Method: {}", request.getMethod());
+                    log.info("Headers: {}", request.getHeaders());
                     System.out.println("Method: " + request.getMethod());
+
                     return execution.execute(request, body);
                 })
                 .defaultStatusHandler(status -> status.value() == 404, (request, response) -> {

@@ -6,7 +6,6 @@ import com.microservices.auth.dto.auth.ProfileCreationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -21,9 +20,6 @@ public class UserServiceClient {
 
     private final EndpointResolver endpointResolver;
 
-    @Value("${spring.application.name}")
-    private String serviceName;
-
     public void createUserProfile(ProfileCreationRequest request) {
         log.info("Calling user-service to create profile for user: {}", request.getUserId());
 
@@ -36,8 +32,6 @@ public class UserServiceClient {
                             securityProperties.getUserIdHeader(),
                             request.getUserId().toString())
                     .header(securityProperties.getRequestIdHeader(), MDC.get(securityProperties.getRequestIdHeader()))
-                    .header(securityProperties.getServiceNameHeader(), serviceName)
-                    .header(securityProperties.getServiceSecretHeader(), securityProperties.getSecret())
                     .body(request)
                     .retrieve()
                     .toBodilessEntity();
