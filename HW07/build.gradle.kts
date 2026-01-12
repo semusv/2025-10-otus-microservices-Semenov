@@ -43,7 +43,6 @@ allprojects {
             dependency("org.projectlombok:lombok:$lombokVersion")
             dependency("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
             dependency("org.springframework.boot:spring-boot-starter-hateoas:$hateoasVersion")
-
         }
     }
 

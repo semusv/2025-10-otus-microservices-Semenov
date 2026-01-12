@@ -1,5 +1,6 @@
 val mapStructVersion: String by project
 val jjwtVersion: String by project
+val springwolfVersion: String by project
 dependencies {
     implementation ("org.springframework.boot:spring-boot-starter-web")
     implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -17,6 +18,8 @@ dependencies {
 
     //swagger
     implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui")
+    implementation("io.github.springwolf:springwolf-kafka:${springwolfVersion}")
+    implementation("io.github.springwolf:springwolf-ui:${springwolfVersion}")
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:${jjwtVersion}")

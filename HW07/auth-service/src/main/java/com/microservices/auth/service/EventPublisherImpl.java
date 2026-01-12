@@ -2,6 +2,9 @@ package com.microservices.auth.service;
 
 import com.microservices.auth.kafka.UserCreatedEvent;
 import com.microservices.auth.model.User;
+import io.github.springwolf.bindings.kafka.annotations.KafkaAsyncOperationBinding;
+import io.github.springwolf.core.asyncapi.annotations.AsyncOperation;
+import io.github.springwolf.core.asyncapi.annotations.AsyncPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +24,13 @@ public class EventPublisherImpl implements EventPublisher {
 
     @Override
     @Async
+    @AsyncPublisher(
+            operation =
+                    @AsyncOperation(
+                            payloadType = UserCreatedEvent.class,
+                            channelName = "${app.kafka.topics.user-created:user.created}",
+                            description = "Publishes user created event"))
+    @KafkaAsyncOperationBinding(clientId = "${sping.kafka.client-id}")
     public void sendUserCreatedEvent(User user) {
         try {
             UserCreatedEvent event = UserCreatedEvent.builder()

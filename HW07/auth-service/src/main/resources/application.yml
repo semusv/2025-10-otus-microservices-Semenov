@@ -25,6 +25,18 @@ spring:
         max-interval: 10000 # 10 секунд
         multiplier: 1.5 # Увеличение интервала между попытками
 
+springwolf:
+  docket:
+    base-package: com.microservices.auth
+    info:
+      title: ${spring.application.name}
+      version : 1.0.0
+      description : AsyncAPI Documentation using Springwolf
+    servers:
+      kafka-server:
+        protocol: kafka
+        host: ${spring.kafka.bootstrap-servers}
+
 
 #logging:
 #  level:
