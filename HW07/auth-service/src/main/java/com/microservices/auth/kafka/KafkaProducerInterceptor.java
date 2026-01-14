@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerInterceptor;
@@ -22,25 +23,23 @@ public class KafkaProducerInterceptor implements ProducerInterceptor<String, Obj
     private String serviceNameHeader;
 
     @Override
-    public ProducerRecord<String, Object> onSend(ProducerRecord<String, Object> record) {
-        record.headers().add(serviceNameHeader, serviceName.getBytes());
-        record.headers().add(requestIdHeader, MDC.get(requestIdHeader).getBytes());
-        record.headers().add("X-Event-Id", UUID.randomUUID().toString().getBytes());
-        record.headers()
-                .add(
-                        "X-Event-Timestamp",
-                        OffsetDateTime.now(ZoneOffset.UTC).toString().getBytes());
-        return record;
+    public ProducerRecord<String, Object> onSend(ProducerRecord<String, Object> recordKafka) {
+        recordKafka.headers().add(serviceNameHeader, serviceName.getBytes());
+        recordKafka.headers().add(requestIdHeader, MDC.get(requestIdHeader).getBytes());
+        recordKafka.headers().add("X-Event-Id", UUID.randomUUID().toString().getBytes());
+        recordKafka.headers().add("X-Event-Timestamp",
+                OffsetDateTime.now(ZoneOffset.UTC).toString().getBytes());
+        return recordKafka;
     }
 
     @Override
     public void onAcknowledgement(RecordMetadata recordMetadata, Exception e) {
-        return;
+        // Пока не требуется
     }
 
     @Override
     public void close() {
-        return;
+        // Пока не требуется
     }
 
     @Override
