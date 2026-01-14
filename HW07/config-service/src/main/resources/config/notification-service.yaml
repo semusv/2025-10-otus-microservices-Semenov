@@ -34,13 +34,13 @@ spring:
 
     consumer:
       group-id: notification-service
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-
-      properties:
-        spring.json.use.type.headers: false
-        spring.json.value.default.type: com.microservices.notification.kafka.OrderEvent
-        spring.json.trusted.packages: "*"
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#
+#      properties:
+#        spring.json.use.type.headers: false
+#        spring.json.value.default.type: com.microservices.notification.kafka.OrderEvent
+#        spring.json.trusted.packages: "*"
 
 app:
   kafka:

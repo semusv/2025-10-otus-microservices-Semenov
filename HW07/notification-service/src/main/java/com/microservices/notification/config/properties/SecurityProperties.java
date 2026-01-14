@@ -1,4 +1,4 @@
-package com.microservices.billing.config;
+package com.microservices.notification.config.properties;
 
 import lombok.Getter;
 import lombok.Setter;

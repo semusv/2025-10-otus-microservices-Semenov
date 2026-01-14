@@ -1,5 +1,6 @@
 package com.microservices.billing.config;
 
+import com.microservices.billing.config.properties.SecurityProperties;
 import com.microservices.billing.filter.MdcFilter;
 import com.microservices.billing.filter.ServiceAuthFilter;
 import com.microservices.billing.filter.UserAuthFilter;

@@ -1,7 +1,7 @@
-package com.microservices.billing.config;
+package com.microservices.notification.config;
 
-import com.microservices.billing.config.properties.SecurityProperties;
-import com.microservices.billing.kafka.KafkaConsumerInterceptor;
+import com.microservices.notification.config.properties.SecurityProperties;
+import com.microservices.notification.kafka.KafkaConsumerInterceptor;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,7 @@ public class KafkaConfig {
         // Разрешаем все пакеты (для разработки, в проде укажите конкретные)
         configProps.put(
                 JsonDeserializer.TRUSTED_PACKAGES,
-                "com.microservices.billing.kafka.dto,java.util,java.lang,com.fasterxml.jackson.databind");
+                "com.microservices.notification.kafka,java.util,java.lang,com.fasterxml.jackson.databind");
         // Отключаем использование информации о типе из заголовков
         configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         // кастомные настройки

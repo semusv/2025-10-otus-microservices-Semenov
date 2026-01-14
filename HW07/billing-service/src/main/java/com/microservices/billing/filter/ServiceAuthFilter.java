@@ -1,6 +1,6 @@
 package com.microservices.billing.filter;
 
-import com.microservices.billing.config.SecurityProperties;
+import com.microservices.billing.config.properties.SecurityProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
