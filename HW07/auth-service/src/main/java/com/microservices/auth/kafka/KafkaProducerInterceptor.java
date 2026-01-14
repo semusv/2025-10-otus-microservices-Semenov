@@ -4,7 +4,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
-
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerInterceptor;
@@ -27,8 +26,11 @@ public class KafkaProducerInterceptor implements ProducerInterceptor<String, Obj
         recordKafka.headers().add(serviceNameHeader, serviceName.getBytes());
         recordKafka.headers().add(requestIdHeader, MDC.get(requestIdHeader).getBytes());
         recordKafka.headers().add("X-Event-Id", UUID.randomUUID().toString().getBytes());
-        recordKafka.headers().add("X-Event-Timestamp",
-                OffsetDateTime.now(ZoneOffset.UTC).toString().getBytes());
+        recordKafka
+                .headers()
+                .add(
+                        "X-Event-Timestamp",
+                        OffsetDateTime.now(ZoneOffset.UTC).toString().getBytes());
         return recordKafka;
     }
 
