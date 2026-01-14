@@ -2,6 +2,6 @@ package com.microservices.order.service;
 
 import com.microservices.order.model.Order;
 
-public interface NotificationService {
+public interface EventPublisher {
     void sendNotification(Order order);
 }

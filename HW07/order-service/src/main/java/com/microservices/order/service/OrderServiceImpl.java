@@ -27,7 +27,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final BillingServiceClient billingClient;
 
-    private final NotificationService notificationService;
+    private final EventPublisher eventPublisher;
 
     @Transactional
     @Override
@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(paid ? Order.Status.PAID : Order.Status.FAILED);
         orderRepository.save(order);
 
-        notificationService.sendNotification(order);
+        eventPublisher.sendNotification(order);
 
         return new OrderResponse(
                 order.getId(), order.getUserId(), order.getPrice(), order.getStatus(), order.getCreatedAt());

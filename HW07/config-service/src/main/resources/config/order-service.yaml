@@ -25,15 +25,25 @@ spring:
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+    client-id: order-service-producer
 
     properties:
       security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
       sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
       sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
 
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+#
+springwolf:
+  docket:
+    base-package: com.microservices.order
+    info:
+      title: ${spring.application.name}
+      version : 1.0.0
+      description : AsyncAPI Documentation using Springwolf
+    servers:
+      kafka-server:
+        protocol: kafka
+        host: ${spring.kafka.bootstrap-servers}
 
 app:
   kafka:
