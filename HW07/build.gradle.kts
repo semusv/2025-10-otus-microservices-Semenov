@@ -2,6 +2,8 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.cloud.tools.jib.gradle.JibExtension
 import fr.brouillard.oss.gradle.plugins.JGitverPluginExtension
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 import org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
 
 plugins {
@@ -13,6 +15,8 @@ plugins {
     id("com.diffplug.spotless") apply false     // Форматирование кода
     id("checkstyle")                            // Проверка стиля кода
     id("com.google.cloud.tools.jib") apply false  // Деплой в Docker
+    id("org.openapi.generator") apply false
+
 }
 
 
@@ -45,8 +49,6 @@ allprojects {
             dependency("org.springframework.boot:spring-boot-starter-hateoas:$hateoasVersion")
         }
     }
-
-
 }
 
 // Настройки для всех подпроектов (микросервисов)
@@ -60,14 +62,80 @@ subprojects {
     apply(plugin = "checkstyle")
     apply(plugin = "com.google.cloud.tools.jib")
 
+    configure<SpotlessExtension> {
+        java {
+            palantirJavaFormat("2.38.0")  // Автоматическое форматирование кода
+            targetExclude("$buildDir/generated/**")
+        }
+    }
+
+
+
+    apply(plugin = "idea")
+    val openApiContracts = mapOf(
+        "auth-service" to listOf("auth-api.yaml"),
+        "order-service" to listOf("auth-service-api.yaml", "order-service-api2.yaml"),
+        "user-service" to listOf("shared-user.yaml"),
+        "billing-service" to listOf("order-client.yaml", "billing-api.yaml")
+    )
+
+    val contractFile = file("../api-contracts/${project.name}-api.yaml")
+    if (contractFile.exists()) {
+        apply(plugin = "org.openapi.generator")
+
+        // ✅ УДАЛИ кастомную задачу, используй openApiGenerate
+        tasks.named("openApiGenerate", GenerateTask::class.java) {
+            generatorName.set("spring")
+            inputSpec.set(contractFile.absolutePath)
+            outputDir.set("$buildDir/generated/sources/openapi")
+            apiPackage.set("ru.vvsem.${project.name}.api")
+            modelPackage.set("ru.vvsem.${project.name}.dto")
+            invokerPackage.set("ru.vvsem.${project.name}.invoker")
+            configOptions.set(
+                mapOf(
+                    "interfaceOnly" to "true",
+                    "delegatePattern" to "true",
+                    "useJakartaEe" to "true",
+                    "dateLibrary" to "java8"
+                )
+            )
+            validateSpec.set(true)
+        }
+
+        the<JavaPluginExtension>().sourceSets {
+            getByName("main") {
+                java.srcDir("$buildDir/generated/sources/openapi/src/main/java")
+            }
+        }
+
+        tasks.named("compileJava") {
+            dependsOn("openApiGenerate") // ✅ имя стандартное
+        }
+
+        tasks.named("spotlessJava") {
+            dependsOn("openApiGenerate")
+        }
+    }
+
     afterEvaluate {
         dependencies {
             add("compileOnly", "org.projectlombok:lombok")
             add("annotationProcessor", "org.projectlombok:lombok")
+
+            // ✅ ДОБАВИТЬ: Jackson для работы с DTO
+            add("implementation", "com.fasterxml.jackson.core:jackson-databind")
+            add("implementation", "com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
+            // ✅ ДОБАВИТЬ: Bean Validation
+            add("implementation", "jakarta.validation:jakarta.validation-api")
+            add("implementation", "org.hibernate.validator:hibernate-validator")
+
+
             add("testCompileOnly", "org.projectlombok:lombok")
             add("testAnnotationProcessor", "org.projectlombok:lombok")
         }
     }
+
 
     configure<JavaPluginExtension> {
         toolchain {
@@ -79,7 +147,7 @@ subprojects {
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
         options.compilerArgs.addAll(listOf("-Xlint:all,-serial,-processing"))
-        dependsOn("spotlessApply") // Форматируем код перед компиляцией
+        dependsOn("spotlessApply")
     }
 
     // Настройка Checkstyle
@@ -93,18 +161,19 @@ subprojects {
         isIgnoreFailures = false
     }
 
-    configure<SpotlessExtension> {
-        java {
-            palantirJavaFormat("2.38.0")  // Автоматическое форматирование кода
+    // Исключаем проверку сгенерированных классов
+    tasks.withType<Checkstyle>().configureEach {
+        classpath = project.files()
+        exclude("**/generated/**")
+        exclude("**/build/**")
+
+        // Явное указание source directories
+        source = fileTree("src/main/java") {
+            include("**/*.java")
+            exclude("**/generated/**")
         }
     }
 
-//    configure<SonarLintExtension> {
-//        nodeJs {
-//            detectNodeJs = false
-//            logNodeJsNotFound = false
-//        }
-//    }
 
     // Настройки тестов
     tasks.withType<Test> {
@@ -132,7 +201,8 @@ subprojects {
         nonQualifierBranches("main,master")
         // Более чистый паттерн для версий
         versionPattern(
-                "\${v}\${<meta.COMMIT_DISTANCE}-SNAPSHOT")
+            "\${v}\${<meta.COMMIT_DISTANCE}-SNAPSHOT"
+        )
         // Не добавляем dirty флаг в версию
         useDirty(false)
     }

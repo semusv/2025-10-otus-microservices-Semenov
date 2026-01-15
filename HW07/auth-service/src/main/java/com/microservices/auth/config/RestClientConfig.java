@@ -36,7 +36,6 @@ public class RestClientConfig {
     public RestClient userServiceRestClient() {
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory();
         requestFactory.setReadTimeout(readTimeout);
-
         return RestClient.builder()
                 .baseUrl(servicesProperties.getServices().get("user-service").getUrl())
                 .requestFactory(requestFactory)
@@ -49,7 +48,6 @@ public class RestClientConfig {
                     log.info("Method: {}", request.getMethod());
                     log.info("Headers: {}", request.getHeaders());
                     System.out.println("Method: " + request.getMethod());
-
                     return execution.execute(request, body);
                 })
                 .defaultStatusHandler(status -> status.value() == 404, (request, response) -> {

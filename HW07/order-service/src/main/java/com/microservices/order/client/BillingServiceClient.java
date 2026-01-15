@@ -31,35 +31,36 @@ public class BillingServiceClient {
     @Value("${spring.application.name}")
     private String serviceName;
 
-    @SuppressWarnings("CheckStyle")
     public void withdrawMoney(BillingOrderRequest billingOrderRequest) {
         log.info("Calling billing-service to withdraw money for user: {}", billingOrderRequest.getUserId());
-
         try {
-            BalanceResponse balanceResponse = billingServiceRestClient
-                    .post()
-                    .uri(endpointResolver.getBillingServiceUrl("order"))
-                    .header(
-                            securityProperties.getUserIdHeader(),
-                            billingOrderRequest.getUserId().toString())
-                    .header(securityProperties.getRequestIdHeader(), MDC.get(securityProperties.getRequestIdHeader()))
-                    .header(securityProperties.getServiceNameHeader(), serviceName)
-                    .header(securityProperties.getServiceSecretHeader(), securityProperties.getSecret())
-                    .body(billingOrderRequest)
-                    .retrieve()
-                    .onStatus(status -> status == HttpStatus.BAD_REQUEST, this::mapBillingError)
-                    .onStatus(status -> status == HttpStatus.NOT_FOUND, this::mapBillingError)
-                    .body(BalanceResponse.class);
-
-            assert balanceResponse != null;
-            log.info(
-                    "Successfully withdrawn money for: {}, balance: {}",
-                    billingOrderRequest.getUserId(),
-                    balanceResponse.getBalance().toString());
+            callWithdrawMoney(billingOrderRequest);
         } catch (Exception e) {
             log.error("Failed to withdrawn money for {}: {}", billingOrderRequest.getUserId(), e.getMessage());
             throw new BillingServiceException("Failed to call billing-service: " + e.getMessage(), e);
         }
+    }
+
+    private void callWithdrawMoney(BillingOrderRequest billingOrderRequest) {
+        BalanceResponse balanceResponse = billingServiceRestClient
+                .post()
+                .uri(endpointResolver.getBillingServiceUrl("order"))
+                .header(
+                        securityProperties.getUserIdHeader(),
+                        billingOrderRequest.getUserId().toString())
+                .header(securityProperties.getRequestIdHeader(), MDC.get(securityProperties.getRequestIdHeader()))
+                .header(securityProperties.getServiceNameHeader(), serviceName)
+                .header(securityProperties.getServiceSecretHeader(), securityProperties.getSecret())
+                .body(billingOrderRequest)
+                .retrieve()
+                .onStatus(status -> status == HttpStatus.BAD_REQUEST, this::mapBillingError)
+                .onStatus(status -> status == HttpStatus.NOT_FOUND, this::mapBillingError)
+                .body(BalanceResponse.class);
+        assert balanceResponse != null;
+        log.info(
+                "Successfully withdrawn money for: {}, balance: {}",
+                billingOrderRequest.getUserId(),
+                balanceResponse.getBalance().toString());
     }
 
     @SuppressWarnings("CheckStyle")

@@ -7,6 +7,7 @@ pluginManagement {
     val sonarlintVersion: String by settings
     val spotlessVersion: String by settings
     val jibVersion: String by settings
+    val openapiGeneratorVersion: String by settings
 
     plugins {
         // Плагин для Spring Boot - упрощает создание Spring приложений
@@ -30,6 +31,7 @@ pluginManagement {
         // Плагин для создания Docker образов приложения без Dockerfile
         id("com.google.cloud.tools.jib") version jibVersion
 
+        id("org.openapi.generator") version openapiGeneratorVersion
     }
 }
 
