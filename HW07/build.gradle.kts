@@ -7,7 +7,8 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
 
 plugins {
-    idea  // Поддержка IntelliJ IDEA
+    idea
+    application
     id("fr.brouillard.oss.gradle.jgitver")      // Автоматическое версионирование через Git
     id("io.spring.dependency-management")       // Управление зависимостями (аналог Maven BOM)
     id("org.springframework.boot") apply false  // Spring Boot, но не применяем к корню
@@ -28,6 +29,30 @@ allprojects {
         mavenLocal()    // Локальный Maven репозиторий (~/.m2)
         mavenCentral()  // Maven Central
     }
+
+
+    apply(plugin = "io.spring.dependency-management")
+
+
+    // Включить кэширование тестов
+    tasks.withType<Test> {
+        outputs.cacheIf { true }
+    }
+
+    // Кэширование компиляции
+    tasks.withType<JavaCompile> {
+        inputs.property("moduleName", project.name)
+        outputs.cacheIf { true }
+    }
+
+    // Настройка инкрементальной компиляции для аннотаций
+    tasks.withType<JavaCompile> {
+        options.isIncremental = true
+    }
+}
+
+// Настройки для всех подпроектов (микросервисов)
+subprojects {
     // Управление зависимостями (аналог Maven Dependency Management)
     val springCloudVersion: String by project
     val logbackEncoder: String by project
@@ -35,7 +60,6 @@ allprojects {
     val springdocVersion: String by project
     val hateoasVersion: String by project
 
-    apply(plugin = "io.spring.dependency-management")
     dependencyManagement {
         dependencies {
             imports {
@@ -49,10 +73,8 @@ allprojects {
             dependency("org.springframework.boot:spring-boot-starter-hateoas:$hateoasVersion")
         }
     }
-}
 
-// Настройки для всех подпроектов (микросервисов)
-subprojects {
+
     // Применяем плагины ко всем подпроектам
     apply(plugin = "org.springframework.boot")
     apply(plugin = "java")
@@ -61,33 +83,26 @@ subprojects {
     apply(plugin = "fr.brouillard.oss.gradle.jgitver")
     apply(plugin = "checkstyle")
     apply(plugin = "com.google.cloud.tools.jib")
+    apply(plugin = "idea")
+
 
     configure<SpotlessExtension> {
         java {
             palantirJavaFormat("2.38.0")  // Автоматическое форматирование кода
-            targetExclude("$buildDir/generated/**")
+            targetExclude("${layout.buildDirectory.get()}/generated/**")
         }
     }
 
-
-
-    apply(plugin = "idea")
-    val openApiContracts = mapOf(
-        "auth-service" to listOf("auth-api.yaml"),
-        "order-service" to listOf("auth-service-api.yaml", "order-service-api2.yaml"),
-        "user-service" to listOf("shared-user.yaml"),
-        "billing-service" to listOf("order-client.yaml", "billing-api.yaml")
-    )
-
     val contractFile = file("../api-contracts/${project.name}-api.yaml")
-    if (contractFile.exists()) {
+    //пока не будем использовать
+    if (contractFile.exists() && 1 == 2) {
         apply(plugin = "org.openapi.generator")
 
         // ✅ УДАЛИ кастомную задачу, используй openApiGenerate
         tasks.named("openApiGenerate", GenerateTask::class.java) {
             generatorName.set("spring")
             inputSpec.set(contractFile.absolutePath)
-            outputDir.set("$buildDir/generated/sources/openapi")
+            outputDir.set("${layout.buildDirectory.get()}/generated/sources/openapi")
             apiPackage.set("ru.vvsem.${project.name}.api")
             modelPackage.set("ru.vvsem.${project.name}.dto")
             invokerPackage.set("ru.vvsem.${project.name}.invoker")
@@ -104,7 +119,7 @@ subprojects {
 
         the<JavaPluginExtension>().sourceSets {
             getByName("main") {
-                java.srcDir("$buildDir/generated/sources/openapi/src/main/java")
+                java.srcDir("${layout.buildDirectory.get()}/generated/sources/openapi/src/main/java")
             }
         }
 

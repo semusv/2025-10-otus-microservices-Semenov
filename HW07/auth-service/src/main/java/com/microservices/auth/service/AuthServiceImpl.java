@@ -24,6 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.vvsem.shared.dto.shared_models.OrderRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -181,7 +182,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void saveRefreshToken(User user, String tokenValue) {
-
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
         refreshToken.setToken(tokenValue);

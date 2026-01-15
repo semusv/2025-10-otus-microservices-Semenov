@@ -32,4 +32,6 @@ dependencies {
 
     compileOnly("org.mapstruct:mapstruct:$mapStructVersion")
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapStructVersion")
+
+    implementation(project(":shared-dto"))
 }

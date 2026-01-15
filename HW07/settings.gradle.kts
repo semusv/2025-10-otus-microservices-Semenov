@@ -1,4 +1,4 @@
-
+println("SETTINGS FILE: This is executed during the initialization phase")
 pluginManagement {
     // Объявление версий плагинов через переменные для централизованного управления
     val springframeworkBootVersion: String by settings
@@ -34,6 +34,7 @@ pluginManagement {
         id("org.openapi.generator") version openapiGeneratorVersion
     }
 }
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "hw07"
 
@@ -44,4 +45,5 @@ include("config-service")
 include("billing-service")
 include("order-service")
 include("notification-service")
+include(":shared-dto")
 
