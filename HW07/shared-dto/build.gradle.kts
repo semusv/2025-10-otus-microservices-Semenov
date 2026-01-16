@@ -2,6 +2,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import java.util.Locale
 
 plugins {
+    idea
     `java-library`
     id("org.openapi.generator") version "7.18.0"
 }
@@ -61,16 +62,17 @@ tasks.register("generateDto") {
 }
 
 // Обновляем sourceSets для ВСЕХ сгенерированных директорий
-sourceSets {
-    main {
-        java {
-            yamlFiles.forEach { specFile ->
-                srcDir(layout.buildDirectory.dir("generated-sources/openapi/${specFile.nameWithoutExtension}/src/main/java"))
+afterEvaluate {
+    sourceSets {
+        main {
+            java {
+                yamlFiles.forEach { specFile ->
+                    srcDir(layout.buildDirectory.dir("generated-sources/openapi/${specFile.nameWithoutExtension}/src/main/java"))
+                }
             }
         }
     }
 }
-
 repositories {
     mavenCentral()
 }

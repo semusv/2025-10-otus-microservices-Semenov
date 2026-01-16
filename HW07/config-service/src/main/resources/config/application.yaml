@@ -145,7 +145,7 @@ springdoc:
     fallbackToSystemLocale: false
     use-code-as-default-message: true
   enable-hateoas: false
-  show-actuator: true
+  show-actuator: false
 
 logging:
   level:

@@ -1,0 +1,272 @@
+openapi: 3.1.0
+info:
+  title: Common DTO Definitions
+  version: 1.0.0
+  description: Единые DTO для всех микросервисов
+servers:
+  - url: http://localhost:8080
+    description: Common API Server
+
+components:
+  schemas:
+    # Auth Service
+    AuthValidateTokenRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          minLength: 1
+      required:
+        - token
+      description: "Запрос на валидацию токена"
+
+    AuthTokenValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        userId:
+          type: string
+        username:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        tokenType:
+          type: string
+        error:
+          type: string
+      description: "Ответ валидации токена"
+
+    AuthRegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        username:
+          type: string
+          maxLength: 50
+          minLength: 3
+        password:
+          type: string
+          maxLength: 2147483647
+          minLength: 8
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+          maxLength: 30
+          minLength: 0
+      required:
+        - email
+        - password
+        - username
+      description: "Запрос регистрации пользователя"
+
+    AuthRefreshTokenRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          minLength: 1
+      required:
+        - refreshToken
+      description: "Запрос обновления токена"
+
+    AuthTokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+        expiresIn:
+          type: integer
+          format: int64
+      description: "Ответ с токенами"
+
+    AuthLoginRequest:
+      type: object
+      properties:
+        login:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+        - login
+        - password
+      description: "Запрос авторизации"
+
+    # Billing Service
+    BillingOrderRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        price:
+          type: number
+          minimum: 0.01
+      description: "Запрос для операций с заказами в биллинге"
+
+    BillingBalanceResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        balance:
+          type: number
+      description: "Ответ с балансом пользователя"
+
+    BillingAmountRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 0.01
+      required:
+        - amount
+      description: "Запрос с суммой операции"
+
+    # Notification Service
+    NotificationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+        status:
+          type: string
+      description: "Ответ с уведомлением"
+
+    # Order Service
+    OrderCreateOrderRequest:
+      type: object
+      properties:
+        price:
+          type: number
+          minimum: 0.01
+      description: "Запрос создания заказа"
+
+    OrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        price:
+          type: number
+        status:
+          type: string
+          enum:
+            - PAID
+            - FAILED
+            - PENDING
+        createdAt:
+          type: string
+          format: date-time
+      description: "Ответ с информацией о заказе"
+
+    # User Service
+    UserUpdateProfileRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+      description: "Запрос обновления профиля"
+
+    UserProfileResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - SUSPENDED
+      description: "Ответ с профилем пользователя"
+
+    UserCreateProfileRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+          minLength: 1
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+          minLength: 1
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+      required:
+        - email
+        - userId
+        - username
+      description: "Запрос создания профиля"
+
+    # Common headers
+    UserIdHeader:
+      type: string
+      format: uuid
+      description: "ID пользователя для передачи в заголовках"

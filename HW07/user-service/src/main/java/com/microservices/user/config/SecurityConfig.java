@@ -75,6 +75,7 @@ public class SecurityConfig {
                 // Публичные эндпоинты
                 .requestMatchers(
                         "/v3/api-docs/**",
+                        "/v3/api-docs.yaml/**",
                         "/actuator/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",

@@ -1,0 +1,300 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8081
+  description: Generated server url
+paths:
+  /internal/validate:
+    post:
+      tags:
+      - internal-controller
+      operationId: validateToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/com.microservices.auth.dto.auth.ValidateTokenRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/com.microservices.auth.dto.auth.TokenValidationResponse"
+  /auth/validate:
+    post:
+      tags:
+      - auth-controller
+      operationId: validateToken_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/com.microservices.auth.dto.auth.ValidateTokenRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: boolean
+  /auth/register:
+    post:
+      tags:
+      - auth-controller
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/com.microservices.auth.dto.auth.RegisterRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+  /auth/refresh:
+    post:
+      tags:
+      - auth-controller
+      operationId: refreshToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/com.microservices.auth.dto.auth.RefreshTokenRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/com.microservices.auth.dto.auth.TokenResponse"
+  /auth/logout:
+    post:
+      tags:
+      - auth-controller
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/com.microservices.auth.dto.auth.RefreshTokenRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /auth/login:
+    post:
+      tags:
+      - auth-controller
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/com.microservices.auth.dto.auth.LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/com.microservices.auth.dto.auth.TokenResponse"
+  /springwolf/ui-config:
+    get:
+      tags:
+      - ui-config-controller
+      operationId: getUiConfig
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/io.github.springwolf.core.controller.UiConfigController.UiConfig"
+  /springwolf/docs:
+    get:
+      tags:
+      - async-api-controller
+      operationId: asyncApiYaml
+      parameters: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/yaml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+  /springwolf/docs/{group}:
+    get:
+      tags:
+      - async-api-controller
+      operationId: asyncApiYaml_1
+      parameters:
+      - name: group
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/yaml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+  /springwolf/docs.yaml:
+    get:
+      tags:
+      - async-api-controller
+      operationId: asyncApiYaml_2
+      parameters: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/yaml:
+              schema:
+                type: string
+  /springwolf/docs.json:
+    get:
+      tags:
+      - async-api-controller
+      operationId: asyncApiJson
+      parameters: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+components:
+  schemas:
+    com.microservices.auth.dto.auth.ValidateTokenRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          minLength: 1
+      required:
+      - token
+      title: ValidateTokenRequest
+    com.microservices.auth.dto.auth.TokenValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        userId:
+          type: string
+        username:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        tokenType:
+          type: string
+        error:
+          type: string
+      title: TokenValidationResponse
+    com.microservices.auth.dto.auth.RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        username:
+          type: string
+          maxLength: 50
+          minLength: 3
+        password:
+          type: string
+          maxLength: 2147483647
+          minLength: 8
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+          maxLength: 30
+          minLength: 0
+      required:
+      - email
+      - password
+      - username
+      title: RegisterRequest
+    com.microservices.auth.dto.auth.RefreshTokenRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          minLength: 1
+      required:
+      - refreshToken
+      title: RefreshTokenRequest
+    com.microservices.auth.dto.auth.TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+        expiresIn:
+          type: integer
+          format: int64
+      title: TokenResponse
+    com.microservices.auth.dto.auth.LoginRequest:
+      type: object
+      properties:
+        login:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - login
+      - password
+      title: LoginRequest
+    io.github.springwolf.core.controller.UiConfigController.UiConfig:
+      type: object
+      properties:
+        initialConfig:
+          $ref: "#/components/schemas/io.github.springwolf.core.controller.UiConfigController.UiConfig.InitialConfig"
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/io.github.springwolf.core.controller.UiConfigController.UiConfig.UiConfigGroup"
+      title: UiConfig
+    io.github.springwolf.core.controller.UiConfigController.UiConfig.InitialConfig:
+      type: object
+      properties:
+        showBindings:
+          type: boolean
+        showHeaders:
+          type: boolean
+      title: InitialConfig
+    io.github.springwolf.core.controller.UiConfigController.UiConfig.UiConfigGroup:
+      type: object
+      properties:
+        name:
+          type: string
+      title: UiConfigGroup

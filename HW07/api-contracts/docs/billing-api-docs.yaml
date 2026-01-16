@@ -1,0 +1,132 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8083
+  description: Generated server url
+paths:
+  /internal/order:
+    post:
+      tags:
+      - internal-controller
+      operationId: withdraw
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillingOrderRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BalanceResponse"
+  /billing/accounts/withdraw:
+    post:
+      tags:
+      - billing-controller
+      operationId: withdraw_1
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AmountRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BalanceResponse"
+  /billing/accounts/deposit:
+    post:
+      tags:
+      - billing-controller
+      operationId: deposit
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AmountRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BalanceResponse"
+  /billing/accounts/balance:
+    get:
+      tags:
+      - billing-controller
+      operationId: balance
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BalanceResponse"
+components:
+  schemas:
+    BillingOrderRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        price:
+          type: number
+          minimum: 0.01
+    BalanceResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        balance:
+          type: number
+    AmountRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 0.01
+      required:
+      - amount
