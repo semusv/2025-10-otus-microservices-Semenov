@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class UserCreatedEvent {
+public class UserCreatedEventMsg {
 
     @Builder.Default
     private String source = "auth-service";

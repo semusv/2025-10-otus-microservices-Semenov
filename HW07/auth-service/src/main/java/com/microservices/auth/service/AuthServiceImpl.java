@@ -2,6 +2,8 @@ package com.microservices.auth.service;
 
 import com.microservices.auth.client.UserServiceClient;
 import com.microservices.auth.comonents.security.JwtTokenProvider;
+import com.microservices.auth.config.properties.SecurityProperties;
+import com.microservices.auth.event.UserCreatedEvent;
 import com.microservices.auth.model.RefreshToken;
 import com.microservices.auth.model.Role;
 import com.microservices.auth.model.User;
@@ -10,6 +12,9 @@ import com.microservices.auth.repository.UserRepository;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,6 +35,11 @@ import ru.vvsem.shared.dto.shared_api_dto.UserCreateProfileRequest;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
+    @Value("${spring.application.name}")
+    private String serviceName;
+
+    private final SecurityProperties securityProperties;
+
     private final UserRepository userRepository;
 
     private final RefreshTokenRepository refreshTokenRepository;
@@ -44,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserServiceClient userServiceClient;
 
-    private final EventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
@@ -58,11 +68,11 @@ public class AuthServiceImpl implements AuthService {
         }
         // 1. Создаем пользователя в auth DB
         User savedUser = createUser(request);
-
         // 2. Создаем профиль в user-service и публикуем событие
         try {
             callCreationUserProfile(request, savedUser);
-            eventPublisher.sendUserCreatedEvent(savedUser);
+            eventPublisher.publishEvent(
+                    new UserCreatedEvent(savedUser, serviceName, MDC.get(securityProperties.getRequestIdHeader())));
         } catch (Exception e) {
             // Если не удалось создать профиль - откатываем регистрацию
             userRepository.delete(savedUser);

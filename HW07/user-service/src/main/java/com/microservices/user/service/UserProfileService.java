@@ -1,7 +1,6 @@
 package com.microservices.user.service;
 
 import java.util.UUID;
-
 import ru.vvsem.shared.dto.shared_api_dto.UserCreateProfileRequest;
 import ru.vvsem.shared.dto.shared_api_dto.UserProfileResponse;
 import ru.vvsem.shared.dto.shared_api_dto.UserUpdateProfileRequest;

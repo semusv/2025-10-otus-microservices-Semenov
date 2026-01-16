@@ -24,6 +24,9 @@ spring:
 
 #logging:
 #  level:
+#    #liquibase
+#    liquibase: DEBUG
+
 #    # Spring Security логгирование
 #    org.springframework.security: TRACE
 #    org.springframework.security.web: DEBUG

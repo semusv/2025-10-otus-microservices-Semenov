@@ -1,7 +1,5 @@
 package com.microservices.user.controller;
 
-import com.microservices.user.dto.UserCreateProfileRequest;
-import com.microservices.user.dto.UserProfileResponse;
 import com.microservices.user.service.UserProfileService;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -15,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.vvsem.shared.dto.shared_api_dto.UserCreateProfileRequest;
+import ru.vvsem.shared.dto.shared_api_dto.UserProfileResponse;
 
 @RestController
 @RequestMapping("/internal")

@@ -1,28 +1,30 @@
 package com.microservices.auth.service;
 
-import static java.lang.Thread.sleep;
 import static org.springframework.kafka.support.mapping.AbstractJavaTypeMapper.DEFAULT_CLASSID_FIELD_NAME;
 
+import com.microservices.auth.config.properties.SecurityProperties;
 import com.microservices.auth.kafka.EventType;
-import com.microservices.auth.kafka.UserCreatedEvent;
+import com.microservices.auth.kafka.UserCreatedEventMsg;
 import com.microservices.auth.model.User;
 import io.github.springwolf.bindings.kafka.annotations.KafkaAsyncOperationBinding;
 import io.github.springwolf.core.asyncapi.annotations.AsyncOperation;
 import io.github.springwolf.core.asyncapi.annotations.AsyncPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class EventPublisherImpl implements EventPublisher {
+public class KafkaEventPublisherImpl implements KafkaEventPublisher {
+
+    private final SecurityProperties securityProperties;
 
     @Value("${app.kafka.topics.user-created:user.created}")
     private String userCreatedTopic;
@@ -30,11 +32,10 @@ public class EventPublisherImpl implements EventPublisher {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Override
-    @Async
     @AsyncPublisher(
             operation =
                     @AsyncOperation(
-                            payloadType = UserCreatedEvent.class,
+                            payloadType = UserCreatedEventMsg.class,
                             channelName = "${app.kafka.topics.user-created:user.created}",
                             description = "Publishes user created event",
                             headers =
@@ -44,7 +45,7 @@ public class EventPublisherImpl implements EventPublisher {
                                                 @AsyncOperation.Headers.Header(
                                                         name = DEFAULT_CLASSID_FIELD_NAME,
                                                         description = "Spring Type Event",
-                                                        value = "com.microservices.auth.kafka.UserCreatedEvent"),
+                                                        value = "com.microservices.auth.kafka.UserCreatedEventMsg"),
                                                 @AsyncOperation.Headers.Header(
                                                         name = "X-Request-Id",
                                                         description = "Request ID for tracing",
@@ -67,24 +68,35 @@ public class EventPublisherImpl implements EventPublisher {
                                                         value = "2024-01-13T22:45:48.399Z")
                                             })))
     @KafkaAsyncOperationBinding(clientId = "${spring.kafka.client-id}")
-    public void sendUserCreatedEvent(User user) {
-        try {
-            UserCreatedEvent event = UserCreatedEvent.builder()
-                    .userId(user.getId())
-                    .email(user.getEmail())
-                    .username(user.getUsername())
-                    .build();
+    public void sendUserCreatedEvent(User user, String requestId) {
+        Message<UserCreatedEventMsg> message = prepareMessage(user, requestId);
+        kafkaTemplate.send(message).whenComplete((stringObjectSendResult, throwable) -> {
+            MDC.clear();
+            MDC.put(securityProperties.getRequestIdHeader(), requestId);
+            if (throwable != null) {
+                log.error(
+                        "Failed to send user created event for {}: {}",
+                        user.getId(),
+                        throwable.getMessage(),
+                        throwable);
+            } else {
+                log.info("Sended user created event for {}", user.getId());
+            }
+            MDC.clear();
+        });
+    }
 
-            Message<UserCreatedEvent> message = MessageBuilder.withPayload(event)
-                    .setHeader(KafkaHeaders.TOPIC, userCreatedTopic)
-                    .setHeader(KafkaHeaders.KEY, user.getId().toString())
-                    .setHeader("X-EventType", EventType.USER_CREATED.toString().getBytes())
-                    .build();
-
-            kafkaTemplate.send(message);
-            log.info("Sended user created event for {}", user.getId());
-        } catch (Exception e) {
-            log.error("Failed to send user created event for {}: {}", user.getId(), e.getMessage(), e);
-        }
+    private Message<UserCreatedEventMsg> prepareMessage(User user, String requestId) {
+        UserCreatedEventMsg event = UserCreatedEventMsg.builder()
+                .userId(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .build();
+        return MessageBuilder.withPayload(event)
+                .setHeader(KafkaHeaders.TOPIC, userCreatedTopic)
+                .setHeader(KafkaHeaders.KEY, user.getId().toString())
+                .setHeader(securityProperties.getRequestIdHeader(), requestId.getBytes())
+                .setHeader("X-EventType", EventType.USER_CREATED.toString().getBytes())
+                .build();
     }
 }

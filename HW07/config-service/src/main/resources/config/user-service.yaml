@@ -23,3 +23,10 @@ spring:
     change-log: classpath:db/changelog/user-service.db.changelog-master.xml
     default-schema: user_service
     liquibase-schema: public
+#    search-path: classpath:db/changelog/
+#    duplicate-file-mode: WARN
+
+#logging:
+#  level:
+#    #liquibase
+#    liquibase: DEBUG

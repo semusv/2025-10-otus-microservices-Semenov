@@ -1,7 +1,5 @@
 package com.microservices.user.controller;
 
-import com.microservices.user.dto.UpdateProfileRequest;
-import com.microservices.user.dto.UserProfileResponse;
 import com.microservices.user.service.UserProfileService;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -18,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.vvsem.shared.dto.shared_api_dto.UserProfileResponse;
+import ru.vvsem.shared.dto.shared_api_dto.UserUpdateProfileRequest;
 
 @RestController
 @RequestMapping("/users")
@@ -59,7 +59,7 @@ public class UserController {
     @PutMapping("/me")
     @ResponseStatus(HttpStatus.OK)
     public UserProfileResponse updateMyProfile(
-            @RequestHeader("X-User-Id") UUID userId, @Valid @RequestBody UpdateProfileRequest request) {
+            @RequestHeader("X-User-Id") UUID userId, @Valid @RequestBody UserUpdateProfileRequest request) {
 
         return userProfileService.updateProfile(userId, request);
     }
