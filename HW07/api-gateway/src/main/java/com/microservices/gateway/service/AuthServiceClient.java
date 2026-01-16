@@ -1,9 +1,11 @@
 package com.microservices.gateway.service;
 
-import com.microservices.gateway.dto.TokenValidationResponse;
 import reactor.core.publisher.Mono;
+import ru.vvsem.shared.dto.shared_api_dto.AuthTokenValidationResponse;
 
 public interface AuthServiceClient {
 
-    Mono<TokenValidationResponse> validateToken(String token);
+    Mono<AuthTokenValidationResponse> validateToken(String token);
+
+    boolean checkValidAccessToken(String tokenType, boolean valid);
 }

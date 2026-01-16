@@ -9,6 +9,12 @@ dependencies {
     //micrometer
     implementation ("io.micrometer:micrometer-registry-prometheus")
     implementation ("io.micrometer:micrometer-core")
+
+    // DTO
+    implementation(project(":shared-dto"))
+
+    //swagger
+    implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui")
 }
 
 

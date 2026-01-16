@@ -1,7 +1,7 @@
 package com.microservices.user.controller;
 
-import com.microservices.user.dto.ProfileResponse;
 import com.microservices.user.dto.UpdateProfileRequest;
+import com.microservices.user.dto.UserProfileResponse;
 import com.microservices.user.service.UserProfileService;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -32,7 +32,7 @@ public class UserController {
      */
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
-    public ProfileResponse getMyProfile(@RequestHeader("X-User-Id") UUID userId) {
+    public UserProfileResponse getMyProfile(@RequestHeader("X-User-Id") UUID userId) {
         return userProfileService.getProfileResponseByUserId(userId);
     }
 
@@ -42,7 +42,7 @@ public class UserController {
      */
     @GetMapping("/{userId}")
     @PreAuthorize("#userId == authentication.principal")
-    public ResponseEntity<ProfileResponse> getProfile(
+    public ResponseEntity<UserProfileResponse> getProfile(
             @PathVariable UUID userId, @RequestHeader("X-User-Id") UUID authenticatedUserId) {
 
         // Двойная проверка: Spring Security + ручная
@@ -58,7 +58,7 @@ public class UserController {
      */
     @PutMapping("/me")
     @ResponseStatus(HttpStatus.OK)
-    public ProfileResponse updateMyProfile(
+    public UserProfileResponse updateMyProfile(
             @RequestHeader("X-User-Id") UUID userId, @Valid @RequestBody UpdateProfileRequest request) {
 
         return userProfileService.updateProfile(userId, request);
@@ -78,7 +78,7 @@ public class UserController {
      */
     @GetMapping("/username/{username}")
     @ResponseStatus(HttpStatus.OK)
-    public ProfileResponse getProfileByUsername(
+    public UserProfileResponse getProfileByUsername(
             @PathVariable String username, @RequestHeader("X-User-Id") UUID userId) {
         return userProfileService.getProfileResponseByUsername(username, userId);
     }

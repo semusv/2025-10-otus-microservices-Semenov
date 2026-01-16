@@ -1,6 +1,5 @@
 package com.microservices.notification.controller;
 
-import com.microservices.notification.dto.NotificationResponse;
 import com.microservices.notification.service.NotificationService;
 import java.util.List;
 import java.util.UUID;
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.vvsem.shared.dto.shared_api_dto.NotificationResponse;
 
 @RestController
 @RequestMapping("notif")

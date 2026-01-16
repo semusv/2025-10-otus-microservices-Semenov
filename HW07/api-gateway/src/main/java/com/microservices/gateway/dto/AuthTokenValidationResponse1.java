@@ -5,7 +5,7 @@ import java.util.Set;
 import lombok.Data;
 
 @Data
-public class TokenValidationResponse {
+public class AuthTokenValidationResponse1 {
     private boolean valid;
 
     @JsonProperty("userId")

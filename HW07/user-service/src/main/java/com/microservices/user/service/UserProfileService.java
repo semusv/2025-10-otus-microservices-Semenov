@@ -1,19 +1,20 @@
 package com.microservices.user.service;
 
-import com.microservices.user.dto.CreateProfileRequest;
-import com.microservices.user.dto.ProfileResponse;
-import com.microservices.user.dto.UpdateProfileRequest;
 import java.util.UUID;
+
+import ru.vvsem.shared.dto.shared_api_dto.UserCreateProfileRequest;
+import ru.vvsem.shared.dto.shared_api_dto.UserProfileResponse;
+import ru.vvsem.shared.dto.shared_api_dto.UserUpdateProfileRequest;
 
 public interface UserProfileService {
 
-    void createProfile(CreateProfileRequest request, UUID userId);
+    void createProfile(UserCreateProfileRequest request, UUID userId);
 
-    ProfileResponse updateProfile(UUID userId, UpdateProfileRequest request);
+    UserProfileResponse updateProfile(UUID userId, UserUpdateProfileRequest request);
 
     void deactivateProfile(UUID userId);
 
-    ProfileResponse getProfileResponseByUserId(UUID userId);
+    UserProfileResponse getProfileResponseByUserId(UUID userId);
 
-    ProfileResponse getProfileResponseByUsername(String username, UUID userId);
+    UserProfileResponse getProfileResponseByUsername(String username, UUID userId);
 }

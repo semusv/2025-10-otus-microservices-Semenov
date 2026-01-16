@@ -58,10 +58,10 @@ public class JwtValidationFilterFactory extends AbstractGatewayFilterFactory<Jwt
     private Mono<Void> validateToken(ServerWebExchange exchange, GatewayFilterChain chain, String token) {
         // Валидируем токен через auth-service
         return authServiceClient.validateToken(token).flatMap(validationResponse -> {
-            if (validationResponse.isValidAccessToken()) {
+            if (authServiceClient.checkValidAccessToken(
+                    validationResponse.getTokenType(), Boolean.TRUE.equals(validationResponse.getValid()))) {
                 // Токен валиден, добавляем заголовки
                 log.debug("Token valid, adding headers for user: {}", validationResponse.getUsername());
-
                 return chain.filter(exchange.mutate()
                         .request(builder -> builder.header(
                                         securityProperties.getUserIdHeader(), validationResponse.getUserId())

@@ -1,10 +1,5 @@
 package com.microservices.auth.controller;
 
-import com.microservices.auth.dto.auth.LoginRequest;
-import com.microservices.auth.dto.auth.RefreshTokenRequest;
-import com.microservices.auth.dto.auth.RegisterRequest;
-import com.microservices.auth.dto.auth.TokenResponse;
-import com.microservices.auth.dto.auth.ValidateTokenRequest;
 import com.microservices.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +9,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.vvsem.shared.dto.shared_api_dto.AuthLoginRequest;
+import ru.vvsem.shared.dto.shared_api_dto.AuthRefreshTokenRequest;
+import ru.vvsem.shared.dto.shared_api_dto.AuthRegisterRequest;
+import ru.vvsem.shared.dto.shared_api_dto.AuthTokenResponse;
+import ru.vvsem.shared.dto.shared_api_dto.AuthValidateTokenRequest;
 
 @RestController
 @RequestMapping("auth")
@@ -24,31 +24,31 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public void register(@Valid @RequestBody RegisterRequest request) {
+    public void register(@Valid @RequestBody AuthRegisterRequest request) {
         authService.register(request);
     }
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public TokenResponse login(@Valid @RequestBody LoginRequest request) {
+    public AuthTokenResponse login(@Valid @RequestBody AuthLoginRequest request) {
         return authService.login(request);
     }
 
     @PostMapping("/refresh")
     @ResponseStatus(HttpStatus.OK)
-    public TokenResponse refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+    public AuthTokenResponse refreshToken(@Valid @RequestBody AuthRefreshTokenRequest request) {
         return authService.refreshToken(request.getRefreshToken());
     }
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(@Valid @RequestBody RefreshTokenRequest request) {
+    public void logout(@Valid @RequestBody AuthRefreshTokenRequest request) {
         authService.logout(request.getRefreshToken());
     }
 
     @PostMapping("/validate")
     @ResponseStatus(HttpStatus.OK)
-    public Boolean validateToken(@Valid @RequestBody ValidateTokenRequest request) {
+    public Boolean validateToken(@Valid @RequestBody AuthValidateTokenRequest request) {
         // Этот endpoint может использоваться Gateway для проверки токенов
         return authService.validateToken(request.getToken());
     }

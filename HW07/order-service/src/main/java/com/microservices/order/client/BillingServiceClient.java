@@ -3,8 +3,6 @@ package com.microservices.order.client;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microservices.order.config.properties.SecurityProperties;
-import com.microservices.order.dto.BalanceResponse;
-import com.microservices.order.dto.BillingOrderRequest;
 import com.microservices.order.resolver.EndpointResolver;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import ru.vvsem.shared.dto.shared_api_dto.BillingBalanceResponse;
+import ru.vvsem.shared.dto.shared_api_dto.BillingOrderRequest;
 
 @Component
 @RequiredArgsConstructor
@@ -42,7 +42,7 @@ public class BillingServiceClient {
     }
 
     private void callWithdrawMoney(BillingOrderRequest billingOrderRequest) {
-        BalanceResponse balanceResponse = billingServiceRestClient
+        BillingBalanceResponse billingBalanceResponse = billingServiceRestClient
                 .post()
                 .uri(endpointResolver.getBillingServiceUrl("order"))
                 .header(
@@ -55,12 +55,12 @@ public class BillingServiceClient {
                 .retrieve()
                 .onStatus(status -> status == HttpStatus.BAD_REQUEST, this::mapBillingError)
                 .onStatus(status -> status == HttpStatus.NOT_FOUND, this::mapBillingError)
-                .body(BalanceResponse.class);
-        assert balanceResponse != null;
+                .body(BillingBalanceResponse.class);
+        assert billingBalanceResponse != null;
         log.info(
                 "Successfully withdrawn money for: {}, balance: {}",
                 billingOrderRequest.getUserId(),
-                balanceResponse.getBalance().toString());
+                billingBalanceResponse.getBalance().toString());
     }
 
     @SuppressWarnings("CheckStyle")

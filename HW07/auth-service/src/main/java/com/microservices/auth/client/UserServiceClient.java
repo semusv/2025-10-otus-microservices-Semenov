@@ -2,13 +2,13 @@ package com.microservices.auth.client;
 
 import com.microservices.auth.comonents.resolver.EndpointResolver;
 import com.microservices.auth.config.properties.SecurityProperties;
-import com.microservices.auth.dto.auth.ProfileCreationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import ru.vvsem.shared.dto.shared_api_dto.UserCreateProfileRequest;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class UserServiceClient {
 
     private final EndpointResolver endpointResolver;
 
-    public void createUserProfile(ProfileCreationRequest request) {
+    public void createUserProfile(UserCreateProfileRequest request) {
         log.info("Calling user-service to create profile for user: {}", request.getUserId());
 
         try {

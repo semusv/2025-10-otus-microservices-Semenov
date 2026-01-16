@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BalanceResponse {
+public class BillingBalanceResponse1 {
     private UUID userId;
 
     private BigDecimal balance;

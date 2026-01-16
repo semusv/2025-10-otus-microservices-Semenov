@@ -2,11 +2,6 @@ package com.microservices.auth.service;
 
 import com.microservices.auth.client.UserServiceClient;
 import com.microservices.auth.comonents.security.JwtTokenProvider;
-import com.microservices.auth.dto.auth.LoginRequest;
-import com.microservices.auth.dto.auth.ProfileCreationRequest;
-import com.microservices.auth.dto.auth.RegisterRequest;
-import com.microservices.auth.dto.auth.TokenResponse;
-import com.microservices.auth.dto.auth.TokenValidationResponse;
 import com.microservices.auth.model.RefreshToken;
 import com.microservices.auth.model.Role;
 import com.microservices.auth.model.User;
@@ -24,6 +19,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.vvsem.shared.dto.shared_api_dto.AuthLoginRequest;
+import ru.vvsem.shared.dto.shared_api_dto.AuthRegisterRequest;
+import ru.vvsem.shared.dto.shared_api_dto.AuthTokenResponse;
+import ru.vvsem.shared.dto.shared_api_dto.AuthTokenValidationResponse;
 import ru.vvsem.shared.dto.shared_api_dto.UserCreateProfileRequest;
 
 @Service
@@ -49,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public void register(RegisterRequest request) {
+    public void register(AuthRegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
@@ -72,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    private User createUser(RegisterRequest request) {
+    private User createUser(AuthRegisterRequest request) {
         User user = User.builder()
                 .email(request.getEmail())
                 .username(request.getUsername())
@@ -84,21 +83,24 @@ public class AuthServiceImpl implements AuthService {
         return savedUser;
     }
 
-    private void callCreationUserProfile(RegisterRequest request, User savedUser) {
+    private void callCreationUserProfile(AuthRegisterRequest request, User savedUser) {
+
+        var profileCreationRequest = new UserCreateProfileRequest()
+                .userId(savedUser.getId())
+                .email(savedUser.getEmail())
+                .username(savedUser.getUsername())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .phone(request.getPhone());
+
         // Вызов user-service для создания профиля через HTTP клиент
-        userServiceClient.createUserProfile(new ProfileCreationRequest(
-                savedUser.getId(),
-                savedUser.getEmail(),
-                savedUser.getUsername(),
-                request.getFirstName(),
-                request.getLastName(),
-                request.getPhone()));
+        userServiceClient.createUserProfile(profileCreationRequest);
         log.info("User profile created for user id: {}", savedUser.getId());
     }
 
     @Override
     @Transactional
-    public TokenResponse login(LoginRequest request) {
+    public AuthTokenResponse login(AuthLoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -113,7 +115,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public TokenResponse refreshToken(String refreshTokenValue) {
+    public AuthTokenResponse refreshToken(String refreshTokenValue) {
         // Проверяем refresh token в БД
         RefreshToken refreshToken = refreshTokenRepository
                 .findByToken(refreshTokenValue)
@@ -147,10 +149,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TokenValidationResponse validateTokenWithData(String token) {
+    public AuthTokenValidationResponse validateTokenWithData(String token) {
         // Делаем валидацию токена и возвращаем данные пользователя
         if (Boolean.TRUE.equals(validateToken(token))) {
-            TokenValidationResponse response = new TokenValidationResponse();
+            AuthTokenValidationResponse response = new AuthTokenValidationResponse();
             response.setUsername(jwtTokenProvider.getUsernameFromToken(token));
             response.setRoles(jwtTokenProvider.getRolesFromToken(token));
             response.setValid(true);
@@ -163,7 +165,7 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    private TokenResponse generateTokens(User user) {
+    private AuthTokenResponse generateTokens(User user) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
 
         String accessToken = jwtTokenProvider.generateAccessToken(userDetails, user.getId());
@@ -176,10 +178,12 @@ public class AuthServiceImpl implements AuthService {
         // Сохраняем refresh token в БД
         saveRefreshToken(user, refreshToken);
 
-        return new TokenResponse(
-                accessToken,
-                refreshToken,
-                jwtTokenProvider.getExpirationDateFromToken(accessToken).getTime());
+        return new AuthTokenResponse()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(
+                        jwtTokenProvider.getExpirationDateFromToken(accessToken).getTime())
+                .tokenType("Bearer");
     }
 
     private void saveRefreshToken(User user, String tokenValue) {

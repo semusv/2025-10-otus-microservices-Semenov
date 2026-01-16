@@ -1,5 +1,6 @@
 package com.microservices.auth.service;
 
+import static java.lang.Thread.sleep;
 import static org.springframework.kafka.support.mapping.AbstractJavaTypeMapper.DEFAULT_CLASSID_FIELD_NAME;
 
 import com.microservices.auth.kafka.EventType;

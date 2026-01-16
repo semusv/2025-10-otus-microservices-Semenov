@@ -1,12 +1,12 @@
 package com.microservices.order.service;
 
-import com.microservices.order.dto.CreateOrderRequest;
-import com.microservices.order.dto.OrderResponse;
 import java.util.List;
 import java.util.UUID;
+import ru.vvsem.shared.dto.shared_api_dto.OrderCreateOrderRequest;
+import ru.vvsem.shared.dto.shared_api_dto.OrderResponse;
 
 public interface OrderService {
-    OrderResponse createOrder(UUID userId, CreateOrderRequest orderRequest);
+    OrderResponse createOrder(UUID userId, OrderCreateOrderRequest orderRequest);
 
     OrderResponse get(UUID orderId, UUID userId);
 

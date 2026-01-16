@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class OrderResponse {
+public class OrderResponse1 {
     private UUID id;
 
     private UUID userId;

@@ -1,6 +1,7 @@
 val mapStructVersion: String by project
 val jjwtVersion: String by project
 val springwolfVersion: String by project
+
 dependencies {
     implementation ("org.springframework.boot:spring-boot-starter-web")
     implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -33,5 +34,6 @@ dependencies {
     compileOnly("org.mapstruct:mapstruct:$mapStructVersion")
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapStructVersion")
 
+    // DTO
     implementation(project(":shared-dto"))
 }

@@ -1,8 +1,5 @@
 package com.microservices.user.service;
 
-import com.microservices.user.dto.CreateProfileRequest;
-import com.microservices.user.dto.ProfileResponse;
-import com.microservices.user.dto.UpdateProfileRequest;
 import com.microservices.user.mapper.ProfileResponseMapper;
 import com.microservices.user.model.UserProfile;
 import com.microservices.user.repository.UserProfileRepository;
@@ -12,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.vvsem.shared.dto.shared_api_dto.UserCreateProfileRequest;
+import ru.vvsem.shared.dto.shared_api_dto.UserProfileResponse;
+import ru.vvsem.shared.dto.shared_api_dto.UserUpdateProfileRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +27,7 @@ public class UserProfileServiceImpl implements UserProfileService {
      */
     @Transactional
     @Override
-    public void createProfile(CreateProfileRequest request, UUID userId) {
+    public void createProfile(UserCreateProfileRequest request, UUID userId) {
         log.info("Creating profile for user: {}", request.getUserId());
         checksBeforeCreation(request, userId);
         UserProfile profile = new UserProfile();
@@ -43,7 +43,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         log.info("Profile created successfully for user: {}", request.getUserId());
     }
 
-    private void checksBeforeCreation(CreateProfileRequest request, UUID userId) {
+    private void checksBeforeCreation(UserCreateProfileRequest request, UUID userId) {
         // Проверяем, что ID пользователя совпадает с ID из запроса
         if (!userId.equals(request.getUserId())) {
             throw new IllegalStateException(" User ID mismatch : " + userId + " != " + request.getUserId() + " ");
@@ -85,7 +85,7 @@ public class UserProfileServiceImpl implements UserProfileService {
      */
     @Transactional
     @Override
-    public ProfileResponse updateProfile(UUID userId, UpdateProfileRequest request) {
+    public UserProfileResponse updateProfile(UUID userId, UserUpdateProfileRequest request) {
         UserProfile existingProfile = getProfileByUserId(userId);
         // Обновляем только разрешенные поля
         if (request.getFirstName() != null) {
@@ -121,13 +121,13 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProfileResponse getProfileResponseByUserId(UUID userId) {
+    public UserProfileResponse getProfileResponseByUserId(UUID userId) {
         return profileResponseMapper.toProfileResponse(getProfileByUserId(userId));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ProfileResponse getProfileResponseByUsername(String username, UUID userId) {
+    public UserProfileResponse getProfileResponseByUsername(String username, UUID userId) {
         UserProfile profile = getProfileByUsername(username);
         if (!profile.getUserId().equals(userId)) {
             throw new AccessDeniedException("You can see only your profile, not for user: " + username);

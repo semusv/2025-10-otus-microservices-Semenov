@@ -2,8 +2,6 @@ package com.microservices.gateway.service;
 
 import com.microservices.gateway.component.resolver.EndpointResolver;
 import com.microservices.gateway.config.properties.SecurityProperties;
-import com.microservices.gateway.dto.TokenValidationResponse;
-import com.microservices.gateway.dto.ValidateTokenRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.context.ContextView;
+import ru.vvsem.shared.dto.shared_api_dto.AuthTokenValidationResponse;
+import ru.vvsem.shared.dto.shared_api_dto.AuthValidateTokenRequest;
 
 @RequiredArgsConstructor
 @Service
@@ -35,16 +35,21 @@ public class AuthServiceClientImpl implements AuthServiceClient {
      */
     @Cacheable(value = "tokenValidation", key = "#token", unless = "#result.valid == false")
     @Override
-    public Mono<TokenValidationResponse> validateToken(String token) {
+    public Mono<AuthTokenValidationResponse> validateToken(String token) {
         log.debug("Validating token via auth-service: {}", maskToken(token));
 
         return Mono.deferContextual(ctx -> buildWebClientRequest(token, ctx))
                 .onErrorResume(this::handleValidationError);
     }
 
-    private Mono<TokenValidationResponse> buildWebClientRequest(String token, ContextView ctx) {
+    @Override
+    public boolean checkValidAccessToken(String tokenType, boolean valid) {
+        return isValidAccessToken(tokenType, valid);
+    }
+
+    private Mono<AuthTokenValidationResponse> buildWebClientRequest(String token, ContextView ctx) {
         String requestId = ctx.getOrDefault(securityProperties.getRequestIdHeader(), "");
-        ValidateTokenRequest request = new ValidateTokenRequest(token);
+        AuthValidateTokenRequest request = new AuthValidateTokenRequest(token);
 
         return webClient
                 .post()
@@ -53,7 +58,7 @@ public class AuthServiceClientImpl implements AuthServiceClient {
                 .bodyValue(request)
                 .headers(headers -> addHeaders(headers, requestId))
                 .retrieve()
-                .bodyToMono(TokenValidationResponse.class)
+                .bodyToMono(AuthTokenValidationResponse.class)
                 .doOnNext(response -> logValidationResult(response, requestId));
     }
 
@@ -63,21 +68,25 @@ public class AuthServiceClientImpl implements AuthServiceClient {
         headers.add(securityProperties.getRequestIdHeader(), requestId);
     }
 
-    private void logValidationResult(TokenValidationResponse response, String requestId) {
-        if (response.isValid()) {
+    private void logValidationResult(AuthTokenValidationResponse response, String requestId) {
+        if (isValidAccessToken(response.getTokenType(), Boolean.TRUE.equals(response.getValid()))) {
             log.debug("Token valid for user: {} [RequestId: {}", response.getUsername(), requestId);
         } else {
             log.warn("Token invalid: {} [RequestId: {}", response.getError(), requestId);
         }
     }
 
-    private Mono<TokenValidationResponse> handleValidationError(Throwable e) {
+    private boolean isValidAccessToken(String tokenType, boolean valid) {
+        return valid && "access".equals(tokenType);
+    }
+
+    private Mono<AuthTokenValidationResponse> handleValidationError(Throwable e) {
         log.error("Error validating token: {}", e.getMessage());
         return Mono.just(createErrorResponse());
     }
 
-    private TokenValidationResponse createErrorResponse() {
-        TokenValidationResponse response = new TokenValidationResponse();
+    private AuthTokenValidationResponse createErrorResponse() {
+        AuthTokenValidationResponse response = new AuthTokenValidationResponse();
         response.setValid(false);
         response.setError("Auth service unavailable");
         return response;

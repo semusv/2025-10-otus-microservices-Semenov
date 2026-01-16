@@ -1,6 +1,5 @@
 package com.microservices.notification.service;
 
-import com.microservices.notification.dto.NotificationResponse;
 import com.microservices.notification.kafka.OrderEvent;
 import com.microservices.notification.mapper.NotificationMapper;
 import com.microservices.notification.model.Notification;
@@ -11,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.vvsem.shared.dto.shared_api_dto.NotificationResponse;
 
 @Service
 @RequiredArgsConstructor

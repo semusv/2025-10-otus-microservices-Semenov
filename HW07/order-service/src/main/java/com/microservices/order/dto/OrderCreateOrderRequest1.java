@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CreateOrderRequest {
+public class OrderCreateOrderRequest1 {
     @DecimalMin(value = "0.01", message = "Price must be positive")
     private BigDecimal price;
 }

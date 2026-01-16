@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ValidateTokenRequest {
+public class AuthValidateTokenRequest1 {
     private String token;
 }

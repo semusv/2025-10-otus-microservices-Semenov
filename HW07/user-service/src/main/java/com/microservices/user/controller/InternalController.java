@@ -1,7 +1,7 @@
 package com.microservices.user.controller;
 
-import com.microservices.user.dto.CreateProfileRequest;
-import com.microservices.user.dto.ProfileResponse;
+import com.microservices.user.dto.UserCreateProfileRequest;
+import com.microservices.user.dto.UserProfileResponse;
 import com.microservices.user.service.UserProfileService;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -32,7 +32,7 @@ public class InternalController {
     @PreAuthorize("hasRole('SERVICE')")
     @ResponseStatus(HttpStatus.CREATED)
     public void createProfileInternal(
-            @RequestHeader("X-User-Id") UUID userId, @Valid @RequestBody CreateProfileRequest request) {
+            @RequestHeader("X-User-Id") UUID userId, @Valid @RequestBody UserCreateProfileRequest request) {
         userProfileService.createProfile(request, userId);
     }
 
@@ -42,7 +42,7 @@ public class InternalController {
     @GetMapping("/me")
     @PreAuthorize("hasRole('SERVICE')")
     @ResponseStatus(HttpStatus.OK)
-    public ProfileResponse getMyProfile(@RequestHeader("X-User-Id") UUID userId) {
+    public UserProfileResponse getMyProfile(@RequestHeader("X-User-Id") UUID userId) {
         return userProfileService.getProfileResponseByUserId(userId);
     }
 }

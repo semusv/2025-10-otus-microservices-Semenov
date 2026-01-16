@@ -1,7 +1,5 @@
 package com.microservices.auth.controller;
 
-import com.microservices.auth.dto.auth.TokenValidationResponse;
-import com.microservices.auth.dto.auth.ValidateTokenRequest;
 import com.microservices.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.vvsem.shared.dto.shared_api_dto.AuthTokenValidationResponse;
+import ru.vvsem.shared.dto.shared_api_dto.AuthValidateTokenRequest;
 
 @RestController
 @RequestMapping("/internal")
@@ -25,7 +25,7 @@ public class InternalController {
      */
     @PostMapping("/validate")
     @ResponseStatus(HttpStatus.OK)
-    public TokenValidationResponse validateToken(@Valid @RequestBody ValidateTokenRequest request) {
+    public AuthTokenValidationResponse validateToken(@Valid @RequestBody AuthValidateTokenRequest request) {
         // Этот endpoint может использоваться Gateway для проверки токенов
         return authService.validateTokenWithData(request.getToken());
     }

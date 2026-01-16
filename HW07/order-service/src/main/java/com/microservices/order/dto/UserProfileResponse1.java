@@ -1,21 +1,14 @@
-package com.microservices.user.dto;
+package com.microservices.order.dto;
 
-import com.microservices.user.model.UserProfile;
 import java.time.LocalDate;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * DTO for {@link UserProfile}
- */
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class ProfileResponse {
+public class UserProfileResponse1 {
+
     private UUID userId;
 
     private String username;
@@ -30,5 +23,5 @@ public class ProfileResponse {
 
     private LocalDate dateOfBirth;
 
-    private UserProfile.ProfileStatus status;
+    private String status;
 }

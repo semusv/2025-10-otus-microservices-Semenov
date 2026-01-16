@@ -1,9 +1,9 @@
 package com.microservices.notification.service;
 
-import com.microservices.notification.dto.NotificationResponse;
 import com.microservices.notification.kafka.OrderEvent;
 import java.util.List;
 import java.util.UUID;
+import ru.vvsem.shared.dto.shared_api_dto.NotificationResponse;
 
 public interface NotificationService {
     void saveFromEvent(OrderEvent event);

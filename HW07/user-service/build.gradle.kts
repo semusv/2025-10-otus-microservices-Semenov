@@ -28,4 +28,7 @@ dependencies {
     compileOnly("org.mapstruct:mapstruct:$mapStructVersion")
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapStructVersion")
     annotationProcessor("org.projectlombok:lombok-mapstruct-binding:$lombokMapstructBindingVersion")
+
+    // DTO
+    implementation(project(":shared-dto"))
 }

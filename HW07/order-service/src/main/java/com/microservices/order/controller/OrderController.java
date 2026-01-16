@@ -1,7 +1,5 @@
 package com.microservices.order.controller;
 
-import com.microservices.order.dto.CreateOrderRequest;
-import com.microservices.order.dto.OrderResponse;
 import com.microservices.order.service.OrderService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -16,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.vvsem.shared.dto.shared_api_dto.OrderCreateOrderRequest;
+import ru.vvsem.shared.dto.shared_api_dto.OrderResponse;
 
 @RestController
 @RequestMapping("orders")
@@ -27,7 +27,7 @@ public class OrderController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public OrderResponse create(
-            @RequestHeader("X-User-Id") UUID userId, @Valid @RequestBody CreateOrderRequest request) {
+            @RequestHeader("X-User-Id") UUID userId, @Valid @RequestBody OrderCreateOrderRequest request) {
         return orderService.createOrder(userId, request);
     }
 

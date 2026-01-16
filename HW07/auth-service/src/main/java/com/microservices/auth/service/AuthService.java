@@ -1,21 +1,21 @@
 package com.microservices.auth.service;
 
-import com.microservices.auth.dto.auth.LoginRequest;
-import com.microservices.auth.dto.auth.RegisterRequest;
-import com.microservices.auth.dto.auth.TokenResponse;
-import com.microservices.auth.dto.auth.TokenValidationResponse;
+import ru.vvsem.shared.dto.shared_api_dto.AuthLoginRequest;
+import ru.vvsem.shared.dto.shared_api_dto.AuthRegisterRequest;
+import ru.vvsem.shared.dto.shared_api_dto.AuthTokenResponse;
+import ru.vvsem.shared.dto.shared_api_dto.AuthTokenValidationResponse;
 
 public interface AuthService {
 
-    void register(RegisterRequest request);
+    void register(AuthRegisterRequest request);
 
-    TokenResponse login(LoginRequest request);
+    AuthTokenResponse login(AuthLoginRequest request);
 
-    TokenResponse refreshToken(String refreshTokenValue);
+    AuthTokenResponse refreshToken(String refreshTokenValue);
 
     void logout(String refreshTokenValue);
 
     Boolean validateToken(String token);
 
-    TokenValidationResponse validateTokenWithData(String token);
+    AuthTokenValidationResponse validateTokenWithData(String token);
 }

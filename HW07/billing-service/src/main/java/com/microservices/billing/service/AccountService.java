@@ -1,7 +1,5 @@
 package com.microservices.billing.service;
 
-import com.microservices.billing.dto.BalanceResponse;
-import com.microservices.billing.dto.BillingOrderRequest;
 import com.microservices.billing.exception.AccountNotFoundException;
 import com.microservices.billing.exception.InsufficientFundsException;
 import com.microservices.billing.kafka.UserCreatedEvent;
@@ -14,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.vvsem.shared.dto.shared_api_dto.BillingBalanceResponse;
+import ru.vvsem.shared.dto.shared_api_dto.BillingOrderRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -39,28 +39,28 @@ public class AccountService {
     }
 
     @Transactional
-    public BalanceResponse deposit(UUID userId, BigDecimal amount) {
+    public BillingBalanceResponse deposit(UUID userId, BigDecimal amount) {
         Account account = getAccount(userId);
         account.setBalance(account.getBalance().add(amount));
         accountRepository.save(account);
-        return new BalanceResponse(userId, account.getBalance());
+        return new BillingBalanceResponse().userId(userId).balance(account.getBalance());
     }
 
     @Transactional
-    public BalanceResponse withdraw(UUID userId, BigDecimal amount) {
+    public BillingBalanceResponse withdraw(UUID userId, BigDecimal amount) {
         Account account = getAccount(userId);
         if (account.getBalance().compareTo(amount) < 0) {
             throw new InsufficientFundsException("Not enough funds");
         }
         account.setBalance(account.getBalance().subtract(amount));
         accountRepository.save(account);
-        return new BalanceResponse(userId, account.getBalance());
+        return new BillingBalanceResponse().userId(userId).balance(account.getBalance());
     }
 
     @Transactional(readOnly = true)
-    public BalanceResponse balance(UUID userId) {
+    public BillingBalanceResponse balance(UUID userId) {
         Account account = getAccount(userId);
-        return new BalanceResponse(userId, account.getBalance());
+        return new BillingBalanceResponse().userId(userId).balance(account.getBalance());
     }
 
     private Account getAccount(UUID userId) {
@@ -69,7 +69,7 @@ public class AccountService {
                 .orElseThrow(() -> new AccountNotFoundException("Account not found for user " + userId));
     }
 
-    public BalanceResponse orderPayment(UUID userId, @Valid BillingOrderRequest orderRequest) {
+    public BillingBalanceResponse orderPayment(UUID userId, @Valid BillingOrderRequest orderRequest) {
         BigDecimal amount = orderRequest.getPrice();
         Account account = getAccount(userId);
         if (account.getBalance().compareTo(amount) < 0) {
@@ -77,6 +77,6 @@ public class AccountService {
         }
         account.setBalance(account.getBalance().subtract(amount));
         accountRepository.save(account);
-        return new BalanceResponse(userId, account.getBalance());
+        return new BillingBalanceResponse().userId(userId).balance(account.getBalance());
     }
 }
