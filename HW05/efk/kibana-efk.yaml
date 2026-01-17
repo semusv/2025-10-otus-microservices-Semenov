@@ -1,0 +1,35 @@
+# kibana-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-kibana-config
+  namespace: efk
+data:
+  kibana.yml: |
+    server.host: "0.0.0.0"
+    server.shutdownTimeout: "5s"
+    
+    # Конфигурация Elasticsearch
+    elasticsearch.hosts: ["https://elasticsearch-master:9200"]
+    
+    # SSL настройки для подключения к Elasticsearch
+    elasticsearch.ssl:
+      certificateAuthorities: ["/usr/share/kibana/config/certs/ca.crt"]
+      verificationMode: "certificate"
+    
+    # Если используете аутентификацию
+    elasticsearch.username: "elastic"
+    elasticsearch.password: "<ваш_пароль>"
+    
+    # Настройки безопасности
+    xpack.security.encryptionKey: "something_at_least_32_characters"
+    xpack.encryptedSavedObjects.encryptionKey: "something_at_least_32_characters"
+    xpack.reporting.encryptionKey: "something_at_least_32_characters"
+    
+    # Отключение некоторых функций для упрощения
+    xpack.security.enabled: false
+    xpack.fleet.enabled: false
+    xpack.maps.enabled: false
+    xpack.graph.enabled: false
+    
+    monitoring.ui.container.elasticsearch.enabled: true

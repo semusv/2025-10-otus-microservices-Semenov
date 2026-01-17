@@ -1,0 +1,206 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.fullname" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "app.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.migration.enabled }}
+      initContainers:
+        - name: wait-for-migrations
+          image: bitnami/kubectl:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=== Начало проверки миграций ==="
+
+              JOB_NAME="{{ include "app.fullname" . }}-migration"
+              NAMESPACE="{{ .Release.Namespace | default "default" }}"
+              TIMEOUT={{ .Values.user_service.initContainer.timeoutSeconds | default 300 }}
+
+              echo "Job: $JOB_NAME, Namespace: $NAMESPACE, Timeout: ${TIMEOUT}s"
+
+              # Функция проверки статуса Job
+              check_job_status() {
+                # Пытаемся получить статус Job
+                if ! kubectl get job "$JOB_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
+                  echo "Job '$JOB_NAME' не найдена"
+                  return 2
+                fi
+
+                # Проверяем completion
+                COMPLETE=$(kubectl get job "$JOB_NAME" -n "$NAMESPACE" -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' 2>/dev/null || echo "")
+
+                if [ "$COMPLETE" = "True" ]; then
+                  SUCCEEDED=$(kubectl get job "$JOB_NAME" -n "$NAMESPACE" -o jsonpath='{.status.succeeded}' 2>/dev/null || echo "0")
+                  echo "✅ Миграция успешно завершена (succeeded: $SUCCEEDED)"
+                  return 0
+                fi
+
+                # Проверяем failure
+                FAILED=$(kubectl get job "$JOB_NAME" -n "$NAMESPACE" -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' 2>/dev/null || echo "")
+
+                if [ "$FAILED" = "True" ]; then
+                  FAILURES=$(kubectl get job "$JOB_NAME" -n "$NAMESPACE" -o jsonpath='{.status.failed}' 2>/dev/null || echo "0")
+                  echo "⚠️ Миграция завершилась с ошибкой (failed: $FAILURES)"
+                  # Решение: продолжить или завершиться с ошибкой
+                  {{- if .Values.migration.continueOnFailure }}
+                  echo "Продолжаем запуск приложения (continueOnFailure=true)"
+                  return 0
+                  {{- else }}
+                  return 1
+                  {{- end }}
+                fi
+
+                # Проверяем активные поды
+                ACTIVE=$(kubectl get job "$JOB_NAME" -n "$NAMESPACE" -o jsonpath='{.status.active}' 2>/dev/null || echo "0")
+
+                if [ "$ACTIVE" -gt 0 ]; then
+                  echo "Миграция выполняется (active pods: $ACTIVE)"
+                  return 2
+                fi
+
+                echo "Job существует, но статус не определен"
+                return 2
+              }
+
+              # Основной цикл ожидания
+              START_TIME=$(date +%s)
+              CHECK_INTERVAL=5
+
+              while true; do
+                CURRENT_TIME=$(date +%s)
+                ELAPSED=$((CURRENT_TIME - START_TIME))
+
+                # Проверяем таймаут
+                if [ $ELAPSED -ge $TIMEOUT ]; then
+                  echo "Таймаут ожидания миграций! ($ELAPSED/$TIMEOUT секунд)"
+
+                  # Пытаемся получить больше информации для отладки
+                  echo "=== Debug информация ==="
+                  kubectl get job "$JOB_NAME" -n "$NAMESPACE" -o wide || true
+                  echo "---"
+                  kubectl get pods -n "$NAMESPACE" -l job-name="$JOB_NAME" || true
+
+                  {{- if .Values.migration.continueOnTimeout }}
+                  echo "Продолжаем запуск приложения (continueOnTimeout=true)"
+                  exit 0
+                  {{- else }}
+                  exit 1
+                  {{- end }}
+                fi
+
+                # Проверяем статус Job
+                check_job_status
+                RESULT=$?
+
+                case $RESULT in
+                  0)
+                    echo "=== Проверка миграций завершена успешно ==="
+                    exit 0
+                    ;;
+                  1)
+                    echo "=== Миграция завершилась с ошибкой ==="
+                    exit 1
+                    ;;
+                  2)
+                    echo "Ожидание... ($ELAPSED/${TIMEOUT}s)"
+                    sleep $CHECK_INTERVAL
+                    ;;
+                esac
+              done
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+      {{- end }}
+
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion | default "latest" }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - -Dspring.config.import=optional:file:/config/application.yml
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "{{ .Values.user_service.profiles }}"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgresql-secret
+                  key: password
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.liveness.delay }}
+            periodSeconds: {{ .Values.liveness.timeout }}
+            failureThreshold: 10
+            httpGet:
+              path: {{ .Values.liveness.path }}
+              port: http
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.readiness.delay }}
+            periodSeconds: {{ .Values.readiness.timeout }}
+            failureThreshold: 10
+            httpGet:
+              path: {{ .Values.readiness.path }}
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.user_service.volumeMounts }}
+          volumeMounts:
+          {{- toYaml . | nindent 12  }}
+          {{- end }}
+      {{- with .Values.user_service.volumes }}
+      volumes:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
