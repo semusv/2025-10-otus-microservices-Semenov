@@ -1,6 +1,6 @@
 package com.microservices.auth.controller;
 
-import com.microservices.auth.service.AuthService;
+import com.microservices.auth.service.TokenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import ru.vvsem.shared.dto.shared_api_dto.AuthValidateTokenRequest;
 @RequiredArgsConstructor
 public class InternalController {
 
-    private final AuthService authService;
+    private final TokenService tokenService;
 
     /**
      * ВНУТРЕННИЙ ЭНДПОИНТ
@@ -27,6 +27,6 @@ public class InternalController {
     @ResponseStatus(HttpStatus.OK)
     public AuthTokenValidationResponse validateToken(@Valid @RequestBody AuthValidateTokenRequest request) {
         // Этот endpoint может использоваться Gateway для проверки токенов
-        return authService.validateTokenWithData(request.getToken());
+        return tokenService.validateTokenWithData(request.getToken());
     }
 }

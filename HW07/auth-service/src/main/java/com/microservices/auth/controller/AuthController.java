@@ -1,6 +1,7 @@
 package com.microservices.auth.controller;
 
 import com.microservices.auth.service.AuthService;
+import com.microservices.auth.service.TokenServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,8 @@ public class AuthController {
 
     private final AuthService authService;
 
+    private final TokenServiceImpl tokenService;
+
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public void register(@Valid @RequestBody AuthRegisterRequest request) {
@@ -37,7 +40,7 @@ public class AuthController {
     @PostMapping("/refresh")
     @ResponseStatus(HttpStatus.OK)
     public AuthTokenResponse refreshToken(@Valid @RequestBody AuthRefreshTokenRequest request) {
-        return authService.refreshToken(request.getRefreshToken());
+        return tokenService.refreshToken(request.getRefreshToken());
     }
 
     @PostMapping("/logout")
@@ -50,6 +53,6 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     public Boolean validateToken(@Valid @RequestBody AuthValidateTokenRequest request) {
         // Этот endpoint может использоваться Gateway для проверки токенов
-        return authService.validateToken(request.getToken());
+        return tokenService.validateToken(request.getToken());
     }
 }

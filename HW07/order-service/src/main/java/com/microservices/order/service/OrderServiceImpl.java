@@ -1,6 +1,7 @@
 package com.microservices.order.service;
 
 import com.microservices.order.client.BillingServiceClient;
+import com.microservices.order.event.OrderCreatedEvent;
 import com.microservices.order.mapper.OrderMapper;
 import com.microservices.order.model.Order;
 import com.microservices.order.repository.OrderRepository;
@@ -9,6 +10,9 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,32 +25,29 @@ import ru.vvsem.shared.dto.shared_api_dto.OrderResponse;
 @Slf4j
 public class OrderServiceImpl implements OrderService {
 
+    @Value("${spring.application.name}")
+    private String serviceName;
+
     private final OrderRepository orderRepository;
 
     private final OrderMapper orderMapper;
 
     private final BillingServiceClient billingClient;
 
-    private final EventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
     public OrderResponse createOrder(UUID userId, OrderCreateOrderRequest orderRequest) {
-        Order order = new Order();
-        order.setUserId(userId);
-        order.setPrice(orderRequest.getPrice());
-        order.setStatus(Order.Status.PENDING);
-        order.setCreatedAt(LocalDateTime.now());
-        orderRepository.save(order);
+        // 1. Создаем заказ в статусе PENDING
+        Order order = createNewOrder(userId, orderRequest);
 
-        boolean paid = withdraw(new BillingOrderRequest()
-                .userId(order.getUserId())
-                .orderId(order.getId())
-                .price(order.getPrice()));
+        // 2. Обновляем статус заказа в зависимости от результата списания средств
+        boolean paid = withdraw(order);
         order.setStatus(paid ? Order.Status.PAID : Order.Status.FAILED);
-        orderRepository.save(order);
+        updateOrderStatus(order.getId(), order.getStatus());
 
-        eventPublisher.sendNotification(order);
+        eventPublisher.publishEvent(new OrderCreatedEvent(order, serviceName, MDC.getCopyOfContextMap()));
 
         return orderMapper.toOrderResponse(order);
     }
@@ -70,7 +71,11 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    private boolean withdraw(BillingOrderRequest request) {
+    private boolean withdraw(Order order) {
+        var request = new BillingOrderRequest()
+                .userId(order.getUserId())
+                .orderId(order.getId())
+                .price(order.getPrice());
         try {
             billingClient.withdrawMoney(request);
             return true;
@@ -78,5 +83,19 @@ public class OrderServiceImpl implements OrderService {
             log.warn("Billing withdraw failed: {}", e.getMessage());
             return false;
         }
+    }
+
+    private void updateOrderStatus(UUID orderId, Order.Status status) {
+        orderRepository.updateStatusById(status, orderId);
+    }
+
+    private Order createNewOrder(UUID userId, OrderCreateOrderRequest orderRequest) {
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setPrice(orderRequest.getPrice());
+        order.setStatus(Order.Status.PENDING);
+        order.setCreatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+        return order;
     }
 }

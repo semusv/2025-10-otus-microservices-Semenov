@@ -44,6 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<NotificationResponse> getNotifications(UUID userId, UUID orderId) {
         return notificationRepository.findByOrderIdAndUserIdOrderByCreatedAtDesc(orderId, userId).stream()

@@ -1,7 +1,7 @@
-package com.microservices.auth.service;
+package com.microservices.auth.publisher;
 
 import com.microservices.auth.model.User;
 
-public interface KafkaEventPublisher {
+public interface AuthEventPublisher {
     void sendUserCreatedEvent(User user, String requestId);
 }

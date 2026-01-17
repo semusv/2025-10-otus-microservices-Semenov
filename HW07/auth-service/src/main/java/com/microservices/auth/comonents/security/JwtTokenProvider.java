@@ -1,14 +1,13 @@
 package com.microservices.auth.comonents.security;
 
+import com.microservices.auth.model.User;
 import java.util.Date;
 import java.util.Set;
-import java.util.UUID;
-import org.springframework.security.core.userdetails.UserDetails;
 
 public interface JwtTokenProvider {
-    String generateAccessToken(UserDetails userDetails, UUID userId);
+    String generateAccessToken(User user);
 
-    String generateRefreshToken(UserDetails userDetails, UUID userId);
+    String generateRefreshToken(User user);
 
     Boolean validateToken(String token);
 

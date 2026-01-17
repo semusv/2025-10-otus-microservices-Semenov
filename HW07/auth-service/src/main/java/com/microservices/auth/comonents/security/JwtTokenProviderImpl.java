@@ -1,5 +1,7 @@
 package com.microservices.auth.comonents.security;
 
+import com.microservices.auth.model.User;
+import com.microservices.auth.service.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -13,8 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     @Value("${jwt.secret}")
@@ -34,30 +37,33 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     @Value("${jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
 
+    private final CustomUserDetailsService userDetailsService;
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
-    public String generateAccessToken(UserDetails userDetails, UUID userId) {
+    public String generateAccessToken(User user) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userId.toString());
+        claims.put("userId", user.getId().toString());
         claims.put(
                 "roles",
                 userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList()));
+                        .toList());
 
         return buildToken(claims, userDetails.getUsername(), accessTokenExpiration);
     }
 
     @Override
-    public String generateRefreshToken(UserDetails userDetails, UUID userId) {
-
+    public String generateRefreshToken(User user) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String uniquePart = UUID.randomUUID().toString().substring(0, 8);
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userId.toString());
+        claims.put("userId", user.getId().toString());
         claims.put("tokenType", "refresh");
         claims.put("jti", uniquePart);
 

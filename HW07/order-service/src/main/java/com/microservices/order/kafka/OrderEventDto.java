@@ -10,14 +10,14 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class OrderEvent {
+public class OrderEventDto {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Builder.Default
     private String eventId = UUID.randomUUID().toString();
 
     @Builder.Default
-    private EventType eventType = EventType.ORDER_CREATED;
+    private OrderEventType orderEventType = OrderEventType.ORDER_CREATED;
 
     @Builder.Default
     private String timestamp = OffsetDateTime.now(ZoneOffset.UTC).format(FORMATTER);

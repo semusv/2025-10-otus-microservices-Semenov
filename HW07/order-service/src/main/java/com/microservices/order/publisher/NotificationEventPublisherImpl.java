@@ -1,11 +1,11 @@
-package com.microservices.auth.service;
+package com.microservices.order.publisher;
 
 import static org.springframework.kafka.support.mapping.AbstractJavaTypeMapper.DEFAULT_CLASSID_FIELD_NAME;
 
-import com.microservices.auth.config.properties.SecurityProperties;
-import com.microservices.auth.kafka.EventType;
-import com.microservices.auth.kafka.UserCreatedEventMsg;
-import com.microservices.auth.model.User;
+import com.microservices.order.config.properties.SecurityProperties;
+import com.microservices.order.kafka.OrderEventDto;
+import com.microservices.order.kafka.OrderEventType;
+import com.microservices.order.model.Order;
 import io.github.springwolf.bindings.kafka.annotations.KafkaAsyncOperationBinding;
 import io.github.springwolf.core.asyncapi.annotations.AsyncOperation;
 import io.github.springwolf.core.asyncapi.annotations.AsyncPublisher;
@@ -18,26 +18,27 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
+import ru.vvsem.shared.dto.shared_api_dto.UserProfileResponse;
 
 @RequiredArgsConstructor
-@Slf4j
 @Service
-public class KafkaEventPublisherImpl implements KafkaEventPublisher {
+@Slf4j
+public class NotificationEventPublisherImpl implements NotificationEventPublisher {
 
     private final SecurityProperties securityProperties;
 
-    @Value("${app.kafka.topics.user-created:user.created}")
-    private String userCreatedTopic;
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Value("${app.kafka.topics.order-events:order.events}")
+    private String orderTopic;
 
     @Override
     @AsyncPublisher(
             operation =
                     @AsyncOperation(
-                            payloadType = UserCreatedEventMsg.class,
-                            channelName = "${app.kafka.topics.user-created:user.created}",
-                            description = "Publishes user created event",
+                            payloadType = OrderEventDto.class,
+                            channelName = "${app.kafka.topics.order-events:order.events}",
+                            description = "Publishes order events",
                             headers =
                                     @AsyncOperation.Headers(
                                             schemaName = "KafkaHeadersDto",
@@ -45,7 +46,7 @@ public class KafkaEventPublisherImpl implements KafkaEventPublisher {
                                                 @AsyncOperation.Headers.Header(
                                                         name = DEFAULT_CLASSID_FIELD_NAME,
                                                         description = "Spring Type Event",
-                                                        value = "com.microservices.auth.kafka.UserCreatedEventMsg"),
+                                                        value = "com.microservices.order.kafka.UserCreatedEvent"),
                                                 @AsyncOperation.Headers.Header(
                                                         name = "X-Request-Id",
                                                         description = "Request ID for tracing",
@@ -53,11 +54,11 @@ public class KafkaEventPublisherImpl implements KafkaEventPublisher {
                                                 @AsyncOperation.Headers.Header(
                                                         name = "X-Service-Name",
                                                         description = "Service name that produced the message",
-                                                        value = "auth-service"),
+                                                        value = "order-service"),
                                                 @AsyncOperation.Headers.Header(
                                                         name = "X-Event-Type",
                                                         description = "Type of the event",
-                                                        value = "USER_CREATED"),
+                                                        value = "ORDER_CREATED"),
                                                 @AsyncOperation.Headers.Header(
                                                         name = "X-Event-Id",
                                                         description = "Unique event ID",
@@ -68,35 +69,50 @@ public class KafkaEventPublisherImpl implements KafkaEventPublisher {
                                                         value = "2024-01-13T22:45:48.399Z")
                                             })))
     @KafkaAsyncOperationBinding(clientId = "${spring.kafka.client-id}")
-    public void sendUserCreatedEvent(User user, String requestId) {
-        Message<UserCreatedEventMsg> message = prepareMessage(user, requestId);
+    public void sendNotification(Order order, UserProfileResponse userProfile, String requestId) {
+        MDC.clear();
+        MDC.put(securityProperties.getRequestIdHeader(), requestId);
+
+        try {
+            OrderEventDto eventDto = OrderEventDto.builder()
+                    .orderId(order.getId())
+                    .userId(order.getUserId())
+                    .email(userProfile.getEmail())
+                    .price(order.getPrice())
+                    .status(order.getStatus().name())
+                    .message(
+                            order.getStatus() == Order.Status.PAID ? "Order paid successfully" : "Order payment failed")
+                    .build();
+
+            sendEvent(eventDto, requestId);
+            log.info("Notification sent for order {}", order.getId());
+        } catch (Exception e) {
+            log.error("Failed to send notification for order {}: {}", order.getId(), e.getMessage(), e);
+        }
+        MDC.clear();
+    }
+
+    private void sendEvent(OrderEventDto eventDto, String requestId) {
+        Message<OrderEventDto> message = MessageBuilder.withPayload(eventDto)
+                .setHeader(KafkaHeaders.TOPIC, orderTopic.getBytes())
+                .setHeader(KafkaHeaders.KEY, eventDto.getUserId().toString())
+                .setHeader(
+                        "X-OrderEventType",
+                        OrderEventType.ORDER_CREATED.toString().getBytes())
+                .build();
         kafkaTemplate.send(message).whenComplete((stringObjectSendResult, throwable) -> {
             MDC.clear();
             MDC.put(securityProperties.getRequestIdHeader(), requestId);
             if (throwable != null) {
                 log.error(
-                        "Failed to send user created event for {}: {}",
-                        user.getId(),
+                        "Failed to send notification for user {}: {}",
+                        eventDto.getUserId(),
                         throwable.getMessage(),
                         throwable);
             } else {
-                log.info("Sended user created event for {}", user.getId());
+                log.info("Sended notification for user {}", eventDto.getUserId());
             }
             MDC.clear();
         });
-    }
-
-    private Message<UserCreatedEventMsg> prepareMessage(User user, String requestId) {
-        UserCreatedEventMsg event = UserCreatedEventMsg.builder()
-                .userId(user.getId())
-                .email(user.getEmail())
-                .username(user.getUsername())
-                .build();
-        return MessageBuilder.withPayload(event)
-                .setHeader(KafkaHeaders.TOPIC, userCreatedTopic)
-                .setHeader(KafkaHeaders.KEY, user.getId().toString())
-                .setHeader(securityProperties.getRequestIdHeader(), requestId.getBytes())
-                .setHeader("X-EventType", EventType.USER_CREATED.toString().getBytes())
-                .build();
     }
 }
