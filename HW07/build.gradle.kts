@@ -364,7 +364,9 @@ tasks {
 
 // Функция для получения всех jibDockerBuild задач из субпроектов
 fun getSubprojectJibTasks(): List<Task> {
-    return subprojects.map { project ->
-        project.tasks.getByName("jibDockerBuild")
+
+    return subprojects
+        .filter { it.name != "shared-dto" }
+        .map { project -> project.tasks.getByName("jibDockerBuild")
     }
 }

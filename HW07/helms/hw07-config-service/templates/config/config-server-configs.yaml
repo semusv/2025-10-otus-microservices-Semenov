@@ -155,7 +155,7 @@ data:
         fallbackToSystemLocale: false
         use-code-as-default-message: true
       enable-hateoas: false
-      show-actuator: true
+      show-actuator: false
 
     logging:
       level:
@@ -333,12 +333,12 @@ data:
         driver-class-name: org.postgresql.Driver
 
       jpa:
+        open-in-view: false
         hibernate:
           ddl-auto: validate
         show-sql: false
         properties:
           hibernate:
-            dialect: org.hibernate.dialect.PostgreSQLDialect
             default_schema: auth
 
       liquibase:
@@ -348,14 +348,26 @@ data:
 
       kafka:
         bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
-        client-id: "auth-service-producer"
-        producer:
-          key-serializer: org.apache.kafka.common.serialization.StringSerializer
-          value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+        client-id: auth-service-producer
+
         properties:
           security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
           sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
           sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
+
+    springwolf:
+      docket:
+        base-package: com.microservices.auth
+        info:
+          title: ${spring.application.name}
+          version : 1.0.0
+          description : AsyncAPI Documentation using Springwolf
+        servers:
+          kafka-server:
+            protocol: kafka
+            host: ${spring.kafka.bootstrap-servers}
+
+
 
     # Настройки JWT
     jwt:
@@ -368,9 +380,6 @@ data:
       kafka:
         topics:
           user-created: user.created
-
-
-
 
   # Конфиг для billing-service
   billing-service.yml: |
@@ -387,12 +396,12 @@ data:
         driver-class-name: org.postgresql.Driver
 
       jpa:
+        open-in-view: false
         hibernate:
           ddl-auto: validate
         show-sql: false
         properties:
           hibernate:
-            dialect: org.hibernate.dialect.PostgreSQLDialect
             default_schema: billing_service
 
       liquibase:
@@ -410,17 +419,24 @@ data:
 
         consumer:
           group-id: billing-service
-          key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-          value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-
-          properties:
-            spring.json.use.type.headers: false
-            spring.json.value.default.type: com.microservices.billing.kafka.UserCreatedEvent
-            spring.json.trusted.packages: "*"
 
         producer:
           key-serializer: org.apache.kafka.common.serialization.StringSerializer
           value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    springwolf:
+      docket:
+        base-package: com.microservices.billing
+        info:
+          title: ${spring.application.name}
+          version : 1.0.0
+          description : AsyncAPI Documentation using Springwolf
+        servers:
+          kafka-server:
+            protocol: kafka
+            host: ${spring.kafka.bootstrap-servers}
+
+
 
     app:
       kafka:
@@ -443,12 +459,12 @@ data:
         driver-class-name: org.postgresql.Driver
 
       jpa:
+        open-in-view: false
         hibernate:
           ddl-auto: validate
         show-sql: false
         properties:
           hibernate:
-            dialect: org.hibernate.dialect.PostgreSQLDialect
             default_schema: notification_service
 
       liquibase:
@@ -466,18 +482,19 @@ data:
 
         consumer:
           group-id: notification-service
-          key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-          value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-
-          properties:
-            spring.json.use.type.headers: false
-            spring.json.value.default.type: com.microservices.notification.kafka.OrderEvent
-            spring.json.trusted.packages: "*"
+    #      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    #      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    #
+    #      properties:
+    #        spring.json.use.type.headers: false
+    #        spring.json.value.default.type: com.microservices.notification.kafka.OrderEvent
+    #        spring.json.trusted.packages: "*"
 
     app:
       kafka:
         topics:
           order-events: order.events
+
 
 
   # Конфиг для order-service
@@ -495,11 +512,12 @@ data:
         driver-class-name: org.postgresql.Driver
 
       jpa:
+        open-in-view: false
         hibernate:
           ddl-auto: validate
+        show-sql: false
         properties:
           hibernate:
-            dialect: org.hibernate.dialect.PostgreSQLDialect
             default_schema: order_service
 
       liquibase:
@@ -509,15 +527,25 @@ data:
 
       kafka:
         bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+        client-id: order-service-producer
 
         properties:
           security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
           sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
           sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
 
-        producer:
-          key-serializer: org.apache.kafka.common.serialization.StringSerializer
-          value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    #
+    springwolf:
+      docket:
+        base-package: com.microservices.order
+        info:
+          title: ${spring.application.name}
+          version : 1.0.0
+          description : AsyncAPI Documentation using Springwolf
+        servers:
+          kafka-server:
+            protocol: kafka
+            host: ${spring.kafka.bootstrap-servers}
 
     app:
       kafka:
@@ -540,15 +568,22 @@ data:
         driver-class-name: org.postgresql.Driver
 
       jpa:
+        open-in-view: false
         hibernate:
           ddl-auto: validate
         show-sql: false
         properties:
           hibernate:
-            dialect: org.hibernate.dialect.PostgreSQLDialect
             default_schema: user_service
 
       liquibase:
         change-log: classpath:db/changelog/user-service.db.changelog-master.xml
         default-schema: user_service
         liquibase-schema: public
+    #    search-path: classpath:db/changelog/
+    #    duplicate-file-mode: WARN
+
+    #logging:
+    #  level:
+    #    #liquibase
+    #    liquibase: DEBUG

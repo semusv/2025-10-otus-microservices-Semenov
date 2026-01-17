@@ -480,7 +480,7 @@
 					"script": {
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {\r",
-							"  pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
 							"var responseData = pm.response.json();\r",
@@ -488,16 +488,12 @@
 							"\r",
 							"var orderAmount = parseFloat(pm.environment.get(\"orderAmount\"));\r",
 							"var balanceBeforeOrder = parseFloat(pm.environment.get(\"balanceBeforeOrder\"));\r",
-							"var balanceAfterOrder = parseFloat(responseData.balance); \r",
+							"var balanceAfterOrder = parseFloat(responseData.balance);\r",
 							"\r",
 							"pm.test(\"Balance should be updated correctly\", function () {\r",
-							"    // Ожидаемый баланс = баланс до заказа - сумма заказа\r",
 							"    var expectedBalance = balanceBeforeOrder - orderAmount;\r",
-							"    \r",
-							"    // Проверяем с округлением (если работаем с деньгами)\r",
 							"    pm.expect(balanceAfterOrder).to.equal(expectedBalance);\r",
-							"});\r",
-							""
+							"});"
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -541,6 +537,69 @@
 						"billing",
 						"accounts",
 						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check order status - PAID",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							" console.log(\"Проверим что статус заказа Failed\");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"var responseData = pm.response.json();\r",
+							"\r",
+							"\r",
+							"pm.test(\"Status should be PAID\", function () {\r",
+							"    pm.expect(responseData.status).to.equal(\"PAID\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/api/v1/orders/{{orderId}}",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{orderId}}"
 					]
 				}
 			},
@@ -824,6 +883,74 @@
 						"billing",
 						"accounts",
 						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check order status - FAILED",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							" console.log(\"Проверим что статус заказа Failed\");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var responseData = pm.response.json();\r",
+							"\r",
+							"\r",
+							"pm.test(\"Status should be FAILED\", function () {\r",
+							"    // Ожидаемый баланс = баланс до заказа - сумма заказа\r",
+							"\r",
+							"    // Проверяем с округлением (если работаем с деньгами)\r",
+							"    pm.expect(responseData.status).to.equal(\"FAILED\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/api/v1/orders/{{orderId}}",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{orderId}}"
 					]
 				}
 			},
