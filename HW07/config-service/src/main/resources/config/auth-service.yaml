@@ -27,7 +27,7 @@ spring:
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
-    client-id: auth-service-producer
+    client-id: ${spring.application.name}
 
     properties:
       security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}

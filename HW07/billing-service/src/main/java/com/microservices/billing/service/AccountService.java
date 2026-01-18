@@ -2,7 +2,7 @@ package com.microservices.billing.service;
 
 import com.microservices.billing.exception.AccountNotFoundException;
 import com.microservices.billing.exception.InsufficientFundsException;
-import com.microservices.billing.kafka.UserCreatedEvent;
+import com.microservices.billing.kafka.UserEventDto;
 import com.microservices.billing.model.Account;
 import com.microservices.billing.repository.AccountRepository;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ public class AccountService {
     private final AccountRepository accountRepository;
 
     @Transactional
-    public void createAccountIfMissing(UserCreatedEvent event) {
+    public void createAccountIfMissing(UserEventDto event) {
         if (event == null || event.getUserId() == null) {
             log.warn("Received empty user created event, skipping");
             return;

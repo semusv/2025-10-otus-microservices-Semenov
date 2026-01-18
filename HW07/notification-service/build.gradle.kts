@@ -1,6 +1,6 @@
 val mapStructVersion: String by project
 val lombokMapstructBindingVersion: String by project
-
+val springwolfVersion: String by project
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -10,9 +10,13 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-config")
     implementation("org.springframework.kafka:spring-kafka")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui")
     implementation("org.liquibase:liquibase-core")
     implementation("org.postgresql:postgresql")
+
+    //swagger
+    implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui")
+    implementation("io.github.springwolf:springwolf-kafka:${springwolfVersion}")
+    implementation("io.github.springwolf:springwolf-ui:${springwolfVersion}")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")

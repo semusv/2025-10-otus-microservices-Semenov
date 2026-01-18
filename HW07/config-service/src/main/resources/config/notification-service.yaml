@@ -25,6 +25,7 @@ spring:
     liquibase-schema: public
 
   kafka:
+    client-id: ${spring.application.name}
     bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
 
     properties:
@@ -34,13 +35,19 @@ spring:
 
     consumer:
       group-id: notification-service
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-#
-#      properties:
-#        spring.json.use.type.headers: false
-#        spring.json.value.default.type: com.microservices.notification.kafka.OrderEvent
-#        spring.json.trusted.packages: "*"
+
+
+springwolf:
+  docket:
+    base-package: com.microservices.notification
+    info:
+      title: ${spring.application.name}
+      version : 1.0.0
+      description : AsyncAPI Documentation using Springwolf
+    servers:
+      kafka-server:
+        protocol: kafka
+        host: ${spring.kafka.bootstrap-servers}
 
 app:
   kafka:

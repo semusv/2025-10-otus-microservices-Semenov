@@ -1,4 +1,4 @@
-package com.microservices.order.kafka;
+package com.microservices.notification.kafka;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;

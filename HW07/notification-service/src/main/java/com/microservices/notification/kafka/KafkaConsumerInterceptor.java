@@ -2,6 +2,7 @@ package com.microservices.notification.kafka;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerInterceptor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -14,10 +15,6 @@ import org.slf4j.MDC;
 public class KafkaConsumerInterceptor implements ConsumerInterceptor<String, Object> {
 
     private String serviceName;
-
-    private String requestIdHeader;
-
-    private String serviceNameHeader;
 
     @Override
     public ConsumerRecords<String, Object> onConsume(ConsumerRecords<String, Object> events) {
@@ -45,9 +42,8 @@ public class KafkaConsumerInterceptor implements ConsumerInterceptor<String, Obj
 
     @Override
     public void onCommit(Map<TopicPartition, OffsetAndMetadata> offsets) {
-        offsets.forEach((tp, offset) -> {
-            log.debug("Committed offset {} for topic {} partition {}", offset.offset(), tp.topic(), tp.partition());
-        });
+        offsets.forEach((tp, offset) ->
+                log.debug("Committed offset {} for topic {} partition {}", offset.offset(), tp.topic(), tp.partition()));
     }
 
     @Override
@@ -60,20 +56,20 @@ public class KafkaConsumerInterceptor implements ConsumerInterceptor<String, Obj
     public void configure(Map<String, ?> configs) {
         // Получаем кастомные свойства из Kafka конфигурации
         this.serviceName = (String) configs.get("custom.service.name");
-        this.requestIdHeader = (String) configs.get("custom.request.id.header");
-        this.serviceNameHeader = (String) configs.get("custom.service.name.header");
     }
 
-    private void setupContextFromHeaders(ConsumerRecord<String, Object> record) {
+    private void setupContextFromHeaders(ConsumerRecord<String, Object> recordEvent) {
         MDC.clear();
-        record.headers().headers(requestIdHeader).forEach(header -> {
-            MDC.put(requestIdHeader, new String(header.value(), StandardCharsets.UTF_8));
-        });
+        recordEvent
+                .headers()
+                .headers(KafkaCustomHeaders.REQUEST_ID)
+                .forEach(header ->
+                        MDC.put(KafkaCustomHeaders.REQUEST_ID, new String(header.value(), StandardCharsets.UTF_8)));
     }
 
-    private void logIncomingMessage(ConsumerRecord<String, Object> record) {
+    private void logIncomingMessage(ConsumerRecord<String, Object> recordEvent) {
         StringBuilder headersInfo = new StringBuilder();
-        record.headers().forEach(header -> {
+        recordEvent.headers().forEach(header -> {
             if (header.value() != null) {
                 headersInfo
                         .append(header.key())
@@ -84,21 +80,29 @@ public class KafkaConsumerInterceptor implements ConsumerInterceptor<String, Obj
         });
         log.debug(
                 "Consuming message: topic={}, partition={}, offset={}, key={}, headers={}",
-                record.topic(),
-                record.partition(),
-                record.offset(),
-                record.key(),
-                headersInfo.toString());
+                recordEvent.topic(),
+                recordEvent.partition(),
+                recordEvent.offset(),
+                recordEvent.key(),
+                headersInfo);
     }
 
-    private void validateMessage(ConsumerRecord<String, Object> record) {
+    private void validateMessage(ConsumerRecord<String, Object> recordEvent) {
         // Проверяем обязательные headers
-        if (!record.headers().headers(requestIdHeader).iterator().hasNext()) {
-            log.warn("Message without {} header: topic={}, key={}", requestIdHeader, record.topic(), record.key());
+        if (!recordEvent.headers().headers(KafkaCustomHeaders.REQUEST_ID).iterator().hasNext()) {
+            log.warn(
+                    "Message without {} header: topic={}, key={}",
+                    KafkaCustomHeaders.REQUEST_ID,
+                    recordEvent.topic(),
+                    recordEvent.key());
         }
 
-        if (!record.headers().headers(serviceNameHeader).iterator().hasNext()) {
-            log.warn("Message without {} header: topic={}, key={}", serviceNameHeader, record.topic(), record.key());
+        if (!recordEvent.headers().headers(KafkaCustomHeaders.SOURCE).iterator().hasNext()) {
+            log.warn(
+                    "Message without {} header: topic={}, key={}",
+                    KafkaCustomHeaders.SOURCE,
+                    recordEvent.topic(),
+                    recordEvent.key());
         }
     }
 }

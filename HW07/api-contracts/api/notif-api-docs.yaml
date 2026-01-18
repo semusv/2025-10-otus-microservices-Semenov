@@ -37,6 +37,7 @@ components:
   schemas:
     NotificationResponse:
       type: object
+      description: Ответ с уведомлением
       properties:
         id:
           type: string
@@ -52,3 +53,4 @@ components:
           type: string
         status:
           type: string
+      title: NotificationResponse

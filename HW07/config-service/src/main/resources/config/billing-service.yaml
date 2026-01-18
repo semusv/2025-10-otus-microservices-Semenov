@@ -25,6 +25,7 @@ spring:
     liquibase-schema: public
 
   kafka:
+    client-id: ${spring.application.name}
     bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
 
     properties:
@@ -34,10 +35,6 @@ spring:
 
     consumer:
       group-id: billing-service
-
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 springwolf:
   docket:

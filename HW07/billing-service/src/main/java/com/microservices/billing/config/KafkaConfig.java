@@ -1,6 +1,5 @@
 package com.microservices.billing.config;
 
-import com.microservices.billing.config.properties.SecurityProperties;
 import com.microservices.billing.kafka.KafkaConsumerInterceptor;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +19,6 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 @Configuration
 @RequiredArgsConstructor
 public class KafkaConfig {
-
-    private final SecurityProperties securityProperties;
 
     @Value("${spring.application.name}")
     private String serviceName;
@@ -45,9 +42,7 @@ public class KafkaConfig {
         configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         // кастомные настройки
         configProps.put(ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG, KafkaConsumerInterceptor.class.getName());
-        configProps.put("custom.service.name.header", securityProperties.getServiceNameHeader());
         configProps.put("custom.service.name", serviceName);
-        configProps.put("custom.request.id.header", securityProperties.getRequestIdHeader());
 
         return new DefaultKafkaConsumerFactory<>(configProps);
     }

@@ -81,6 +81,7 @@ public class SecurityConfig {
                         "/swagger-ui.html",
                         "/swagger-resources/**",
                         "/webjars/**",
+                        "/springwolf/**",
                         "/actuator/**")
                 .permitAll()
                 .anyRequest()

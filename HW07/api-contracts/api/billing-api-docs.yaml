@@ -30,7 +30,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/BalanceResponse"
+                $ref: "#/components/schemas/BillingBalanceResponse"
   /billing/accounts/withdraw:
     post:
       tags:
@@ -47,7 +47,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AmountRequest"
+              $ref: "#/components/schemas/BillingAmountRequest"
         required: true
       responses:
         "200":
@@ -55,7 +55,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/BalanceResponse"
+                $ref: "#/components/schemas/BillingBalanceResponse"
   /billing/accounts/deposit:
     post:
       tags:
@@ -72,7 +72,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AmountRequest"
+              $ref: "#/components/schemas/BillingAmountRequest"
         required: true
       responses:
         "200":
@@ -80,7 +80,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/BalanceResponse"
+                $ref: "#/components/schemas/BillingBalanceResponse"
   /billing/accounts/balance:
     get:
       tags:
@@ -99,11 +99,12 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/BalanceResponse"
+                $ref: "#/components/schemas/BillingBalanceResponse"
 components:
   schemas:
     BillingOrderRequest:
       type: object
+      description: Запрос для операций с заказами в биллинге
       properties:
         userId:
           type: string
@@ -114,19 +115,24 @@ components:
         price:
           type: number
           minimum: 0.01
-    BalanceResponse:
+      title: BillingOrderRequest
+    BillingBalanceResponse:
       type: object
+      description: Ответ с балансом пользователя
       properties:
         userId:
           type: string
           format: uuid
         balance:
           type: number
-    AmountRequest:
+      title: BillingBalanceResponse
+    BillingAmountRequest:
       type: object
+      description: Запрос с суммой операции
       properties:
         amount:
           type: number
           minimum: 0.01
       required:
       - amount
+      title: BillingAmountRequest

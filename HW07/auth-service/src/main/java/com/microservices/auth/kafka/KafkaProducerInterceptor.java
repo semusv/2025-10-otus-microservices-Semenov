@@ -16,16 +16,16 @@ public class KafkaProducerInterceptor implements ProducerInterceptor<String, Obj
 
     private String serviceName;
 
-    private String serviceNameHeader;
-
     @Override
     public ProducerRecord<String, Object> onSend(ProducerRecord<String, Object> recordKafka) {
-        recordKafka.headers().add(serviceNameHeader, serviceName.getBytes());
-        recordKafka.headers().add("X-Event-Id", UUID.randomUUID().toString().getBytes());
+        recordKafka.headers().add(KafkaCustomHeaders.SOURCE, serviceName.getBytes());
+        recordKafka
+                .headers()
+                .add(KafkaCustomHeaders.EVENT_ID, UUID.randomUUID().toString().getBytes());
         recordKafka
                 .headers()
                 .add(
-                        "X-Event-Timestamp",
+                        KafkaCustomHeaders.TIMESTAMP,
                         OffsetDateTime.now(ZoneOffset.UTC).toString().getBytes());
         return recordKafka;
     }
@@ -44,6 +44,5 @@ public class KafkaProducerInterceptor implements ProducerInterceptor<String, Obj
     public void configure(Map<String, ?> configs) {
         // Получаем кастомные свойства из Kafka конфигурации
         this.serviceName = (String) configs.get("custom.service.name");
-        this.serviceNameHeader = (String) configs.get("custom.service.name.header");
     }
 }

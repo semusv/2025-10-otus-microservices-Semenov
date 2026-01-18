@@ -1,6 +1,6 @@
 package com.microservices.notification.service;
 
-import com.microservices.notification.kafka.OrderEvent;
+import com.microservices.notification.kafka.OrderEventDto;
 import com.microservices.notification.mapper.NotificationMapper;
 import com.microservices.notification.model.Notification;
 import com.microservices.notification.repository.NotificationRepository;
@@ -23,14 +23,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Transactional
     @Override
-    public void saveFromEvent(OrderEvent event) {
+    public void saveFromEvent(OrderEventDto event) {
         Notification notification = new Notification();
         notification.setUserId(event.getUserId());
         notification.setEmail(event.getEmail());
-        boolean success = "PAID".equalsIgnoreCase(event.getStatus());
+        boolean success = event.getStatus() == OrderEventDto.Status.PAID;
         notification.setSubject(success ? "Order success" : "Order failed");
         notification.setMessage(event.getMessage());
-        notification.setStatus(event.getStatus());
+        notification.setStatus(Notification.Status.valueOf(event.getStatus().name()));
         notification.setOrderId(event.getOrderId());
         notificationRepository.save(notification);
         log.info("Notification saved for user {}", event.getUserId());

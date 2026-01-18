@@ -146,6 +146,8 @@ springdoc:
     use-code-as-default-message: true
   enable-hateoas: false
   show-actuator: false
+  paths-to-exclude:
+    - /springwolf/**
 
 logging:
   level:

@@ -1,6 +1,5 @@
 package com.microservices.auth.config;
 
-import com.microservices.auth.config.properties.SecurityProperties;
 import com.microservices.auth.kafka.KafkaProducerInterceptor;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +19,6 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 @RequiredArgsConstructor
 public class KafkaConfig {
 
-    private final SecurityProperties securityProperties;
-
     @Value("${spring.application.name}")
     private String serviceName;
 
@@ -31,9 +28,7 @@ public class KafkaConfig {
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         configProps.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, KafkaProducerInterceptor.class.getName());
-        configProps.put("custom.service.name.header", securityProperties.getServiceNameHeader());
         configProps.put("custom.service.name", serviceName);
-        configProps.put("custom.request.id.header", securityProperties.getRequestIdHeader());
 
         return new DefaultKafkaProducerFactory<>(configProps);
     }

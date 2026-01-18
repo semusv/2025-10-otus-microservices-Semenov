@@ -1,0 +1,235 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "notification-service",
+    "version": "1.0.0",
+    "description": "AsyncAPI Documentation using Springwolf",
+    "x-generator": "springwolf"
+  },
+  "defaultContentType": "application/json",
+  "servers": {
+    "kafka-server": {
+      "host": "localhost:9092",
+      "protocol": "kafka"
+    }
+  },
+  "channels": {
+    "order.events": {
+      "address": "order.events",
+      "messages": {
+        "com.microservices.notification.kafka.OrderEventDto": {
+          "$ref": "#/components/messages/com.microservices.notification.kafka.OrderEventDto"
+        },
+        "java.util.MapJava.lang.StringJava.lang.Object": {
+          "$ref": "#/components/messages/java.util.MapJava.lang.StringJava.lang.Object"
+        }
+      },
+      "bindings": {
+        "kafka": {
+          "bindingVersion": "0.5.0"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HeadersNotDocumented": {
+        "title": "HeadersNotDocumented",
+        "type": "object",
+        "properties": {
+
+        },
+        "description": "There can be headers, but they are not explicitly documented.",
+        "examples": [
+          {
+
+          }
+        ]
+      },
+      "SpringKafkaDefaultHeaders-MapStringObject-1657343921": {
+        "title": "SpringKafkaDefaultHeaders-MapStringObject-1657343921",
+        "type": "object",
+        "properties": {
+          "__TypeId__": {
+            "type": "string",
+            "description": "Spring Type Id Header",
+            "enum": [
+              "java.util.MapJava.lang.StringJava.lang.Object"
+            ],
+            "examples": [
+              "java.util.MapJava.lang.StringJava.lang.Object"
+            ]
+          },
+          "kafka_receivedMessageKey": {
+            "type": "string",
+            "examples": [
+              "\"string\""
+            ]
+          },
+          "kafka_receivedTopic": {
+            "type": "string",
+            "examples": [
+              "\"string\""
+            ]
+          }
+        },
+        "examples": [
+          {
+            "__TypeId__": "java.util.MapJava.lang.StringJava.lang.Object",
+            "kafka_receivedMessageKey": "string",
+            "kafka_receivedTopic": "string"
+          }
+        ]
+      },
+      "com.microservices.notification.kafka.OrderEventDto": {
+        "title": "OrderEventDto",
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 0,
+            "maxLength": 255
+          },
+          "message": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "price": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PAID",
+              "FAILED",
+              "PENDING"
+            ]
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "examples": [
+          {
+            "email": "example@example.com",
+            "message": "string",
+            "orderId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "price": 1.1,
+            "status": "PAID",
+            "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          }
+        ],
+        "required": [
+          "email",
+          "orderId",
+          "price",
+          "status",
+          "userId"
+        ]
+      },
+      "java.util.MapJava.lang.StringJava.lang.Object": {
+        "type": "object",
+        "examples": [
+          {
+            "key": {
+
+            }
+          }
+        ],
+        "additionalProperties": {
+          "type": "object"
+        }
+      }
+    },
+    "messages": {
+      "com.microservices.notification.kafka.OrderEventDto": {
+        "headers": {
+          "$ref": "#/components/schemas/HeadersNotDocumented"
+        },
+        "payload": {
+          "schemaFormat": "application/vnd.aai.asyncapi+json;version=3.0.0",
+          "schema": {
+            "$ref": "#/components/schemas/com.microservices.notification.kafka.OrderEventDto"
+          }
+        },
+        "name": "com.microservices.notification.kafka.OrderEventDto",
+        "title": "OrderEventDto",
+        "bindings": {
+          "kafka": {
+            "bindingVersion": "0.5.0"
+          }
+        }
+      },
+      "java.util.MapJava.lang.StringJava.lang.Object": {
+        "headers": {
+          "$ref": "#/components/schemas/SpringKafkaDefaultHeaders-MapStringObject-1657343921"
+        },
+        "payload": {
+          "schemaFormat": "application/vnd.aai.asyncapi+json;version=3.0.0",
+          "schema": {
+            "type": "object",
+            "examples": [
+              {
+                "key": {
+
+                }
+              }
+            ],
+            "additionalProperties": {
+              "type": "object"
+            }
+          }
+        },
+        "name": "java.util.MapJava.lang.StringJava.lang.Object",
+        "title": "MapStringObject",
+        "bindings": {
+          "kafka": {
+            "key": {
+              "type": "string",
+              "examples": [
+                "\"string\""
+              ]
+            },
+            "bindingVersion": "0.5.0"
+          }
+        }
+      }
+    }
+  },
+  "operations": {
+    "order.events_receive_handleUserCreated": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/order.events"
+      },
+      "title": "order.events_receive",
+      "description": "Listener user order created event",
+      "bindings": {
+        "kafka": {
+          "clientId": {
+            "type": "string",
+            "enum": [
+              "notification-service"
+            ]
+          },
+          "bindingVersion": "0.5.0"
+        }
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/order.events/messages/com.microservices.notification.kafka.OrderEventDto"
+        },
+        {
+          "$ref": "#/channels/order.events/messages/java.util.MapJava.lang.StringJava.lang.Object"
+        }
+      ]
+    }
+  }
+}

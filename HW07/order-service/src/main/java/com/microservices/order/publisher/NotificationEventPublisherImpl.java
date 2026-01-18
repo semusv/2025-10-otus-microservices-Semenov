@@ -3,8 +3,8 @@ package com.microservices.order.publisher;
 import static org.springframework.kafka.support.mapping.AbstractJavaTypeMapper.DEFAULT_CLASSID_FIELD_NAME;
 
 import com.microservices.order.config.properties.SecurityProperties;
+import com.microservices.order.kafka.KafkaCustomHeaders;
 import com.microservices.order.kafka.OrderEventDto;
-import com.microservices.order.kafka.OrderEventType;
 import com.microservices.order.model.Order;
 import io.github.springwolf.bindings.kafka.annotations.KafkaAsyncOperationBinding;
 import io.github.springwolf.core.asyncapi.annotations.AsyncOperation;
@@ -46,27 +46,27 @@ public class NotificationEventPublisherImpl implements NotificationEventPublishe
                                                 @AsyncOperation.Headers.Header(
                                                         name = DEFAULT_CLASSID_FIELD_NAME,
                                                         description = "Spring Type Event",
-                                                        value = "com.microservices.order.kafka.UserCreatedEvent"),
+                                                        value = "com.microservices.auth.kafka.UserEventDto"),
                                                 @AsyncOperation.Headers.Header(
-                                                        name = "X-Request-Id",
-                                                        description = "Request ID for tracing",
-                                                        value = "123e4567-e89b-12d3-a456-426614174000"),
-                                                @AsyncOperation.Headers.Header(
-                                                        name = "X-Service-Name",
+                                                        name = "X-Source",
                                                         description = "Service name that produced the message",
-                                                        value = "order-service"),
-                                                @AsyncOperation.Headers.Header(
-                                                        name = "X-Event-Type",
-                                                        description = "Type of the event",
-                                                        value = "ORDER_CREATED"),
+                                                        value = "auth-service"),
                                                 @AsyncOperation.Headers.Header(
                                                         name = "X-Event-Id",
                                                         description = "Unique event ID",
                                                         value = "550e8400-e29b-41d4-a716-446655440000"),
                                                 @AsyncOperation.Headers.Header(
-                                                        name = "X-Event-Timestamp",
+                                                        name = "X-Event-Type",
+                                                        description = "Type of the event",
+                                                        value = "USER_CREATED"),
+                                                @AsyncOperation.Headers.Header(
+                                                        name = "X-Timestamp",
                                                         description = "Event timestamp in ISO format",
-                                                        value = "2024-01-13T22:45:48.399Z")
+                                                        value = "2024-01-13T22:45:48.399Z"),
+                                                @AsyncOperation.Headers.Header(
+                                                        name = "X-Request-Id",
+                                                        description = "Request ID for tracing",
+                                                        value = "123e4567-e89b-12d3-a456-426614174000")
                                             })))
     @KafkaAsyncOperationBinding(clientId = "${spring.kafka.client-id}")
     public void sendNotification(Order order, UserProfileResponse userProfile, String requestId) {
@@ -79,7 +79,7 @@ public class NotificationEventPublisherImpl implements NotificationEventPublishe
                     .userId(order.getUserId())
                     .email(userProfile.getEmail())
                     .price(order.getPrice())
-                    .status(order.getStatus().name())
+                    .status(OrderEventDto.Status.valueOf(order.getStatus().name()))
                     .message(
                             order.getStatus() == Order.Status.PAID ? "Order paid successfully" : "Order payment failed")
                     .build();
@@ -97,8 +97,9 @@ public class NotificationEventPublisherImpl implements NotificationEventPublishe
                 .setHeader(KafkaHeaders.TOPIC, orderTopic.getBytes())
                 .setHeader(KafkaHeaders.KEY, eventDto.getUserId().toString())
                 .setHeader(
-                        "X-OrderEventType",
-                        OrderEventType.ORDER_CREATED.toString().getBytes())
+                        KafkaCustomHeaders.EVENT_TYPE,
+                        KafkaCustomHeaders.EventType.ORDER_CREATED.toString().getBytes())
+                .setHeader(KafkaCustomHeaders.REQUEST_ID, requestId.getBytes())
                 .build();
         kafkaTemplate.send(message).whenComplete((stringObjectSendResult, throwable) -> {
             MDC.clear();
