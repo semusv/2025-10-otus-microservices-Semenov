@@ -2,7 +2,6 @@ package com.microservices.notification.kafka;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerInterceptor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -42,8 +41,8 @@ public class KafkaConsumerInterceptor implements ConsumerInterceptor<String, Obj
 
     @Override
     public void onCommit(Map<TopicPartition, OffsetAndMetadata> offsets) {
-        offsets.forEach((tp, offset) ->
-                log.debug("Committed offset {} for topic {} partition {}", offset.offset(), tp.topic(), tp.partition()));
+        offsets.forEach((tp, offset) -> log.debug(
+                "Committed offset {} for topic {} partition {}", offset.offset(), tp.topic(), tp.partition()));
     }
 
     @Override
@@ -89,7 +88,11 @@ public class KafkaConsumerInterceptor implements ConsumerInterceptor<String, Obj
 
     private void validateMessage(ConsumerRecord<String, Object> recordEvent) {
         // Проверяем обязательные headers
-        if (!recordEvent.headers().headers(KafkaCustomHeaders.REQUEST_ID).iterator().hasNext()) {
+        if (!recordEvent
+                .headers()
+                .headers(KafkaCustomHeaders.REQUEST_ID)
+                .iterator()
+                .hasNext()) {
             log.warn(
                     "Message without {} header: topic={}, key={}",
                     KafkaCustomHeaders.REQUEST_ID,

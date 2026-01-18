@@ -201,16 +201,6 @@ subprojects {
     }
 
     // Автоматическое версионирование
-    //автоматически генерирует версии на основе Git тегов и коммитов.
-//    extensions.configure<JGitverPluginExtension> {
-//        strategy("PATTERN")
-//        nonQualifierBranches("main,master")
-//        tagVersionPattern("\${v}\${<meta.DIRTY_TEXT}")
-//        versionPattern(
-//            "\${v}\${<meta.COMMIT_DISTANCE}\${<meta.GIT_SHA1_8}" +
-//                    "\${<meta.QUALIFIED_BRANCH_NAME}\${<meta.DIRTY_TEXT}-SNAPSHOT"
-//        )
-//    }
     extensions.configure<JGitverPluginExtension> {
         strategy("PATTERN")
         nonQualifierBranches("main,master")
@@ -227,7 +217,8 @@ subprojects {
             image = "bellsoft/liberica-openjdk-alpine-musl:21.0.1"
         }
         to {
-            image = "vvsem/${rootProject.name}-${project.name}"
+//            image = "vvsem/${rootProject.name}-${project.name}"
+            image = "docker.io/vvsem/${rootProject.name}-${project.name}"
             tags = setOf("latest", project.version.toString())
         }
 
@@ -257,6 +248,8 @@ subprojects {
             )
         }
     }
+
+
 }
 
 
@@ -355,18 +348,25 @@ tasks {
     }
 
     // Вспомогательная задача для сборки всех образов
-    register("buildAllImages") {
+    register("buildAllImagesLocal") {
         group = "docker"
         description = "Build Docker images for all services"
         dependsOn(getSubprojectJibTasks())
     }
+    // Вспомогательная задача для сборки всех образов
+    register("buildAllImagesRegistry") {
+        group = "docker"
+        description = "Build Docker images for all services"
+        dependsOn(getSubprojectJibTasks("jibBuild"))
+    }
 }
 
 // Функция для получения всех jibDockerBuild задач из субпроектов
-fun getSubprojectJibTasks(): List<Task> {
+fun getSubprojectJibTasks(taskName: String = "jibDockerBuild"): List<Task> {
 
     return subprojects
         .filter { it.name != "shared-dto" }
-        .map { project -> project.tasks.getByName("jibDockerBuild")
-    }
+        .map { project ->
+            project.tasks.getByName(taskName)
+        }
 }

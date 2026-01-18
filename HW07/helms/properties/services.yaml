@@ -1,5 +1,5 @@
 image:
-  tag: "0.0.0-72-SNAPSHOT"
+  tag: "0.0.0-74-SNAPSHOT"
 
 app:
   services:

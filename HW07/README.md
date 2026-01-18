@@ -95,7 +95,7 @@ services=(
     api-gateway
 )
 for service in postgres config-service ; do
-    ./deploy-service.sh upgrade $service hw07
+    ./deploy-service.sh install $service hw07
 done
 sleep 30
 for service in "${services[@]}"; do
