@@ -1,0 +1,32 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: user_service
+
+  liquibase:
+    change-log: classpath:db/changelog/user-service.db.changelog-master.xml
+    default-schema: user_service
+    liquibase-schema: public
+#    search-path: classpath:db/changelog/
+#    duplicate-file-mode: WARN
+
+#logging:
+#  level:
+#    #liquibase
+#    liquibase: DEBUG

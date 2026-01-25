@@ -2,12 +2,27 @@
 <project version="4">
   <component name="AmplicodePersistenceUnitSettings">
     <persistence-units>
-      <persistence-unit moduleName="hw06.auth-service.main" name="Default">
+      <persistence-unit moduleName="hw08.auth-service.main" name="Default">
         <packages>
           <package value="com.microservices.auth" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="hw06.user-service.main" name="Default">
+      <persistence-unit moduleName="hw08.billing-service.main" name="Default">
+        <packages>
+          <package value="com.microservices.billing" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="hw08.notification-service.main" name="Default">
+        <packages>
+          <package value="com.microservices.notification" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="hw08.order-service.main" name="Default">
+        <packages>
+          <package value="com.microservices.order" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="hw08.user-service.main" name="Default">
         <packages>
           <package value="com.microservices.user" />
         </packages>

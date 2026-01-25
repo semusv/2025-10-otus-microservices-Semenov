@@ -1,0 +1,110 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8084
+  description: Generated server url
+paths:
+  /orders:
+    get:
+      tags:
+      - order-controller
+      operationId: getOrders
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderResponse"
+    post:
+      tags:
+      - order-controller
+      operationId: create
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCreateOrderRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /orders/{orderId}:
+    get:
+      tags:
+      - order-controller
+      operationId: getOrder
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+components:
+  schemas:
+    OrderCreateOrderRequest:
+      type: object
+      description: Запрос создания заказа
+      properties:
+        price:
+          type: number
+          minimum: 0.01
+      title: OrderCreateOrderRequest
+    OrderResponse:
+      type: object
+      description: Ответ с информацией о заказе
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        price:
+          type: number
+        status:
+          type: string
+          enum:
+          - PAID
+          - FAILED
+          - PENDING
+        createdAt:
+          type: string
+          format: date-time
+      title: OrderResponse

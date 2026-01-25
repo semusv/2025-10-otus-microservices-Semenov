@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant Client
+    participant Gateway
+    participant OrderService
+    participant BillingService
+    participant UserService
+    participant NotificationService
+
+    Client->>Gateway: POST /orders
+    Gateway->>Gateway: Validate token
+    Gateway->>OrderService: POST /orders (X-User-Id)
+    
+    OrderService->>OrderService: Save order (PENDING)
+    
+    OrderService->>BillingService: POST /internal/order
+    BillingService-->>OrderService: Payment result
+    
+    alt Payment successful
+        OrderService->>OrderService: Update to PAID
+    else Payment failed
+        OrderService->>OrderService: Update to FAILED
+    end
+    
+    OrderService->>UserService: GET /internal/me
+    UserService-->>OrderService: UserProfileResponse
+    
+    OrderService->>NotificationService: POST /notifications
+    NotificationService-->>OrderService: Notification created
+    
+    OrderService-->>Gateway: Order response
+    Gateway-->>Client: 201 Created

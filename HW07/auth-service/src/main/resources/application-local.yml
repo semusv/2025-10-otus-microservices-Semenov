@@ -1,0 +1,16 @@
+server:
+  port: 8081
+
+spring:
+#  kafka:
+#    bootstrap-servers: localhost:9092
+#    properties:
+#      security.protocol: PLAINTEXT
+
+#  cloud:
+#    config:
+#      allow-override: false
+#      override-system-properties: false
+
+  config:
+    import: optional:configserver:http://${CONFIG_SERVICE_HOST:localhost}:${CONFIG_SERVICE_PORT:8888}
