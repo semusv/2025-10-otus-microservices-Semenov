@@ -4,8 +4,11 @@ import com.microservices.order.client.BillingServiceClient;
 import com.microservices.order.event.OrderCreatedEvent;
 import com.microservices.order.mapper.OrderMapper;
 import com.microservices.order.model.Order;
+import com.microservices.order.model.Position;
 import com.microservices.order.repository.OrderRepository;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.vvsem.shared.dto.shared_api_dto.BillingOrderRequest;
 import ru.vvsem.shared.dto.shared_api_dto.OrderCreateOrderRequest;
+import ru.vvsem.shared.dto.shared_api_dto.OrderCreateOrderRequestItemsInner;
 import ru.vvsem.shared.dto.shared_api_dto.OrderResponse;
 
 @Service
@@ -91,11 +95,30 @@ public class OrderServiceImpl implements OrderService {
 
     private Order createNewOrder(UUID userId, OrderCreateOrderRequest orderRequest) {
         Order order = new Order();
+
         order.setUserId(userId);
-//        order.setPrice(orderRequest.getPrice());
         order.setStatus(Order.Status.PENDING);
+        order.setPositions(new ArrayList<>());
+        orderRequest.getItems().forEach(item -> {
+            Position position = new Position();
+            position.setOrder(order);
+            position.setCatalogItemId(item.getCatalogItemId());
+            position.setQuantity(item.getQuantity());
+            position.setPrice(item.getPrice());
+            order.getPositions().add(position);
+            calculateOrderPrice(item, order);
+        });
+
         order.setCreatedAt(LocalDateTime.now());
         orderRepository.save(order);
         return order;
+    }
+
+    private static void calculateOrderPrice(OrderCreateOrderRequestItemsInner item, Order order) {
+        if (order.getPrice() == null) {
+            order.setPrice(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+        } else {
+            order.setPrice(order.getPrice().add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))));
+        }
     }
 }

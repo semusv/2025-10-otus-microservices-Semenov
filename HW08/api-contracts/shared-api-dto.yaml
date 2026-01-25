@@ -120,6 +120,9 @@ components:
         price:
           type: number
           minimum: 0.01
+      required:
+        - orderId
+        - price
       description: "Запрос для операций с заказами в биллинге"
 
     BillingBalanceResponse:
@@ -180,9 +183,15 @@ components:
               quantity:
                 type: integer
                 minimum: 1
+              price:
+                type: number
+                minimum: 0.1
+            required:
+              - catalogItemId
+              - quantity
+              - price
           minItems: 1
           maxItems: 50
-
 
     OrderResponse:
       type: object

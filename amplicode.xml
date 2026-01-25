@@ -17,11 +17,6 @@
           <package value="com.microservices.notification" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="hw08.order-service.main" name="Default">
-        <packages>
-          <package value="com.microservices.order" />
-        </packages>
-      </persistence-unit>
       <persistence-unit moduleName="hw08.user-service.main" name="Default">
         <packages>
           <package value="com.microservices.user" />
@@ -32,14 +27,19 @@
           <package value="com.microservices.warehouse" />
         </packages>
       </persistence-unit>
+      <persistence-unit moduleName="hw08.warehouse-service.main" name="Default">
+        <packages>
+          <package value="com.microservices.warehouse" />
+        </packages>
+      </persistence-unit>
       <persistence-unit moduleName="hw08.warehouse-service.main" name="hw08-order">
         <packages>
           <package value="com.microservices.order" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="hw08.warehouse-service.main" name="Default">
+      <persistence-unit moduleName="hw08.order-service.main" name="Default">
         <packages>
-          <package value="com.microservices.warehouse" />
+          <package value="com.microservices.order" />
         </packages>
       </persistence-unit>
     </persistence-units>
