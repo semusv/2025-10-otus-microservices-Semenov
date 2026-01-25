@@ -45,5 +45,6 @@ include("config-service")
 include("billing-service")
 include("order-service")
 include("notification-service")
+include("warehouse-service")
 include(":shared-dto")
 

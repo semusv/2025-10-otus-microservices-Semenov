@@ -27,6 +27,21 @@
           <package value="com.microservices.user" />
         </packages>
       </persistence-unit>
+      <persistence-unit moduleName="hw08.warehouse-service.main" name="Default2">
+        <packages>
+          <package value="com.microservices.warehouse" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="hw08.warehouse-service.main" name="hw08-order">
+        <packages>
+          <package value="com.microservices.order" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="hw08.warehouse-service.main" name="Default">
+        <packages>
+          <package value="com.microservices.warehouse" />
+        </packages>
+      </persistence-unit>
     </persistence-units>
   </component>
 </project>

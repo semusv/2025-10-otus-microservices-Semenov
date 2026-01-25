@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+
+    <changeSet id="1769344290374-0" author="system">
+        <sql>
+            CREATE SCHEMA IF NOT EXISTS warehouse_service;
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="1769344290374-1" author="semva (generated)">
+        <createTable tableName="reservation">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_reservation"/>
+            </column>
+            <column name="order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" name="updated_at"
+                    type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1769344290374-2" author="semva (generated)">
+        <createTable tableName="reservation_items">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_reservation_items"/>
+            </column>
+            <column name="reservation_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" name="updated_at"
+                    type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1769344290374-3" author="semva (generated)">
+        <createTable schemaName="warehouse_service" tableName="catalogs">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_catalogs"/>
+            </column>
+            <column name="shop_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reserved_quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" name="updated_at"
+                    type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1769344290374-4" author="semva (generated)">
+        <createTable schemaName="warehouse_service" tableName="products">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_products"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" name="updated_at"
+                    type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1769344290374-5" author="semva (generated)">
+        <addUniqueConstraint columnNames="sku" constraintName="UC_PRODUCTS_SKU" schemaName="warehouse_service"
+                             tableName="products"/>
+    </changeSet>
+    <changeSet id="1769344290374-6" author="semva (generated)">
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="reservation_items"
+                                 constraintName="FK_RESERVATION_ITEMS_ON_PRODUCT" referencedColumnNames="id"
+                                 referencedTableName="products" referencedTableSchemaName="warehouse_service"/>
+    </changeSet>
+    <changeSet id="1769344290374-7" author="semva (generated)">
+        <addForeignKeyConstraint baseColumnNames="reservation_id" baseTableName="reservation_items"
+                                 constraintName="FK_RESERVATION_ITEMS_ON_RESERVATION" referencedColumnNames="id"
+                                 referencedTableName="reservation"/>
+    </changeSet>
+    <changeSet id="1769344290374-8" author="semva (generated)">
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="catalogs"
+                                 baseTableSchemaName="warehouse_service" constraintName="FK_CATALOGS_ON_PRODUCT"
+                                 referencedColumnNames="id" referencedTableName="products"
+                                 referencedTableSchemaName="warehouse_service"/>
+    </changeSet>
+
+</databaseChangeLog>

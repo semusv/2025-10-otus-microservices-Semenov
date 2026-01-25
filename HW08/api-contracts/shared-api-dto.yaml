@@ -166,10 +166,23 @@ components:
     OrderCreateOrderRequest:
       type: object
       properties:
-        price:
-          type: number
-          minimum: 0.01
-      description: "Запрос создания заказа"
+        userId:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              catalogItemId:
+                type: string
+                format: uuid
+              quantity:
+                type: integer
+                minimum: 1
+          minItems: 1
+          maxItems: 50
+
 
     OrderResponse:
       type: object
@@ -270,3 +283,65 @@ components:
       type: string
       format: uuid
       description: "ID пользователя для передачи в заголовках"
+
+    # Warehouse Service
+    WarehouseCatalogResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        shopId:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        productSku:
+          type: string
+        price:
+          type: number
+          format: double
+          minimum: 0.01
+        quantity:
+          type: integer
+          minimum: 0
+        reservedQuantity:
+          type: integer
+          minimum: 0
+        availableQuantity:
+          type: integer
+          minimum: 0
+          description: "Доступное количество (quantity - reservedQuantity)"
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      description: "Ответ с информацией о позиции в каталоге магазина"
+
+    WarehouseProductResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        sku:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      description: "Ответ с информацией о продукте"
+

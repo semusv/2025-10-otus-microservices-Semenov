@@ -1,49 +1,50 @@
-package com.microservices.order.model;
+package com.microservices.warehouse.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-@Entity
-@Table(name = "orders")
 @Getter
 @Setter
-public class Order {
-    public enum Status {
-        PAID,
-        FAILED,
-        PENDING
-    }
-
+@Entity
+@Table(name = "reservation")
+public class Reservation {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(nullable = false)
+    private UUID orderId;
+
+    @Column(nullable = false)
     private UUID userId;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private Status status;
+    private ReservationStatus status = ReservationStatus.PENDING;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "position_id", nullable = false)
-    private Position position;
+    @Column(nullable = false)
+    private LocalDateTime expiresAt;
+
+    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL)
+    private List<ReservationItem> items = new ArrayList<>();
 
     @CreationTimestamp
     @Column(

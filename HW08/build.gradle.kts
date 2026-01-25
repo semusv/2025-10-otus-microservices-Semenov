@@ -233,6 +233,7 @@ subprojects {
                 "billing-service" -> "8083"
                 "order-service" -> "8084"
                 "notification-service" -> "8085"
+                "warehouse-service" -> "8086"
                 "api-gateway" -> "8000"
                 else -> "8080"
             }

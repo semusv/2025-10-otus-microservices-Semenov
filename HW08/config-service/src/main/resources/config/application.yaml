@@ -35,6 +35,9 @@ app:
     notification-service:
       url: http://${NOTIFICATION_SERVICE_HOST:localhost}:${NOTIFICATION_SERVICE_PORT:8085}
 
+    warehouse-service:
+      url: http://${WAREHOUSE_SERVICE_HOST:localhost}:${WAREHOUSE_SERVICE_PORT:8085}
+
   security:
     inter-service:
       secret: ${INTER_SERVICE_SECRET:inter-service-secret-1gas+1!sda2ga52111}

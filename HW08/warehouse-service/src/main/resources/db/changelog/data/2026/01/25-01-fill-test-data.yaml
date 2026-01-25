@@ -1,0 +1,60 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-01-25--0001-products-data
+      author: system
+      context: dev
+      runOnChange: true
+      changes:
+        - loadData:
+            file: csv/2026-01-25--0001-products.csv
+            relativeToChangelogFile: true
+            separator: ";"
+            quotchar: '"'
+            encoding: UTF-8
+            schemaName: warehouse_service
+            tableName: products
+            primaryKey: id
+            columns:
+              - column:
+                  name: id
+              - column:
+                  name: name
+              - column:
+                  name: description
+              - column:
+                  name: sku
+
+  - changeSet:
+      id: 2026-01-25--0002-catalogs-data-shop1
+      author: system
+      context: dev
+      runOnChange: true
+      changes:
+        - loadData:
+            file: csv/2026-01-25--0003-catalogs.csv
+            relativeToChangelogFile: true
+            separator: ";"
+            quotchar: '"'
+            encoding: UTF-8
+            schemaName: warehouse_service
+            tableName: catalogs
+            primaryKey: id
+            columns:
+              - column:
+                  name: id
+              - column:
+                  name: shop_id
+              - column:
+                  name: product_id
+              - column:
+                  name: price
+                  type: DECIMAL
+              - column:
+                  name: quantity
+                  type: NUMERIC
+              - column:
+                  name: reserved_quantity
+                  type: NUMERIC
+              - column:
+                  name: active
+                  type: BOOLEAN

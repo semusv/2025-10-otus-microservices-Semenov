@@ -92,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
     private Order createNewOrder(UUID userId, OrderCreateOrderRequest orderRequest) {
         Order order = new Order();
         order.setUserId(userId);
-        order.setPrice(orderRequest.getPrice());
+//        order.setPrice(orderRequest.getPrice());
         order.setStatus(Order.Status.PENDING);
         order.setCreatedAt(LocalDateTime.now());
         orderRepository.save(order);
