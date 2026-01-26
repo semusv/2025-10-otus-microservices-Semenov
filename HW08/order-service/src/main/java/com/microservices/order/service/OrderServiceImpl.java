@@ -1,7 +1,6 @@
 package com.microservices.order.service;
 
 import com.microservices.order.client.BillingServiceClient;
-import com.microservices.order.event.OrderCreatedEvent;
 import com.microservices.order.mapper.OrderMapper;
 import com.microservices.order.model.Order;
 import com.microservices.order.model.Position;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
@@ -40,18 +38,20 @@ public class OrderServiceImpl implements OrderService {
 
     private final ApplicationEventPublisher eventPublisher;
 
+    private final OrderSagaOrchestrator orderSagaOrchestrator;
+
     @Transactional
     @Override
     public OrderResponse createOrder(UUID userId, OrderCreateOrderRequest orderRequest) {
         // 1. Создаем заказ в статусе PENDING
         Order order = createNewOrder(userId, orderRequest);
-
+        orderSagaOrchestrator.startOrderSaga(order);
         // 2. Обновляем статус заказа в зависимости от результата списания средств
-        boolean paid = withdraw(order);
-        order.setStatus(paid ? Order.Status.PAID : Order.Status.FAILED);
-        updateOrderStatus(order.getId(), order.getStatus());
+        //        boolean paid = withdraw(order);
+        //        order.setStatus(paid ? Order.Status.PAID : Order.Status.FAILED);
+        //        updateOrderStatus(order.getId(), order.getStatus());
 
-        eventPublisher.publishEvent(new OrderCreatedEvent(order, serviceName, MDC.getCopyOfContextMap()));
+        //        eventPublisher.publishEvent(new OrderCreatedEvent(order, serviceName, MDC.getCopyOfContextMap()));
 
         return orderMapper.toOrderResponse(order);
     }

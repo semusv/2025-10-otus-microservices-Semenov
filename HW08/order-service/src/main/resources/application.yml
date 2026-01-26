@@ -10,6 +10,10 @@ spring:
     config:
       enabled: ${CONFIG_SERVICE_ENABLED:true}
       fail-fast: true
+  kafka:
+    consumer:
+      group-id: order-id
+    bootstrap-servers: localhost:9092
 
 logging:
   level:
