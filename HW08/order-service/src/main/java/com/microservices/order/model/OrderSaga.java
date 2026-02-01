@@ -33,8 +33,7 @@ public class OrderSaga {
         DELIVERY_FAILED,
         COMPLETED,
         COMPENSATING,
-        FAILED,
-        CANCELLED
+        COMPENSATED
     }
 
     @Id
@@ -57,6 +56,20 @@ public class OrderSaga {
     @Column(name = "retry_count", nullable = false)
     private Integer retryCount = 0;
 
+    // Флаги выполненных шагов
+    private boolean paymentExecuted = false;
+
+    private boolean warehouseExecuted = false;
+
+    private boolean deliveryExecuted = false;
+
+    // Таймстампы для отладки
+    private LocalDateTime paymentChangedAt;
+
+    private LocalDateTime warehouseChangedAt;
+
+    private LocalDateTime deliveryChangedAt;
+
     @CreationTimestamp
     @Column(
             name = "created_at",
@@ -75,4 +88,30 @@ public class OrderSaga {
     @Version
     @Column(name = "version")
     private Integer version;
+
+    // Методы для управления флагами
+    public void markPaymentExecuted() {
+        this.paymentExecuted = !this.paymentExecuted;
+        this.paymentChangedAt = LocalDateTime.now();
+    }
+
+    public void markWarehouseExecuted() {
+        this.warehouseExecuted = !this.warehouseExecuted;
+        this.warehouseChangedAt = LocalDateTime.now();
+    }
+
+    public void markDeliveryExecuted() {
+        this.deliveryExecuted = !this.deliveryExecuted;
+        this.deliveryChangedAt = LocalDateTime.now();
+    }
+
+    public void resetAllFlags() {
+        this.paymentExecuted = false;
+        this.warehouseExecuted = false;
+        this.deliveryExecuted = false;
+    }
+
+    public boolean isFullyCompensated() {
+        return !(this.paymentExecuted || this.warehouseExecuted || this.deliveryExecuted);
+    }
 }

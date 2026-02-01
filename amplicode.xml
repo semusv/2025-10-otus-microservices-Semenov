@@ -32,7 +32,7 @@
           <package value="com.microservices.warehouse" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="hw08.warehouse-service.main" name="hw08-order">
+      <persistence-unit moduleName="hw08.warehouse-service.main" name="hw08-order" defaultSearchScope="Project">
         <packages>
           <package value="com.microservices.order" />
         </packages>

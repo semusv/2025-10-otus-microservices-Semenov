@@ -207,9 +207,13 @@ components:
         status:
           type: string
           enum:
+            - CREATED
             - PAID
-            - FAILED
-            - PENDING
+            - RESERVED
+            - PROCESSING
+            - DELIVERED
+            - CANCELLING
+            - CANCELLED
         createdAt:
           type: string
           format: date-time

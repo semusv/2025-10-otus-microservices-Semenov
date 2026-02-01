@@ -5,6 +5,7 @@ import com.microservices.order.mapper.OrderMapper;
 import com.microservices.order.model.Order;
 import com.microservices.order.model.Position;
 import com.microservices.order.repository.OrderRepository;
+import com.microservices.order.service.saga.OrderSagaOrchestrator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.vvsem.shared.dto.shared_api_dto.BillingOrderRequest;
 import ru.vvsem.shared.dto.shared_api_dto.OrderCreateOrderRequest;
 import ru.vvsem.shared.dto.shared_api_dto.OrderCreateOrderRequestItemsInner;
 import ru.vvsem.shared.dto.shared_api_dto.OrderResponse;
@@ -46,12 +46,6 @@ public class OrderServiceImpl implements OrderService {
         // 1. Создаем заказ в статусе PENDING
         Order order = createNewOrder(userId, orderRequest);
         orderSagaOrchestrator.startOrderSaga(order);
-        // 2. Обновляем статус заказа в зависимости от результата списания средств
-        //        boolean paid = withdraw(order);
-        //        order.setStatus(paid ? Order.Status.PAID : Order.Status.FAILED);
-        //        updateOrderStatus(order.getId(), order.getStatus());
-
-        //        eventPublisher.publishEvent(new OrderCreatedEvent(order, serviceName, MDC.getCopyOfContextMap()));
 
         return orderMapper.toOrderResponse(order);
     }
@@ -75,29 +69,11 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    private boolean withdraw(Order order) {
-        var request = new BillingOrderRequest()
-                .userId(order.getUserId())
-                .orderId(order.getId())
-                .price(order.getPrice());
-        try {
-            billingClient.withdrawMoney(request);
-            return true;
-        } catch (Exception e) {
-            log.warn("Billing withdraw failed: {}", e.getMessage());
-            return false;
-        }
-    }
-
-    private void updateOrderStatus(UUID orderId, Order.Status status) {
-        orderRepository.updateStatusById(status, orderId);
-    }
-
     private Order createNewOrder(UUID userId, OrderCreateOrderRequest orderRequest) {
         Order order = new Order();
 
         order.setUserId(userId);
-        order.setStatus(Order.Status.PENDING);
+        order.setStatus(Order.Status.CREATED);
         order.setPositions(new ArrayList<>());
         orderRequest.getItems().forEach(item -> {
             Position position = new Position();

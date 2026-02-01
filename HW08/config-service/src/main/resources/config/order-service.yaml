@@ -49,7 +49,26 @@ springwolf:
 app:
   kafka:
     topics:
-      order-events: order.events
+    # Основные топики
+      payment-request: "payment.request.v1"
+      payment-response: "payment.response.v1"
+      warehouse-request: "warehouse.request.v1"
+      warehouse-response: "warehouse.response.v1"
+      delivery-request: "delivery.request.v1"
+      delivery-response: "delivery.response.v1"
+
+      # Компенсационные топики
+      payment-compensate-request: "payment.compensate.request.v1"
+      warehouse-compensate-request: "warehouse.compensate.request.v1"
+      delivery-compensate-request: "delivery.compensate.request.v1"
+      payment-compensate-response: "payment.compensate.response.v1"
+      warehouse-compensate-response: "warehouse.compensate.response.v1"
+      delivery-compensate-response: "delivery.compensate.response.v1"
+
+
+    # Топики для Заказа
+    order-cancelling: "order.cancelling.v1"
+
   saga:
     delay_threshold: 10000
     polling_delay: 5000

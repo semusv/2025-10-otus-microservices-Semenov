@@ -5,7 +5,8 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd"
         objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
-    <changeSet id="1769457379318-1" author="semva (generated)">
+
+    <changeSet id="1769457379318-1" author="semva (generated)" context="order-service">
         <createTable tableName="order_sagas">
             <column name="saga_id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_order_sagas"/>
@@ -31,7 +32,7 @@
             <column name="version" type="INT"/>
         </createTable>
     </changeSet>
-    <changeSet id="1769457379318-2" author="semva (generated)">
+    <changeSet id="1769457379318-2" author="semva (generated)" context="order-service">
         <createTable tableName="outbox_events">
             <column name="event_id" type="VARCHAR(255)">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_outbox_events"/>

@@ -5,13 +5,13 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="1767981146000-0" author="semva">
+    <changeSet id="1767981146000-0" author="semva" context="order-service">
         <sql>
             CREATE SCHEMA IF NOT EXISTS order_service;
         </sql>
     </changeSet>
 
-    <changeSet id="1767981146000-1" author="semva">
+    <changeSet id="1767981146000-1" author="semva" context="order-service">
         <createTable tableName="orders">
             <column name="id" type="UUID">
                 <constraints primaryKey="true" nullable="false" primaryKeyName="pk_orders"/>
@@ -36,7 +36,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="1767981146000-2" author="semva">
+    <changeSet id="1767981146000-2" author="semva" context="order-service">
         <dropDefaultValue
                 tableName="orders"
                 columnName="created_at"

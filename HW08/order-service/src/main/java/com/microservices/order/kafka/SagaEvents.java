@@ -87,6 +87,22 @@ public class SagaEvents {
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class CompensationResponseEvent {
+
+        private UUID sagaId;
+
+        private UUID orderId;
+
+        private boolean success;
+
+        private LocalDateTime timestamp = LocalDateTime.now();
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class WarehouseReservationRequest {
         private UUID sagaId;
 
@@ -96,7 +112,7 @@ public class SagaEvents {
 
         private List<ReservationItem> items;
 
-        private LocalDateTime expiresAt; // Время истечения резерва
+        private LocalDateTime timestamp = LocalDateTime.now();
 
         @Data
         @Builder
@@ -223,12 +239,10 @@ public class SagaEvents {
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class WarehouseCancelEvent {
+    public static class WarehouseReleaseEvent {
         private UUID sagaId;
 
         private UUID orderId;
-
-        private UUID reservationId;
 
         private String reason;
 

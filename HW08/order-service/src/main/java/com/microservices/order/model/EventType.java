@@ -2,7 +2,8 @@ package com.microservices.order.model;
 
 public enum EventType {
     ORDER_CREATED,
-    ORDER_FAILED,
+    ORDER_CANCELLING,
+    ORDER_CANCELED,
     PAYMENT_COMPLETED,
     PAYMENT_REQUESTED,
     PAYMENT_REFUNDED,

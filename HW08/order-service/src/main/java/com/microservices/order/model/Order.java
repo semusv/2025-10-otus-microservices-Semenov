@@ -27,9 +27,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Setter
 public class Order {
     public enum Status {
+        CREATED,
         PAID,
-        FAILED,
-        PENDING
+        RESERVED,
+        PROCESSING,
+        DELIVERED,
+        CANCELLING,
+        CANCELLED;
     }
 
     @Id

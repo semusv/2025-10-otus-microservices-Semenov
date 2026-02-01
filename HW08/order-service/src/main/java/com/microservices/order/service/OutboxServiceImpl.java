@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Slf4j
 public class OutboxServiceImpl implements OutboxService {
-
     private final OutboxEventRepository outboxRepository;
 
     private final KafkaTemplate<String, String> kafkaTemplate;
