@@ -30,7 +30,7 @@ public class SagaRecoveryService {
             log.warn("Found {} stuck sagas for recovery", stuckSagas.size());
             for (OrderSaga saga : stuckSagas) {
                 // Если превышены попытки - запускаем компенсацию
-                if (saga.getRetryCount() < 3) { // 0-based
+                if (saga.getRetryCount() < 3 && !saga.getState().equals(OrderSaga.SagaState.COMPENSATING)) { // 0-based
                     recoverSaga(saga, stateMachine);
                 } else {
                     Order order = getOrder(saga.getOrderId());
@@ -47,7 +47,8 @@ public class SagaRecoveryService {
         List<OrderSaga> sagasAwaitingResponse = sagaRepository.findByStateIn(List.of(
                 OrderSaga.SagaState.PAYMENT_PROCESSING,
                 OrderSaga.SagaState.WAREHOUSE_RESERVING,
-                OrderSaga.SagaState.DELIVERY_SCHEDULING));
+                OrderSaga.SagaState.DELIVERY_SCHEDULING,
+                OrderSaga.SagaState.COMPENSATING));
 
         // Фильтруем те, у которых истек таймаут
         return sagasAwaitingResponse.stream()

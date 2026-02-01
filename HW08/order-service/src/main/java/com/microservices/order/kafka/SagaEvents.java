@@ -255,6 +255,8 @@ public class SagaEvents {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class OrderFailedEvent {
+        private UUID sagaId;
+
         private UUID orderId;
 
         private UUID userId;

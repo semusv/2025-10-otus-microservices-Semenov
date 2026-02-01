@@ -86,6 +86,7 @@ public class OrderSagaOrchestratorImpl implements OrderSagaOrchestrator {
                 orderRepository.save(order);
                 // Фиксируем факт события
                 saga.markPaymentExecuted();
+                saga.setState(OrderSaga.SagaState.PAYMENT_COMPLETED);
                 sagaRepository.save(saga);
 
                 stateMachine.process(saga, order);
@@ -116,6 +117,7 @@ public class OrderSagaOrchestratorImpl implements OrderSagaOrchestrator {
                 orderRepository.save(order);
                 // Фиксируем факт события
                 saga.markWarehouseExecuted();
+                saga.setState(OrderSaga.SagaState.WAREHOUSE_RESERVED);
                 sagaRepository.save(saga);
 
                 stateMachine.process(saga, order);
@@ -148,6 +150,7 @@ public class OrderSagaOrchestratorImpl implements OrderSagaOrchestrator {
                 orderRepository.save(order);
                 // Фиксируем факт события
                 saga.markDeliveryExecuted();
+                saga.setState(OrderSaga.SagaState.DELIVERY_SCHEDULED);
                 sagaRepository.save(saga);
 
                 stateMachine.process(saga, order);

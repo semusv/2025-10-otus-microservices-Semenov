@@ -33,6 +33,8 @@ public class SagaCompensationExecutor {
             return;
         }
 
+        saga.setState(OrderSaga.SagaState.COMPENSATING);
+
         if (saga.isPaymentExecuted()) {
             sendPaymentCompensate(order, reason);
         }
@@ -46,6 +48,7 @@ public class SagaCompensationExecutor {
 
     private void sendPaymentCompensate(Order order, String reason) {
         SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
+                .sagaId(order.getId())
                 .orderId(order.getId())
                 .userId(order.getUserId())
                 .reason(reason)
@@ -61,13 +64,14 @@ public class SagaCompensationExecutor {
 
     private void sendWarehouseCompensate(Order order, String reason) {
         SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
+                .sagaId(order.getId())
                 .orderId(order.getId())
                 .userId(order.getUserId())
                 .reason(reason)
                 .build();
 
         outboxService.saveEvent(
-                EventType.PAYMENT_REFUNDED,
+                EventType.WAREHOUSE_CANCELED,
                 order.getId().toString(),
                 "saga",
                 failedEvent,
@@ -76,13 +80,14 @@ public class SagaCompensationExecutor {
 
     private void sendDeliveryCompensate(Order order, String reason) {
         SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
+                .sagaId(order.getId())
                 .orderId(order.getId())
                 .userId(order.getUserId())
                 .reason(reason)
                 .build();
 
         outboxService.saveEvent(
-                EventType.PAYMENT_REFUNDED,
+                EventType.DELIVERY_CANCELLED,
                 order.getId().toString(),
                 "saga",
                 failedEvent,

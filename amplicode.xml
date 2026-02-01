@@ -32,14 +32,14 @@
           <package value="com.microservices.warehouse" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="hw08.warehouse-service.main" name="hw08-order" defaultSearchScope="Project">
+      <persistence-unit moduleName="hw08.order-service.main" name="Default">
         <packages>
           <package value="com.microservices.order" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="hw08.order-service.main" name="Default">
+      <persistence-unit moduleName="hw08.warehouse-service.main" name="hw08-billing5">
         <packages>
-          <package value="com.microservices.order" />
+          <package value="com.microservices.billing" />
         </packages>
       </persistence-unit>
     </persistence-units>

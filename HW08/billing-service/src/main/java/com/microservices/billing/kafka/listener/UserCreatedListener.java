@@ -1,4 +1,4 @@
-package com.microservices.billing.listener;
+package com.microservices.billing.kafka.listener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microservices.billing.kafka.UserEventDto;
