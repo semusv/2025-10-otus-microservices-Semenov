@@ -57,7 +57,6 @@ public class OutboxServiceImpl implements OutboxService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void processOutbox() {
-        log.debug("Processing outbox events");
         List<OutboxEvent> events = outboxRepository.findUnpublishedEvents(maxRetries);
         for (OutboxEvent event : events) {
             try {

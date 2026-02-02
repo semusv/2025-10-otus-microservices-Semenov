@@ -25,12 +25,11 @@ public class SagaRecoveryService {
 
     public void recoverStuckSagas(SagaStateMachine stateMachine) {
         List<OrderSaga> stuckSagas = findStuckSagas(stateMachine);
-
         if (!stuckSagas.isEmpty()) {
             log.warn("Found {} stuck sagas for recovery", stuckSagas.size());
             for (OrderSaga saga : stuckSagas) {
                 // Если превышены попытки - запускаем компенсацию
-                if (saga.getRetryCount() < 3 && !saga.getState().equals(OrderSaga.SagaState.COMPENSATING)) { // 0-based
+                if (saga.getRetryCount() < 3) { // 0-based
                     recoverSaga(saga, stateMachine);
                 } else {
                     Order order = getOrder(saga.getOrderId());
@@ -42,13 +41,56 @@ public class SagaRecoveryService {
         }
     }
 
+    public void compensateFailedSagas(SagaStateMachine stateMachine) {
+        List<OrderSaga> stuckSagas = findFailedSagas(stateMachine);
+
+        if (!stuckSagas.isEmpty()) {
+            log.warn("Found {} failed sagas for compensation", stuckSagas.size());
+            for (OrderSaga saga : stuckSagas) {
+                Order order = getOrder(saga.getOrderId());
+                String errorMessage = getErrorCompensatedMessage(saga);
+                compensationExecutor.executeCompensation(saga, order, errorMessage);
+                sagaRepository.save(saga);
+            }
+        }
+    }
+
+    private static String getErrorCompensatedMessage(OrderSaga saga) {
+        String errorMessage = "Unknown error";
+        if (saga.getState() == OrderSaga.SagaState.COMPENSATING) {
+            errorMessage = "Compensation repeat";
+        } else if (saga.getState() == OrderSaga.SagaState.PAYMENT_FAILED) {
+            errorMessage = "Payment failed";
+        } else if (saga.getState() == OrderSaga.SagaState.WAREHOUSE_FAILED) {
+            errorMessage = "Warehouse failed";
+        } else if (saga.getState() == OrderSaga.SagaState.DELIVERY_FAILED) {
+            errorMessage = "Delivery failed";
+        }
+        return errorMessage;
+    }
+
+    private List<OrderSaga> findFailedSagas(SagaStateMachine stateMachine) {
+        // Находим саги, которые ожидают ответов
+        List<OrderSaga> sagasAwaitingResponse = sagaRepository.findByStateIn(List.of(
+                OrderSaga.SagaState.PAYMENT_FAILED,
+                OrderSaga.SagaState.WAREHOUSE_FAILED,
+                OrderSaga.SagaState.DELIVERY_FAILED,
+                OrderSaga.SagaState.COMPENSATING));
+        // Фильтруем те, у которых истек таймаут
+        return sagasAwaitingResponse.stream()
+                .filter(saga -> {
+                    long timeout = stateMachine.getTimeoutForState(saga.getState());
+                    return saga.getUpdatedAt().isBefore(LocalDateTime.now().minus(timeout, ChronoUnit.MILLIS));
+                })
+                .toList();
+    }
+
     private List<OrderSaga> findStuckSagas(SagaStateMachine stateMachine) {
         // Находим саги, которые ожидают ответов
         List<OrderSaga> sagasAwaitingResponse = sagaRepository.findByStateIn(List.of(
                 OrderSaga.SagaState.PAYMENT_PROCESSING,
                 OrderSaga.SagaState.WAREHOUSE_RESERVING,
-                OrderSaga.SagaState.DELIVERY_SCHEDULING,
-                OrderSaga.SagaState.COMPENSATING));
+                OrderSaga.SagaState.DELIVERY_SCHEDULING));
 
         // Фильтруем те, у которых истек таймаут
         return sagasAwaitingResponse.stream()
@@ -62,14 +104,15 @@ public class SagaRecoveryService {
     private void recoverSaga(OrderSaga saga, SagaStateMachine stateMachine) {
         Order order = getOrder(saga.getOrderId());
         try {
+            saga.setRetryCount(saga.getRetryCount() + 1);
             log.warn(
                     "Recovering saga {} in state {} (retry {}/3)",
                     saga.getSagaId(),
                     saga.getState(),
-                    saga.getRetryCount() + 1);
+                    saga.getRetryCount());
             // Просто повторно выполняем текущий шаг
             stateMachine.retryStep(saga, order);
-            saga.setRetryCount(saga.getRetryCount() + 1);
+
         } catch (Exception e) {
             log.error("Failed to recover saga {}", saga.getSagaId(), e);
         }

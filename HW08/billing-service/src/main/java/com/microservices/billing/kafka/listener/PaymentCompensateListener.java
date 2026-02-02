@@ -70,7 +70,7 @@ public class PaymentCompensateListener {
                     event.getSagaId().toString(),
                     "Saga",
                     responseEvent,
-                    kafkaTopicProperties.getPaymentResponse());
+                    kafkaTopicProperties.getPaymentCompensateResponse());
             log.info("Successfully processed payment compensation. SagaId: {}", event.getSagaId());
         } catch (Exception e) {
             log.error("Error processing payment compensation event. Key: {}, Topic: {}", key, topic, e);

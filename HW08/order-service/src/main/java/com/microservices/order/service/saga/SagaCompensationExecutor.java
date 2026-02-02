@@ -36,19 +36,19 @@ public class SagaCompensationExecutor {
         saga.setState(OrderSaga.SagaState.COMPENSATING);
 
         if (saga.isPaymentExecuted()) {
-            sendPaymentCompensate(order, reason);
+            sendPaymentCompensate(saga, order, reason);
         }
         if (saga.isWarehouseExecuted()) {
-            sendWarehouseCompensate(order, reason);
+            sendWarehouseCompensate(saga, order, reason);
         }
         if (saga.isDeliveryExecuted()) {
-            sendDeliveryCompensate(order, reason);
+            sendDeliveryCompensate(saga, order, reason);
         }
     }
 
-    private void sendPaymentCompensate(Order order, String reason) {
+    private void sendPaymentCompensate(OrderSaga saga, Order order, String reason) {
         SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
-                .sagaId(order.getId())
+                .sagaId(saga.getSagaId())
                 .orderId(order.getId())
                 .userId(order.getUserId())
                 .reason(reason)
@@ -62,9 +62,9 @@ public class SagaCompensationExecutor {
                 kafkaTopicProperties.getPaymentCompensateRequest());
     }
 
-    private void sendWarehouseCompensate(Order order, String reason) {
+    private void sendWarehouseCompensate(OrderSaga saga, Order order, String reason) {
         SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
-                .sagaId(order.getId())
+                .sagaId(saga.getSagaId())
                 .orderId(order.getId())
                 .userId(order.getUserId())
                 .reason(reason)
@@ -78,9 +78,9 @@ public class SagaCompensationExecutor {
                 kafkaTopicProperties.getWarehouseCompensateRequest());
     }
 
-    private void sendDeliveryCompensate(Order order, String reason) {
+    private void sendDeliveryCompensate(OrderSaga saga, Order order, String reason) {
         SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
-                .sagaId(order.getId())
+                .sagaId(saga.getSagaId())
                 .orderId(order.getId())
                 .userId(order.getUserId())
                 .reason(reason)

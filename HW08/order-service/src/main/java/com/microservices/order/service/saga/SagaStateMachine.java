@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SagaStateMachine {
 
     // Изменение: добавили флаг autoTransition
-    private record StateConfig(boolean finalState, boolean awaitingResponse, long timeoutMs, boolean autoTransition) {}
+    private record StateConfig(boolean finalState, long timeoutMs, boolean autoTransition) {}
 
     private final Map<OrderSaga.SagaState, StateConfig> stateConfig;
 
@@ -34,19 +34,23 @@ public class SagaStateMachine {
 
         // Изменение: добавили autoTransition флаг в конфигурацию
         this.stateConfig = Map.of(
-                OrderSaga.SagaState.STARTED, new StateConfig(false, false, 0L, true),
-                OrderSaga.SagaState.PAYMENT_PROCESSING, new StateConfig(false, true, 10_000L, false),
-                OrderSaga.SagaState.WAREHOUSE_RESERVING, new StateConfig(false, true, 10_000L, false),
-                OrderSaga.SagaState.DELIVERY_SCHEDULING, new StateConfig(false, true, 10_000L, false),
-                OrderSaga.SagaState.COMPLETED, new StateConfig(true, false, 0L, false),
-                OrderSaga.SagaState.COMPENSATED, new StateConfig(true, false, 0L, false),
-                OrderSaga.SagaState.COMPENSATING, new StateConfig(false, false, 0L, false));
+                OrderSaga.SagaState.STARTED, new StateConfig(false, 0L, true),
+                OrderSaga.SagaState.PAYMENT_PROCESSING, new StateConfig(false, 10_000L, false),
+                OrderSaga.SagaState.WAREHOUSE_RESERVING, new StateConfig(false, 10_000L, false),
+                OrderSaga.SagaState.DELIVERY_SCHEDULING, new StateConfig(false, 10_000L, false),
+                OrderSaga.SagaState.COMPLETED, new StateConfig(true, 0L, false),
+                OrderSaga.SagaState.COMPENSATED, new StateConfig(true, 0L, false),
+                OrderSaga.SagaState.COMPENSATING, new StateConfig(false, 10_000L, false),
+                OrderSaga.SagaState.PAYMENT_FAILED, new StateConfig(false, 10_000L, false),
+                OrderSaga.SagaState.WAREHOUSE_FAILED, new StateConfig(false, 10_000L, false),
+                OrderSaga.SagaState.DELIVERY_FAILED, new StateConfig(false, 10_000L, false));
 
         log.debug("SagaStateMachine initialized with {} handlers", handlers.size());
     }
 
     @Transactional
     public void process(OrderSaga saga, Order order) {
+        saga.setRetryCount(0);
         OrderSaga.SagaState nextState = transitions.get(saga.getState());
         executeStep(saga, order, nextState);
     }
@@ -67,18 +71,8 @@ public class SagaStateMachine {
         handler.execute(saga, order);
     }
 
-    // Изменение: используем конфигурацию вместо хардкода
-    private boolean shouldAutoTransition(OrderSaga.SagaState state) {
-        return getConfig(state).autoTransition();
-    }
-
     public boolean isFinalState(OrderSaga.SagaState state) {
         return getConfig(state).finalState();
-    }
-
-    // Новые публичные методы для внешнего использования
-    public boolean isAwaitingResponse(OrderSaga.SagaState state) {
-        return getConfig(state).awaitingResponse();
     }
 
     public long getTimeoutForState(OrderSaga.SagaState state) {
@@ -90,6 +84,6 @@ public class SagaStateMachine {
     }
 
     private StateConfig getConfig(OrderSaga.SagaState state) {
-        return stateConfig.getOrDefault(state, new StateConfig(true, false, 60_000L, false));
+        return stateConfig.getOrDefault(state, new StateConfig(true, 60_000L, false));
     }
 }
