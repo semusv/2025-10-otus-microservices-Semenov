@@ -316,7 +316,7 @@ public class OrderSagaOrchestratorImpl implements OrderSagaOrchestrator {
                 kafkaTopicProperties.getOrderCancellingRequest());
     }
 
-    @Scheduled(fixedDelayString = "${app.saga.polling_delay: 10000}")
+    @Scheduled(fixedDelayString = "${app.saga.polling_delay: 30000}")
     @Transactional
     @Override
     public void recoverStuckSagas() {

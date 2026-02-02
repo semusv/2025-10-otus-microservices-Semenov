@@ -1,6 +1,7 @@
 package com.microservices.billing.service;
 
-import com.microservices.billing.kafka.PaymentEventDto;
+import static com.microservices.billing.model.Operation.SagaStep.PAYMENT;
+
 import com.microservices.billing.kafka.PaymentEventDto.PaymentRequestEvent;
 import com.microservices.billing.kafka.PaymentEventDto.PaymentResponseEvent;
 import com.microservices.billing.model.Account;
@@ -31,123 +32,78 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public PaymentResponseEvent processPayment(PaymentRequestEvent event) {
 
-        Optional<Operation> existingOp =
-                operationRepository.findBySagaIdAndSagaStep(event.getSagaId(), Operation.SagaStep.PAYMENT);
-
+        Optional<Operation> existingOp = operationRepository.findBySagaIdAndSagaStep(event.getSagaId(), PAYMENT);
         // Проверяем сагу - возможно она уже отменена
         if (existingOp.isPresent() && isSagaCompensated(existingOp.get())) {
-            log.info(
-                    "Saga {} already compensated, rejecting payment, orderId {}",
-                    event.getSagaId(),
-                    event.getOrderId());
+            return getAlreadyCompensatedPaymentResponse(event);
         }
-
+        // Проверяем, что операция уже выполнена
         if (existingOp.isPresent()) {
-            Operation op = existingOp.get();
-            return PaymentResponseEvent.builder()
-                    .sagaId(event.getSagaId())
-                    .orderId(event.getOrderId())
-                    .success(op.getStatus() == Operation.Status.COMPLETED)
-                    .transactionId(op.getId().toString())
-                    .errorMessage(op.getStatus() == Operation.Status.FAILED ? "Payment failed previously" : null)
-                    .build();
+            return getAlreadyDonePaymentResponseEvent(event, existingOp.get());
         }
-
+        // Создаем новую операцию
         try {
-            Account account = getAccount(event);
-            // Создаем операцию
-            Operation operation = Operation.builder()
-                    .id(UUID.randomUUID())
-                    .sagaId(event.getSagaId())
-                    .sagaStep(Operation.SagaStep.PAYMENT)
-                    .account(account)
-                    .orderId(event.getOrderId())
-                    .amount(event.getAmount().negate())
-                    .status(Operation.Status.COMPLETED)
-                    .build();
-            operationRepository.save(operation);
-            // Выполняем списание
-            accountService.withdraw(account, event.getAmount());
-
-            operation.setStatus(Operation.Status.COMPLETED);
-            return PaymentResponseEvent.builder()
-                    .sagaId(event.getSagaId())
-                    .orderId(event.getOrderId())
-                    .success(true)
-                    .transactionId(operation.getId().toString())
-                    .build();
-
+            return createNewPaymentOperation(event);
         } catch (Exception e) {
             log.error("Payment processing failed for sagaId: {}", event.getSagaId(), e);
             return createFailedResponse(event, e.getMessage());
         }
     }
 
-    @Override
-    public PaymentResponseEvent processCompensationPayment(PaymentEventDto.OrderFailedEvent event) {
-        //TODO
+    private PaymentResponseEvent createNewPaymentOperation(PaymentRequestEvent event) {
+        Account account = getAccount(event.getUserId());
+        // Создаем операцию
+        Operation operation = Operation.builder()
+                .id(UUID.randomUUID())
+                .sagaId(event.getSagaId())
+                .sagaStep(PAYMENT)
+                .account(account)
+                .orderId(event.getOrderId())
+                .amount(event.getAmount().negate())
+                .status(Operation.Status.COMPLETED)
+                .build();
+        // Выполняем списание
+        accountService.withdraw(account, event.getAmount());
 
-        Optional<Operation> existingOp =
-                operationRepository.findBySagaIdAndSagaStep(event.getSagaId(), Operation.SagaStep.PAYMENT);
+        operationRepository.save(operation);
 
-        // Проверяем сагу - возможно она уже отменена
-        if (existingOp.isPresent() && isSagaCompensated(existingOp.get())) {
-            log.info(
-                    "Saga {} already compensated, rejecting payment, orderId {}",
-                    event.getSagaId(),
-                    event.getOrderId());
-        }
-
-        if (existingOp.isPresent()) {
-            Operation op = existingOp.get();
-            return PaymentResponseEvent.builder()
-                    .sagaId(event.getSagaId())
-                    .orderId(event.getOrderId())
-                    .success(op.getStatus() == Operation.Status.COMPLETED)
-                    .transactionId(op.getId().toString())
-                    .errorMessage(op.getStatus() == Operation.Status.FAILED ? "Payment failed previously" : null)
-                    .build();
-        }
-
-        try {
-            Account account = getAccount(event);
-            // Создаем операцию
-            Operation operation = Operation.builder()
-                    .id(UUID.randomUUID())
-                    .sagaId(event.getSagaId())
-                    .sagaStep(Operation.SagaStep.PAYMENT)
-                    .account(account)
-                    .orderId(event.getOrderId())
-                    .amount(event.getAmount().negate())
-                    .status(Operation.Status.COMPLETED)
-                    .build();
-            operationRepository.save(operation);
-            // Выполняем списание
-            accountService.withdraw(account, event.getAmount());
-
-            operation.setStatus(Operation.Status.COMPLETED);
-            return PaymentResponseEvent.builder()
-                    .sagaId(event.getSagaId())
-                    .orderId(event.getOrderId())
-                    .success(true)
-                    .transactionId(operation.getId().toString())
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Payment processing failed for sagaId: {}", event.getSagaId(), e);
-            return createFailedResponse(event, e.getMessage());
-        }
+        return PaymentResponseEvent.builder()
+                .sagaId(event.getSagaId())
+                .orderId(event.getOrderId())
+                .success(true)
+                .transactionId(operation.getId().toString())
+                .build();
     }
 
+    private static PaymentResponseEvent getAlreadyDonePaymentResponseEvent(PaymentRequestEvent event, Operation op) {
+        return PaymentResponseEvent.builder()
+                .sagaId(event.getSagaId())
+                .orderId(event.getOrderId())
+                .success(op.getStatus() == Operation.Status.COMPLETED)
+                .transactionId(op.getId().toString())
+                .errorMessage(op.getStatus() == Operation.Status.FAILED ? "Payment failed previously" : null)
+                .build();
+    }
 
-    private Account getAccount(PaymentRequestEvent event) {
+    private static PaymentResponseEvent getAlreadyCompensatedPaymentResponse(PaymentRequestEvent event) {
+        log.info("Saga {} already compensated, rejecting payment, orderId {}", event.getSagaId(), event.getOrderId());
+
+        return PaymentResponseEvent.builder()
+                .sagaId(event.getSagaId())
+                .orderId(event.getOrderId())
+                .success(false)
+                .errorMessage("Saga already compensated")
+                .build();
+    }
+
+    private Account getAccount(UUID userId) {
         return accountRepository
-                .findByUserIdAndLock(event.getUserId())
-                .orElseThrow(() -> new RuntimeException("Account not found for user: " + event.getUserId()));
+                .findByUserIdAndLock(userId)
+                .orElseThrow(() -> new RuntimeException("Account not found for user: " + userId));
     }
 
-    private boolean isSagaCompensated(Operation sagaId) {
-        return sagaId.getStatus() == Operation.Status.COMPENSATED;
+    private boolean isSagaCompensated(Operation operation) {
+        return operation.getCompensatedBy() != null;
     }
 
     private PaymentResponseEvent createFailedResponse(PaymentRequestEvent event, String error) {

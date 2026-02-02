@@ -79,6 +79,8 @@ public class SagaEvents {
 
         private String errorMessage;
 
+        private boolean duplicate = false;
+
         private LocalDateTime timestamp = LocalDateTime.now();
     }
 
@@ -94,6 +96,10 @@ public class SagaEvents {
         private UUID orderId;
 
         private boolean success;
+
+        private String errorMessage;
+
+        private boolean duplicate = false;
 
         private LocalDateTime timestamp = LocalDateTime.now();
     }

@@ -46,6 +46,8 @@ public class PaymentEventDto {
 
         private String errorMessage;
 
+        private boolean duplicate = false;
+
         private LocalDateTime timestamp = LocalDateTime.now();
     }
 
@@ -78,6 +80,10 @@ public class PaymentEventDto {
         private UUID orderId;
 
         private boolean success;
+
+        private String errorMessage;
+
+        private boolean duplicate = false;
 
         private LocalDateTime timestamp = LocalDateTime.now();
     }

@@ -15,6 +15,8 @@ public interface AccountService {
 
     void withdraw(Account account, BigDecimal amount);
 
+    void deposit(Account account, BigDecimal amount);
+
     BillingBalanceResponse balance(UUID userId);
 
     Account getAccountForUser(UUID userId);

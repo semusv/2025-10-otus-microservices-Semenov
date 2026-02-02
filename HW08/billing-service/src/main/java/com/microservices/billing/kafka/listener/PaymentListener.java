@@ -74,7 +74,6 @@ public class PaymentListener {
         }
     }
 
-
     private PaymentRequestEvent convertToDto(Map<String, Object> payload) {
         try {
             return objectMapper.convertValue(payload, PaymentRequestEvent.class);

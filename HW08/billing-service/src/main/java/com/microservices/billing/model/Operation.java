@@ -82,8 +82,7 @@ public class Operation {
     public enum Status {
         COMPLETED,
         FAILED,
-        COMPENSATED,
-        CANCELED;
+        COMPENSATED
     }
 
     public enum SagaStep {
