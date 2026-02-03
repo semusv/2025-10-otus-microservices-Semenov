@@ -9,4 +9,5 @@
     <include file="structure/2026/02/01-01-changelog.xml" relativeToChangelogFile="true"/>
     <include file="structure/2026/02/01-02-changelog.xml" relativeToChangelogFile="true"/>
     <include file="structure/2026/02/02-01-changelog.xml" relativeToChangelogFile="true"/>
+    <include file="structure/2026/02/03-01-changelog.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

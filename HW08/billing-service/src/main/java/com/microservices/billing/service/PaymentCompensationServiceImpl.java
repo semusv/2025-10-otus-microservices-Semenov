@@ -9,6 +9,7 @@ import com.microservices.billing.model.Account;
 import com.microservices.billing.model.Operation;
 import com.microservices.billing.repository.AccountRepository;
 import com.microservices.billing.repository.OperationRepository;
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +34,10 @@ public class PaymentCompensationServiceImpl implements PaymentCompensationServic
         // Ищем операцию по sagaId и смотрим есть ли там закрывающая операция
         Optional<Operation> existingOp =
                 operationRepository.findBySagaIdAndSagaStep(event.getSagaId(), Operation.SagaStep.PAYMENT);
-        // Нет платежа - возвращаем ошибку
+
+        // Нет платежа - создаем компенсационную операцию, она заблокирует создание операции в будущем
         if (existingOp.isEmpty()) {
-            return getNotPaymentFoundCompensationResponse(event);
+            return createNewCompensatedOperationWithoutPayment(event);
         }
         // Проверяем сагу - возможно она уже отменена
         if (isSagaCompensated(existingOp.get())) {
@@ -49,6 +51,14 @@ public class PaymentCompensationServiceImpl implements PaymentCompensationServic
             log.error(" Compensation payment processing failed for sagaId: {}", event.getSagaId(), e);
             return createFailedCompensationResponse(event, e.getMessage());
         }
+    }
+
+    private CompensationResponseEvent createNewCompensatedOperationWithoutPayment(OrderFailedEvent event) {
+        Account account = getAccount(event.getUserId());
+        // Создаем операцию
+        Operation operationCompensation = getCompensationOperation(event, account);
+        operationRepository.save(operationCompensation);
+        return getCompensationResponse(event);
     }
 
     private CompensationResponseEvent createNewCompensatedOperation(
@@ -72,6 +82,18 @@ public class PaymentCompensationServiceImpl implements PaymentCompensationServic
                 .orderId(event.getOrderId())
                 .success(false)
                 .errorMessage(message)
+                .build();
+    }
+
+    private static Operation getCompensationOperation(OrderFailedEvent event, Account account) {
+        return Operation.builder()
+                .id(UUID.randomUUID())
+                .sagaId(event.getSagaId())
+                .sagaStep(COMPENSATION)
+                .account(account)
+                .orderId(event.getOrderId())
+                .amount(new BigDecimal(0))
+                .status(COMPENSATED)
                 .build();
     }
 
@@ -110,17 +132,6 @@ public class PaymentCompensationServiceImpl implements PaymentCompensationServic
                 .success(true)
                 .duplicate(true)
                 .errorMessage("Saga already compensated in previous run")
-                .build();
-    }
-
-    private static CompensationResponseEvent getNotPaymentFoundCompensationResponse(OrderFailedEvent event) {
-        log.info("Saga {} not found, orderId {}", event.getSagaId(), event.getOrderId());
-        // TODO Нужна будет отбратьчто что платежа начального не было
-        return CompensationResponseEvent.builder()
-                .sagaId(event.getSagaId())
-                .orderId(event.getOrderId())
-                .success(false)
-                .errorMessage("Saga not found")
                 .build();
     }
 

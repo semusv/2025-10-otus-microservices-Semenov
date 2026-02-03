@@ -1,5 +1,6 @@
 package com.microservices.billing.service;
 
+import static com.microservices.billing.model.Operation.SagaStep.COMPENSATION;
 import static com.microservices.billing.model.Operation.SagaStep.PAYMENT;
 
 import com.microservices.billing.kafka.PaymentEventDto.PaymentRequestEvent;
@@ -26,15 +27,15 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final AccountService accountService;
 
-    private final AccountServiceImpl accountServiceImpl;
-
     @Override
     @Transactional
     public PaymentResponseEvent processPayment(PaymentRequestEvent event) {
 
         Optional<Operation> existingOp = operationRepository.findBySagaIdAndSagaStep(event.getSagaId(), PAYMENT);
+        Optional<Operation> existingOpComps =
+                operationRepository.findBySagaIdAndSagaStep(event.getSagaId(), COMPENSATION);
         // Проверяем сагу - возможно она уже отменена
-        if (existingOp.isPresent() && isSagaCompensated(existingOp.get())) {
+        if (existingOpComps.isPresent()) {
             return getAlreadyCompensatedPaymentResponse(event);
         }
         // Проверяем, что операция уже выполнена
@@ -46,7 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
             return createNewPaymentOperation(event);
         } catch (Exception e) {
             log.error("Payment processing failed for sagaId: {}", event.getSagaId(), e);
-            return createFailedResponse(event, e.getMessage());
+            return createFailedOperation(event, e.getMessage());
         }
     }
 
@@ -102,16 +103,17 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new RuntimeException("Account not found for user: " + userId));
     }
 
-    private boolean isSagaCompensated(Operation operation) {
-        return operation.getCompensatedBy() != null;
-    }
+    private PaymentResponseEvent createFailedOperation(PaymentRequestEvent event, String error) {
 
-    private PaymentResponseEvent createFailedResponse(PaymentRequestEvent event, String error) {
         // Сохраняем информацию о неудачной операции для идемпотентности
+        Optional<Account> account = accountRepository.findByUserId(event.getUserId());
+
         Operation failedOperation = Operation.builder()
                 .id(UUID.randomUUID())
                 .sagaId(event.getSagaId())
                 .orderId(event.getOrderId())
+                .sagaStep(PAYMENT)
+                .account(account.orElse(null))
                 .amount(event.getAmount())
                 .status(Operation.Status.FAILED)
                 .build();
