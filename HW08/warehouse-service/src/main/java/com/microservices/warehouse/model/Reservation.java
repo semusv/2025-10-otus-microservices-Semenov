@@ -36,15 +36,28 @@ public class Reservation {
     @Column(nullable = false)
     private UUID userId;
 
-    @Column(nullable = false)
+    @Column(name = "saga_id", nullable = false)
+    private UUID sagaId;
+
+    @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private ReservationStatus status = ReservationStatus.PENDING;
+    private Status status;
 
     @Column(nullable = false)
     private LocalDateTime expiresAt;
 
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL)
     private List<ReservationItem> items = new ArrayList<>();
+
+    @Column(name = "saga_step", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private SagaStep sagaStep;
+
+    @Column(name = "compensated_by")
+    private UUID compensatedBy; // ID операции компенсации
+
+    @Column(name = "compensates")
+    private UUID compensates; // ID исходной операции, которую компенсируем
 
     @CreationTimestamp
     @Column(
@@ -64,4 +77,15 @@ public class Reservation {
     @Version
     @Column(name = "version")
     private Integer version;
+
+    public enum Status {
+        COMPLETED,
+        FAILED,
+        COMPENSATED
+    }
+
+    public enum SagaStep {
+        RESERVATION, // Основная операция
+        COMPENSATION // Компенсирующая операция
+    }
 }

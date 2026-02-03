@@ -19,6 +19,8 @@ public class PaymentStepHandler implements SagaStepHandler {
 
     private static final EventType EVENT_TYPE = EventType.PAYMENT_REQUESTED;
 
+    private static final EventType COMPENSATE_EVENT_TYPE = EventType.PAYMENT_REFUNDED;
+
     private final OutboxService outboxService;
 
     private final KafkaTopicProperties kafkaTopicProperties;
@@ -47,15 +49,19 @@ public class PaymentStepHandler implements SagaStepHandler {
 
     @Override
     public void compensate(OrderSaga saga, Order order, String reason) {
-        SagaEvents.PaymentRefundEvent refundEvent = SagaEvents.PaymentRefundEvent.builder()
+        SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
                 .sagaId(saga.getSagaId())
-                .orderId(saga.getOrderId())
-                .amount(order.getPrice())
+                .orderId(order.getId())
+                .userId(order.getUserId())
                 .reason(reason)
                 .build();
 
         outboxService.saveEvent(
-                EventType.PAYMENT_REFUNDED, saga.getSagaId().toString(), "Saga", refundEvent, "payment-refund");
+                COMPENSATE_EVENT_TYPE,
+                order.getId().toString(),
+                "saga",
+                failedEvent,
+                kafkaTopicProperties.getPaymentCompensationRequest());
     }
 
     @Override
@@ -66,5 +72,10 @@ public class PaymentStepHandler implements SagaStepHandler {
     @Override
     public OrderSaga.SagaState getHandledState() {
         return SAGA_STATE;
+    }
+
+    @Override
+    public EventType getHandledCompensateEventType() {
+        return COMPENSATE_EVENT_TYPE;
     }
 }

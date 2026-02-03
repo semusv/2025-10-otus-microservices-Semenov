@@ -1,10 +1,7 @@
 package com.microservices.order.service.saga;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservices.order.kafka.SagaEvents.CompensationResponseEvent;
-import com.microservices.order.kafka.SagaEvents.DeliveryResponseEvent;
-import com.microservices.order.kafka.SagaEvents.PaymentResponseEvent;
-import com.microservices.order.kafka.SagaEvents.WarehouseReservationResponse;
+import com.microservices.order.kafka.SagaEvents;
 import com.microservices.order.model.Order;
 import com.microservices.order.model.OrderSaga;
 import com.microservices.order.repository.SagaRepository;
@@ -74,17 +71,20 @@ public class OrderSagaOrchestratorImpl implements OrderSagaOrchestrator {
             groupId = "order-service")
     @Transactional
     public void handlePaymentResponse(String message) {
-        handleMessage(message, PaymentResponseEvent.class, paymentResponseHandler::processPaymentResponse);
+        handleMessage(message, SagaEvents.PaymentResponseEvent.class, paymentResponseHandler::processPaymentResponse);
     }
 
     // названиетопика из конфигурации
     @KafkaListener(
             id = "warehouseListener",
-            topics = "#{@kafkaTopicProperties.getWarehouseResponse()}",
+            topics = "#{@kafkaTopicProperties.getWarehouseReservationResponse()}",
             groupId = "order-service")
     @Transactional
     public void handleWarehouseResponse(String message) {
-        handleMessage(message, WarehouseReservationResponse.class, warehouseResponseHandler::processWarehouseResponse);
+        handleMessage(
+                message,
+                SagaEvents.WarehouseReservationResponseEvent.class,
+                warehouseResponseHandler::processWarehouseResponse);
     }
 
     @KafkaListener(
@@ -93,42 +93,43 @@ public class OrderSagaOrchestratorImpl implements OrderSagaOrchestrator {
             groupId = "order-service")
     @Transactional
     public void handleDeliveryResponse(String message) {
-        handleMessage(message, DeliveryResponseEvent.class, deliveryResponseHandler::processDeliveryResponse);
+        handleMessage(
+                message, SagaEvents.DeliveryResponseEvent.class, deliveryResponseHandler::processDeliveryResponse);
     }
 
     @KafkaListener(
             id = "paymentCompensationListener",
-            topics = "#{@kafkaTopicProperties.getPaymentCompensateResponse()}",
+            topics = "#{@kafkaTopicProperties.getPaymentCompensationResponse()}",
             groupId = "order-service")
     @Transactional
-    public void handlePaymentCompensateResponse(String message) {
+    public void handlePaymentCompensationResponse(String message) {
         handleMessage(
                 message,
-                CompensationResponseEvent.class,
+                SagaEvents.CompensationResponseEvent.class,
                 compensationResponseHandler::processPaymentCompensationResponse);
     }
 
     @KafkaListener(
             id = "warehouseCompensationListener",
-            topics = "#{@kafkaTopicProperties.getWarehouseCompensateResponse()}",
+            topics = "#{@kafkaTopicProperties.getWarehouseReservationCompensationResponse()}",
             groupId = "order-service")
     @Transactional
-    public void handleWarehouseCompensateResponse(String message) {
+    public void handleWarehouseCompensationResponse(String message) {
         handleMessage(
                 message,
-                CompensationResponseEvent.class,
+                SagaEvents.CompensationResponseEvent.class,
                 compensationResponseHandler::processWarehouseCompensationResponse);
     }
 
     @KafkaListener(
             id = "deliveryCompensationListener",
-            topics = "#{@kafkaTopicProperties.getDeliveryCompensateResponse()}",
+            topics = "#{@kafkaTopicProperties.getDeliveryCompensationResponse()}",
             groupId = "order-service")
     @Transactional
-    public void handleDeliveryCompensateResponse(String message) {
+    public void handleDeliveryCompensationResponse(String message) {
         handleMessage(
                 message,
-                CompensationResponseEvent.class,
+                SagaEvents.CompensationResponseEvent.class,
                 compensationResponseHandler::processDeliveryCompensationResponse);
     }
 

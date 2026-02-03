@@ -15,9 +15,9 @@ public class KafkaTopicProperties {
 
     private String paymentResponse;
 
-    private String warehouseRequest;
+    private String warehouseReservationRequest;
 
-    private String warehouseResponse;
+    private String warehouseReservationResponse;
 
     private String deliveryRequest;
 
@@ -25,17 +25,17 @@ public class KafkaTopicProperties {
 
     // Compensation topics
 
-    private String paymentCompensateRequest;
+    private String paymentCompensationRequest;
 
-    private String warehouseCompensateRequest;
+    private String paymentCompensationResponse;
 
-    private String deliveryCompensateRequest;
+    private String warehouseReservationCompensationRequest;
 
-    private String paymentCompensateResponse;
+    private String warehouseReservationCompensationResponse;
 
-    private String warehouseCompensateResponse;
+    private String deliveryCompensationRequest;
 
-    private String deliveryCompensateResponse;
+    private String deliveryCompensationResponse;
 
     // Отмена заказа
     private String orderCancellingRequest;
@@ -44,7 +44,7 @@ public class KafkaTopicProperties {
     public String getRequestTopic(OrderSaga.SagaState state) {
         return switch (state) {
             case PAYMENT_PROCESSING -> paymentRequest;
-            case WAREHOUSE_RESERVING -> warehouseRequest;
+            case WAREHOUSE_RESERVING -> warehouseReservationRequest;
             case DELIVERY_SCHEDULING -> deliveryRequest;
             default -> throw new IllegalArgumentException("No topic for state: " + state);
         };

@@ -1,6 +1,6 @@
 package com.microservices.order.service.saga.handlers;
 
-import com.microservices.order.kafka.SagaEvents.WarehouseReservationResponse;
+import com.microservices.order.kafka.SagaEvents.WarehouseReservationResponseEvent;
 import com.microservices.order.model.Order;
 import com.microservices.order.model.OrderSaga;
 import com.microservices.order.repository.OrderRepository;
@@ -21,7 +21,7 @@ public class WarehouseResponseHandler {
 
     private final SagaStateMachine stateMachine;
 
-    public void processWarehouseResponse(WarehouseReservationResponse event, OrderSaga saga) {
+    public void processWarehouseResponse(WarehouseReservationResponseEvent event, OrderSaga saga) {
         if (event.isSuccess()) {
             Order order = orderRepository
                     .findById(saga.getOrderId())

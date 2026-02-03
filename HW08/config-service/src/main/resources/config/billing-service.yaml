@@ -56,6 +56,6 @@ app:
       user-created: user.created
       payment-request: "payment.request.v1"
       payment-response: "payment.response.v1"
-      payment-compensate-request: "payment.compensate.request.v1"
-      payment-compensate-response: "payment.compensate.response.v1"
+      payment-compensation-request: "payment.compensation.request.v1"
+      payment-compensation-response: "payment.compensation.response.v1"
 

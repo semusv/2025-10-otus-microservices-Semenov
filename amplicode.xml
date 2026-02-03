@@ -27,11 +27,6 @@
           <package value="com.microservices.warehouse" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="hw08.warehouse-service.main" name="Default">
-        <packages>
-          <package value="com.microservices.warehouse" />
-        </packages>
-      </persistence-unit>
       <persistence-unit moduleName="hw08.order-service.main" name="Default">
         <packages>
           <package value="com.microservices.order" />
@@ -40,6 +35,16 @@
       <persistence-unit moduleName="hw08.warehouse-service.main" name="hw08-billing5">
         <packages>
           <package value="com.microservices.billing" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="hw08.warehouse-service.main" name="warehouse-service">
+        <packages>
+          <package value="com.microservices.warehouse" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="hw08.warehouse-service.main" name="Default">
+        <packages>
+          <package value="com.microservices.warehouse" />
         </packages>
       </persistence-unit>
     </persistence-units>

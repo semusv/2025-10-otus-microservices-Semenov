@@ -8,4 +8,6 @@
     <include file="structure/2026/01/25-01-changelog.xml" relativeToChangelogFile="true"/>
 
     <include file="data/2026/01/25-01-fill-test-data.yaml" relativeToChangelogFile="true"/>
+
+    <include file="structure/2026/02/03-01-changelog.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

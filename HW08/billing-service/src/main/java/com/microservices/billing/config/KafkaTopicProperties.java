@@ -15,9 +15,9 @@ public class KafkaTopicProperties {
     private String paymentResponse;
 
     // Compensation topics
-    private String paymentCompensateRequest;
+    private String paymentCompensationRequest;
 
-    private String paymentCompensateResponse;
+    private String paymentCompensationResponse;
 
     // User topics
     private String userCreated;

@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PaymentCompensateListener {
+public class PaymentCompensationListener {
 
     private final ObjectMapper objectMapper;
 
@@ -40,17 +40,17 @@ public class PaymentCompensateListener {
     private final KafkaTopicProperties kafkaTopicProperties;
 
     @KafkaListener(
-            topics = "#{@kafkaTopicProperties.getPaymentCompensateRequest()}",
+            topics = "#{@kafkaTopicProperties.getPaymentCompensationRequest()}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory")
     @AsyncListener(
             operation =
                     @AsyncOperation(
                             payloadType = OrderFailedEvent.class,
-                            channelName = "#{@kafkaTopicProperties.getPaymentCompensateRequest()}",
+                            channelName = "#{@kafkaTopicProperties.getPaymentCompensationRequest()}",
                             description = "Listener for payment compensation request"))
     @KafkaAsyncOperationBinding(clientId = "${spring.kafka.client-id}")
-    public void handlePaymentCompensateRequestEvent(
+    public void handlePaymentCompensationRequestEvent(
             @Payload Map<String, Object> payload,
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(KafkaHeaders.RECEIVED_KEY) String key) {
@@ -70,7 +70,7 @@ public class PaymentCompensateListener {
                     event.getSagaId().toString(),
                     "Saga",
                     responseEvent,
-                    kafkaTopicProperties.getPaymentCompensateResponse());
+                    kafkaTopicProperties.getPaymentCompensationResponse());
             log.info("Successfully processed payment compensation. SagaId: {}", event.getSagaId());
         } catch (Exception e) {
             log.error("Error processing payment compensation event. Key: {}, Topic: {}", key, topic, e);

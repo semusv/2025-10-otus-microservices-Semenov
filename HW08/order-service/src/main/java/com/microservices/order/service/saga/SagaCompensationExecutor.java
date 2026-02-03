@@ -5,7 +5,6 @@ import com.microservices.order.kafka.SagaEvents;
 import com.microservices.order.model.EventType;
 import com.microservices.order.model.Order;
 import com.microservices.order.model.OrderSaga;
-import com.microservices.order.repository.OrderRepository;
 import com.microservices.order.service.OutboxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +17,9 @@ public class SagaCompensationExecutor {
 
     private final OutboxService outboxService;
 
-    private final OrderRepository orderRepository;
-
     private final KafkaTopicProperties kafkaTopicProperties;
+
+    private final SagaStateMachine sagaStateMachine;
 
     /**
      * Выполняет компенсацию шагов саги в обратном порядке
@@ -47,35 +46,11 @@ public class SagaCompensationExecutor {
     }
 
     private void sendPaymentCompensate(OrderSaga saga, Order order, String reason) {
-        SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
-                .sagaId(saga.getSagaId())
-                .orderId(order.getId())
-                .userId(order.getUserId())
-                .reason(reason)
-                .build();
-
-        outboxService.saveEvent(
-                EventType.PAYMENT_REFUNDED,
-                order.getId().toString(),
-                "saga",
-                failedEvent,
-                kafkaTopicProperties.getPaymentCompensateRequest());
+        sagaStateMachine.compensate(saga, order, reason, EventType.PAYMENT_REFUNDED);
     }
 
     private void sendWarehouseCompensate(OrderSaga saga, Order order, String reason) {
-        SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
-                .sagaId(saga.getSagaId())
-                .orderId(order.getId())
-                .userId(order.getUserId())
-                .reason(reason)
-                .build();
-
-        outboxService.saveEvent(
-                EventType.WAREHOUSE_CANCELED,
-                order.getId().toString(),
-                "saga",
-                failedEvent,
-                kafkaTopicProperties.getWarehouseCompensateRequest());
+        sagaStateMachine.compensate(saga, order, reason, EventType.WAREHOUSE_RESERVATION_CANCELED);
     }
 
     private void sendDeliveryCompensate(OrderSaga saga, Order order, String reason) {
@@ -91,7 +66,7 @@ public class SagaCompensationExecutor {
                 order.getId().toString(),
                 "saga",
                 failedEvent,
-                kafkaTopicProperties.getDeliveryCompensateRequest());
+                kafkaTopicProperties.getDeliveryCompensationRequest());
     }
 
     public void compensatePayment(OrderSaga saga) {

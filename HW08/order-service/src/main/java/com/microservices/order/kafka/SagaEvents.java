@@ -109,7 +109,7 @@ public class SagaEvents {
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class WarehouseReservationRequest {
+    public static class WarehouseReservationRequestEvent {
         private UUID sagaId;
 
         private UUID orderId;
@@ -136,7 +136,7 @@ public class SagaEvents {
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class WarehouseReservationResponse {
+    public static class WarehouseReservationResponseEvent {
 
         private UUID sagaId;
 

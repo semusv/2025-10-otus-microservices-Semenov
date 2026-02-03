@@ -1,5 +1,6 @@
 package com.microservices.order.service.saga.steps;
 
+import com.microservices.order.model.EventType;
 import com.microservices.order.model.Order;
 import com.microservices.order.model.OrderSaga;
 
@@ -11,4 +12,6 @@ public interface SagaStepHandler {
     boolean canHandle(OrderSaga.SagaState state);
 
     OrderSaga.SagaState getHandledState();
+
+    EventType getHandledCompensateEventType();
 }

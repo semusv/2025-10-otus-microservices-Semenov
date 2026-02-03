@@ -17,7 +17,9 @@ public class WarehouseStepHandler implements SagaStepHandler {
 
     private static final OrderSaga.SagaState SAGA_STATE = OrderSaga.SagaState.WAREHOUSE_RESERVING;
 
-    private static final EventType EVENT_TYPE = EventType.WAREHOUSE_REQUESTED;
+    private static final EventType EVENT_TYPE = EventType.WAREHOUSE_RESERVATION_REQUESTED;
+
+    private static final EventType COMPENSATE_EVENT_TYPE = EventType.WAREHOUSE_RESERVATION_CANCELED;
 
     private final OutboxService outboxService;
 
@@ -27,17 +29,18 @@ public class WarehouseStepHandler implements SagaStepHandler {
     public void execute(OrderSaga saga, Order order) {
         saga.setState(SAGA_STATE);
 
-        SagaEvents.WarehouseReservationRequest warehouseEvent = SagaEvents.WarehouseReservationRequest.builder()
-                .sagaId(saga.getSagaId())
-                .orderId(saga.getOrderId())
-                .userId(order.getUserId())
-                .items(order.getPositions().stream()
-                        .map(p -> SagaEvents.WarehouseReservationRequest.ReservationItem.builder()
-                                .catalogItemId(p.getCatalogItemId())
-                                .quantity(p.getQuantity())
-                                .build())
-                        .toList())
-                .build();
+        SagaEvents.WarehouseReservationRequestEvent warehouseEvent =
+                SagaEvents.WarehouseReservationRequestEvent.builder()
+                        .sagaId(saga.getSagaId())
+                        .orderId(saga.getOrderId())
+                        .userId(order.getUserId())
+                        .items(order.getPositions().stream()
+                                .map(p -> SagaEvents.WarehouseReservationRequestEvent.ReservationItem.builder()
+                                        .catalogItemId(p.getCatalogItemId())
+                                        .quantity(p.getQuantity())
+                                        .build())
+                                .toList())
+                        .build();
         outboxService.saveEvent(
                 EVENT_TYPE,
                 saga.getSagaId().toString(),
@@ -50,12 +53,19 @@ public class WarehouseStepHandler implements SagaStepHandler {
 
     @Override
     public void compensate(OrderSaga saga, Order order, String reason) {
-
-        SagaEvents.WarehouseReleaseEvent releaseEvent = SagaEvents.WarehouseReleaseEvent.builder()
+        SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
                 .sagaId(saga.getSagaId())
-                .orderId(saga.getOrderId())
+                .orderId(order.getId())
+                .userId(order.getUserId())
                 .reason(reason)
                 .build();
+
+        outboxService.saveEvent(
+                COMPENSATE_EVENT_TYPE,
+                order.getId().toString(),
+                "saga",
+                failedEvent,
+                kafkaTopicProperties.getWarehouseReservationCompensationRequest());
     }
 
     @Override
@@ -66,5 +76,10 @@ public class WarehouseStepHandler implements SagaStepHandler {
     @Override
     public OrderSaga.SagaState getHandledState() {
         return SAGA_STATE;
+    }
+
+    @Override
+    public EventType getHandledCompensateEventType() {
+        return COMPENSATE_EVENT_TYPE;
     }
 }

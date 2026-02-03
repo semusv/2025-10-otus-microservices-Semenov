@@ -1,5 +1,6 @@
 package com.microservices.order.service.saga;
 
+import com.microservices.order.model.EventType;
 import com.microservices.order.model.Order;
 import com.microservices.order.model.OrderSaga;
 import com.microservices.order.service.saga.steps.SagaStepHandler;
@@ -22,6 +23,8 @@ public class SagaStateMachine {
 
     private final Map<OrderSaga.SagaState, SagaStepHandler> handlers;
 
+    private final Map<EventType, SagaStepHandler> compesationHandlers;
+
     private final Map<OrderSaga.SagaState, OrderSaga.SagaState> transitions = Map.of(
             OrderSaga.SagaState.STARTED, OrderSaga.SagaState.PAYMENT_PROCESSING,
             OrderSaga.SagaState.PAYMENT_COMPLETED, OrderSaga.SagaState.WAREHOUSE_RESERVING,
@@ -31,6 +34,9 @@ public class SagaStateMachine {
     public SagaStateMachine(List<SagaStepHandler> handlers) {
         this.handlers =
                 handlers.stream().collect(Collectors.toMap(SagaStepHandler::getHandledState, Function.identity()));
+
+        this.compesationHandlers = handlers.stream()
+                .collect(Collectors.toMap(SagaStepHandler::getHandledCompensateEventType, Function.identity()));
 
         // Изменение: добавили autoTransition флаг в конфигурацию
         this.stateConfig = Map.of(
@@ -56,6 +62,18 @@ public class SagaStateMachine {
     }
 
     @Transactional
+    public void compensate(OrderSaga saga, Order order, String reason, EventType eventType) {
+        SagaStepHandler handler = compesationHandlers.get(eventType);
+
+        if (handler == null) {
+            throw new IllegalStateException("No handler for compensate eventType: " + eventType.toString());
+        }
+
+        log.debug("Executing compensate {} for saga {}", eventType.toString(), saga.getSagaId());
+        handler.compensate(saga, order, reason);
+    }
+
+    @Transactional
     public void retryStep(OrderSaga saga, Order order) {
         executeStep(saga, order, saga.getState());
     }
@@ -71,16 +89,8 @@ public class SagaStateMachine {
         handler.execute(saga, order);
     }
 
-    public boolean isFinalState(OrderSaga.SagaState state) {
-        return getConfig(state).finalState();
-    }
-
     public long getTimeoutForState(OrderSaga.SagaState state) {
         return getConfig(state).timeoutMs();
-    }
-
-    public OrderSaga.SagaState getNextState(OrderSaga.SagaState currentState) {
-        return transitions.get(currentState);
     }
 
     private StateConfig getConfig(OrderSaga.SagaState state) {
