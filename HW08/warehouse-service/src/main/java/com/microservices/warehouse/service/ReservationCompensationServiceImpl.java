@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 public class ReservationCompensationServiceImpl implements ReservationCompensationService {
     @Override
     public SagaEvents.CompensationResponseEvent processCompensationReservation(SagaEvents.OrderFailedEvent event) {
+
+        // TODO: Implement compensation logic
         return null;
     }
 }

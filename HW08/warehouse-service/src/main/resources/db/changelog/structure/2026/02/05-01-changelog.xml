@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1770317115677-1" author="semva (generated)">
+        <addColumn tableName="reservation_items">
+            <column name="catalog_id" type="UUID"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1770317115677-2" author="semva (generated)">
+        <addNotNullConstraint columnName="catalog_id" tableName="reservation_items"/>
+    </changeSet>
+    <changeSet id="1770317115677-3" author="semva (generated)">
+        <addForeignKeyConstraint baseColumnNames="catalog_id" baseTableName="reservation_items"
+                                 constraintName="FK_RESERVATION_ITEMS_ON_CATALOG" referencedColumnNames="id"
+                                 referencedTableName="catalogs" referencedTableSchemaName="warehouse_service"/>
+    </changeSet>
+    <changeSet id="1770317115677-4" author="semva (generated)">
+        <dropForeignKeyConstraint baseTableName="reservation_items" constraintName="fk_reservation_items_on_product"/>
+    </changeSet>
+    <changeSet id="1770317115677-5" author="semva (generated)">
+        <dropColumn columnName="product_id" tableName="reservation_items"/>
+    </changeSet>
+
+</databaseChangeLog>
