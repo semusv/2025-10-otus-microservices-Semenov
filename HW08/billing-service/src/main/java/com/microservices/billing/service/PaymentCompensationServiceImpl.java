@@ -31,13 +31,13 @@ public class PaymentCompensationServiceImpl implements PaymentCompensationServic
     @Override
     @Transactional
     public CompensationResponseEvent processCompensationPayment(OrderFailedEvent event) {
-        // Ищем операцию по sagaId и смотрим есть ли там закрывающая операция
+        // Ищем операцию по sagaId и смотрим есть ли там платеж, может еще не провели
         Optional<Operation> existingOp =
                 operationRepository.findBySagaIdAndSagaStep(event.getSagaId(), Operation.SagaStep.PAYMENT);
 
         // Нет платежа - создаем компенсационную операцию, она заблокирует создание операции в будущем
         if (existingOp.isEmpty()) {
-            return createNewCompensatedOperationWithoutPayment(event);
+            return createNewCompensatedOperationWithoutOperation(event);
         }
         // Проверяем сагу - возможно она уже отменена
         if (isSagaCompensated(existingOp.get())) {
@@ -53,7 +53,7 @@ public class PaymentCompensationServiceImpl implements PaymentCompensationServic
         }
     }
 
-    private CompensationResponseEvent createNewCompensatedOperationWithoutPayment(OrderFailedEvent event) {
+    private CompensationResponseEvent createNewCompensatedOperationWithoutOperation(OrderFailedEvent event) {
         Account account = getAccount(event.getUserId());
         // Создаем операцию
         Operation operationCompensation = getCompensationOperation(event, account);

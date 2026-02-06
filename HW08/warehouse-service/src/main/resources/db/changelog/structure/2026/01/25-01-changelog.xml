@@ -6,14 +6,14 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd"
         objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
 
-    <changeSet id="1769344290374-0" author="system">
+    <changeSet id="1769344290374-0" author="system" context="warehouse-service">
         <sql>
             CREATE SCHEMA IF NOT EXISTS warehouse_service;
         </sql>
     </changeSet>
 
 
-    <changeSet id="1769344290374-1" author="semva (generated)">
+    <changeSet id="1769344290374-1" author="semva (generated)" context="warehouse-service">
         <createTable tableName="reservation">
             <column name="id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_reservation"/>
@@ -40,7 +40,7 @@
             <column name="version" type="INT"/>
         </createTable>
     </changeSet>
-    <changeSet id="1769344290374-2" author="semva (generated)">
+    <changeSet id="1769344290374-2" author="semva (generated)" context="warehouse-service">
         <createTable tableName="reservation_items">
             <column name="id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_reservation_items"/>
@@ -64,7 +64,7 @@
             <column name="version" type="INT"/>
         </createTable>
     </changeSet>
-    <changeSet id="1769344290374-3" author="semva (generated)">
+    <changeSet id="1769344290374-3" author="semva (generated)" context="warehouse-service">
         <createTable schemaName="warehouse_service" tableName="catalogs">
             <column name="id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_catalogs"/>
@@ -97,7 +97,7 @@
             <column name="version" type="INT"/>
         </createTable>
     </changeSet>
-    <changeSet id="1769344290374-4" author="semva (generated)">
+    <changeSet id="1769344290374-4" author="semva (generated)" context="warehouse-service">
         <createTable schemaName="warehouse_service" tableName="products">
             <column name="id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_products"/>
@@ -119,21 +119,21 @@
             <column name="version" type="INT"/>
         </createTable>
     </changeSet>
-    <changeSet id="1769344290374-5" author="semva (generated)">
+    <changeSet id="1769344290374-5" author="semva (generated)" context="warehouse-service">
         <addUniqueConstraint columnNames="sku" constraintName="UC_PRODUCTS_SKU" schemaName="warehouse_service"
                              tableName="products"/>
     </changeSet>
-    <changeSet id="1769344290374-6" author="semva (generated)">
+    <changeSet id="1769344290374-6" author="semva (generated)" context="warehouse-service">
         <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="reservation_items"
                                  constraintName="FK_RESERVATION_ITEMS_ON_PRODUCT" referencedColumnNames="id"
                                  referencedTableName="products" referencedTableSchemaName="warehouse_service"/>
     </changeSet>
-    <changeSet id="1769344290374-7" author="semva (generated)">
+    <changeSet id="1769344290374-7" author="semva (generated)" context="warehouse-service">
         <addForeignKeyConstraint baseColumnNames="reservation_id" baseTableName="reservation_items"
                                  constraintName="FK_RESERVATION_ITEMS_ON_RESERVATION" referencedColumnNames="id"
                                  referencedTableName="reservation"/>
     </changeSet>
-    <changeSet id="1769344290374-8" author="semva (generated)">
+    <changeSet id="1769344290374-8" author="semva (generated)" context="warehouse-service">
         <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="catalogs"
                                  baseTableSchemaName="warehouse_service" constraintName="FK_CATALOGS_ON_PRODUCT"
                                  referencedColumnNames="id" referencedTableName="products"

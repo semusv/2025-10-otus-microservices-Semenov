@@ -1,33 +1,30 @@
 package com.microservices.warehouse.service;
 
+import static com.microservices.warehouse.model.Reservation.SagaStep.RESERVATION;
+
 import com.microservices.warehouse.kafka.SagaEvents.WarehouseReservationRequestEvent;
 import com.microservices.warehouse.kafka.SagaEvents.WarehouseReservationResponseEvent;
-import com.microservices.warehouse.kafka.listener.ReservationListener;
 import com.microservices.warehouse.model.Catalog;
 import com.microservices.warehouse.model.Reservation;
 import com.microservices.warehouse.model.ReservationItem;
 import com.microservices.warehouse.repository.CatalogRepository;
-
+import com.microservices.warehouse.repository.ReservationRepository;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import com.microservices.warehouse.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.microservices.warehouse.model.Reservation.SagaStep.RESERVATION;
-
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class ReservationServiceImpl implements ReservationService {
-
 
     private final ReservationRepository reservationRepository;
 
@@ -66,6 +63,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .userId(event.getUserId())
                 .orderId(event.getOrderId())
                 .sagaStep(Reservation.SagaStep.COMPENSATION)
+                .expiresAt(LocalDateTime.now())
                 .status(Reservation.Status.FAILED)
                 .build();
 
@@ -87,7 +85,7 @@ public class ReservationServiceImpl implements ReservationService {
                         WarehouseReservationRequestEvent.ReservationItem::getCatalogItemId,
                         WarehouseReservationRequestEvent.ReservationItem::getQuantity));
         // Создаем операцию
-        Reservation operation = prepareReservaation(event);
+        Reservation operation = prepareReservation(event);
         // Создаем элеенты резервирования
         List<ReservationItem> reservationItems = prepareItems(catalogItems, operation, itemsRequest);
         operation.setItems(reservationItems);
@@ -113,17 +111,18 @@ public class ReservationServiceImpl implements ReservationService {
                         .reservation(operation)
                         .catalog(catalogItem)
                         .quantity(itemsRequest.get(catalogItem.getId()))
-                        .build()
-                ).toList();
+                        .build())
+                .toList();
     }
 
-    private static Reservation prepareReservaation(WarehouseReservationRequestEvent event) {
+    private static Reservation prepareReservation(WarehouseReservationRequestEvent event) {
         return Reservation.builder()
                 .id(UUID.randomUUID())
                 .sagaId(event.getSagaId())
                 .sagaStep(RESERVATION)
                 .orderId(event.getOrderId())
                 .userId(event.getUserId())
+                .expiresAt(LocalDateTime.now().plusMinutes(10))
                 .status(Reservation.Status.COMPLETED)
                 .build();
     }
@@ -135,14 +134,13 @@ public class ReservationServiceImpl implements ReservationService {
         List<Catalog> catalogItems = new ArrayList<>();
         for (WarehouseReservationRequestEvent.ReservationItem item : items) {
             // Используем метод с блокировкой
-            Catalog catalogItem = catalogRepository.findByIdWithLock(item.getCatalogItemId())
-                    .orElseThrow(() -> new ItemReservationException(
-                            "Item not found: " + item.getCatalogItemId()
-                    ));
+            Catalog catalogItem = catalogRepository
+                    .findByIdWithLock(item.getCatalogItemId())
+                    .orElseThrow(() -> new ItemReservationException("Item not found: " + item.getCatalogItemId()));
             if (catalogItem.getQuantity() < item.getQuantity()) {
-                throw new ItemReservationException(
-                        String.format("Not enough items in stock: %s. Available: %d, requested: %d",
-                                item.getCatalogItemId(), catalogItem.getQuantity(), item.getQuantity()));
+                throw new ItemReservationException(String.format(
+                        "Not enough items in stock: %s. Available: %d, requested: %d",
+                        item.getCatalogItemId(), catalogItem.getQuantity(), item.getQuantity()));
             }
             catalogItems.add(catalogItem);
         }
@@ -159,8 +157,10 @@ public class ReservationServiceImpl implements ReservationService {
 
     private static WarehouseReservationResponseEvent getAlreadyCompensatedReservation(
             WarehouseReservationRequestEvent event) {
-        log.info("Saga {} already compensated, rejecting reservation for orderId {}",
-                event.getSagaId(), event.getOrderId());
+        log.info(
+                "Saga {} already compensated, rejecting reservation for orderId {}",
+                event.getSagaId(),
+                event.getOrderId());
 
         return WarehouseReservationResponseEvent.builder()
                 .sagaId(event.getSagaId())
@@ -180,5 +180,4 @@ public class ReservationServiceImpl implements ReservationService {
                 .errorMessage(op.getStatus() == Reservation.Status.FAILED ? "Reservation failed previously" : null)
                 .build();
     }
-
 }

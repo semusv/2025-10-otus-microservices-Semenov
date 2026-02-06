@@ -1,7 +1,6 @@
 package com.microservices.order.service.saga;
 
 import com.microservices.order.config.KafkaTopicProperties;
-import com.microservices.order.kafka.SagaEvents;
 import com.microservices.order.model.EventType;
 import com.microservices.order.model.Order;
 import com.microservices.order.model.OrderSaga;
@@ -9,6 +8,7 @@ import com.microservices.order.service.OutboxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -24,6 +24,7 @@ public class SagaCompensationExecutor {
     /**
      * Выполняет компенсацию шагов саги в обратном порядке
      */
+    @Transactional
     public void executeCompensation(OrderSaga saga, Order order, String reason) {
         log.info("Executing compensation for saga {}: {}", saga.getSagaId(), reason);
 
@@ -54,21 +55,10 @@ public class SagaCompensationExecutor {
     }
 
     private void sendDeliveryCompensate(OrderSaga saga, Order order, String reason) {
-        SagaEvents.OrderFailedEvent failedEvent = SagaEvents.OrderFailedEvent.builder()
-                .sagaId(saga.getSagaId())
-                .orderId(order.getId())
-                .userId(order.getUserId())
-                .reason(reason)
-                .build();
-
-        outboxService.saveEvent(
-                EventType.DELIVERY_CANCELLED,
-                order.getId().toString(),
-                "saga",
-                failedEvent,
-                kafkaTopicProperties.getDeliveryCompensationRequest());
+        sagaStateMachine.compensate(saga, order, reason, EventType.DELIVERY_RESERVATION_CANCELED);
     }
 
+    @Transactional
     public void compensatePayment(OrderSaga saga) {
         saga.markPaymentExecuted();
         if (saga.isFullyCompensated()) {
@@ -76,6 +66,7 @@ public class SagaCompensationExecutor {
         }
     }
 
+    @Transactional
     public void compensateWarehouse(OrderSaga saga) {
         saga.markWarehouseExecuted();
         if (saga.isFullyCompensated()) {
@@ -83,6 +74,7 @@ public class SagaCompensationExecutor {
         }
     }
 
+    @Transactional
     public void compensateDelivery(OrderSaga saga) {
         saga.markDeliveryExecuted();
         if (saga.isFullyCompensated()) {

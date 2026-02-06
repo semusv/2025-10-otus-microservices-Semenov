@@ -137,7 +137,7 @@ public class OrderSagaOrchestratorImpl implements OrderSagaOrchestrator {
         try {
             Method getSagaId = event.getClass().getMethod("getSagaId");
             UUID sagaId = (UUID) getSagaId.invoke(event);
-            return sagaRepository.findById(sagaId).orElseThrow(() -> {
+            return sagaRepository.findBySagaId(sagaId).orElseThrow(() -> {
                 log.error("Saga not found: {}", sagaId);
                 return new RuntimeException("Saga not found: " + sagaId);
             });

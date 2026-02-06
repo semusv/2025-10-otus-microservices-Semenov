@@ -2,7 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 2026-01-25--0001-products-data
       author: system
-      context: dev
+      context: warehouse-service-data
       runOnChange: true
       changes:
         - loadData:
@@ -23,11 +23,15 @@ databaseChangeLog:
                   name: description
               - column:
                   name: sku
+              - column:
+                  name: version
+                  type: NUMERIC
+                  defaultValue: 0
 
   - changeSet:
       id: 2026-01-25--0002-catalogs-data-shop1
       author: system
-      context: dev
+      context: warehouse-service-data
       runOnChange: true
       changes:
         - loadData:
@@ -58,3 +62,7 @@ databaseChangeLog:
               - column:
                   name: active
                   type: BOOLEAN
+              - column:
+                  name: version
+                  type: NUMERIC
+                  defaultValue: 0
