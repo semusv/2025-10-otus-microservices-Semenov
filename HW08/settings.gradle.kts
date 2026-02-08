@@ -46,5 +46,6 @@ include("billing-service")
 include("order-service")
 include("notification-service")
 include("warehouse-service")
+include("delivery-service")
 include(":shared-dto")
 

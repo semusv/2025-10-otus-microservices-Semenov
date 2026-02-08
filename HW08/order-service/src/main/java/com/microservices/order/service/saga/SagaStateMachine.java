@@ -28,8 +28,8 @@ public class SagaStateMachine {
     private final Map<OrderSaga.SagaState, OrderSaga.SagaState> transitions = Map.of(
             OrderSaga.SagaState.STARTED, OrderSaga.SagaState.PAYMENT_PROCESSING,
             OrderSaga.SagaState.PAYMENT_COMPLETED, OrderSaga.SagaState.WAREHOUSE_RESERVING,
-            OrderSaga.SagaState.WAREHOUSE_RESERVED, OrderSaga.SagaState.DELIVERY_SCHEDULING,
-            OrderSaga.SagaState.DELIVERY_SCHEDULED, OrderSaga.SagaState.COMPLETED);
+            OrderSaga.SagaState.WAREHOUSE_RESERVED, OrderSaga.SagaState.DELIVERY_RESERVING,
+            OrderSaga.SagaState.DELIVERY_RESERVED, OrderSaga.SagaState.COMPLETED);
 
     public SagaStateMachine(List<SagaStepHandler> handlers) {
         this.handlers =
@@ -43,7 +43,7 @@ public class SagaStateMachine {
                 OrderSaga.SagaState.STARTED, new StateConfig(false, 0L, true),
                 OrderSaga.SagaState.PAYMENT_PROCESSING, new StateConfig(false, 10_000L, false),
                 OrderSaga.SagaState.WAREHOUSE_RESERVING, new StateConfig(false, 10_000L, false),
-                OrderSaga.SagaState.DELIVERY_SCHEDULING, new StateConfig(false, 10_000L, false),
+                OrderSaga.SagaState.DELIVERY_RESERVING, new StateConfig(false, 10_000L, false),
                 OrderSaga.SagaState.COMPLETED, new StateConfig(true, 0L, false),
                 OrderSaga.SagaState.COMPENSATED, new StateConfig(true, 0L, false),
                 OrderSaga.SagaState.COMPENSATING, new StateConfig(false, 10_000L, false),
@@ -80,6 +80,12 @@ public class SagaStateMachine {
 
     private void executeStep(OrderSaga saga, Order order, OrderSaga.SagaState nexState) {
         SagaStepHandler handler = handlers.get(nexState);
+
+        if (getConfig(nexState).finalState()) {
+            log.info("Sagа {} has reached FINAL state: {}", saga.getSagaId(), nexState);
+            saga.setState(nexState);
+            return;
+        }
 
         if (handler == null) {
             throw new IllegalStateException("No handler for nexState: " + nexState);

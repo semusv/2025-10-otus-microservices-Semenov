@@ -90,7 +90,7 @@ public class SagaRecoveryService {
         List<OrderSaga> sagasAwaitingResponse = sagaRepository.findByStateIn(List.of(
                 OrderSaga.SagaState.PAYMENT_PROCESSING,
                 OrderSaga.SagaState.WAREHOUSE_RESERVING,
-                OrderSaga.SagaState.DELIVERY_SCHEDULING));
+                OrderSaga.SagaState.DELIVERY_RESERVING));
 
         // Фильтруем те, у которых истек таймаут
         return sagasAwaitingResponse.stream()

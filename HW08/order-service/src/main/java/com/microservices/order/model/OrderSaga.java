@@ -28,8 +28,8 @@ public class OrderSaga {
         WAREHOUSE_RESERVING,
         WAREHOUSE_RESERVED,
         WAREHOUSE_FAILED,
-        DELIVERY_SCHEDULING,
-        DELIVERY_SCHEDULED,
+        DELIVERY_RESERVING,
+        DELIVERY_RESERVED,
         DELIVERY_FAILED,
         COMPLETED,
         COMPENSATING,
@@ -103,12 +103,6 @@ public class OrderSaga {
     public void markDeliveryExecuted() {
         this.deliveryExecuted = !this.deliveryExecuted;
         this.deliveryChangedAt = LocalDateTime.now();
-    }
-
-    public void resetAllFlags() {
-        this.paymentExecuted = false;
-        this.warehouseExecuted = false;
-        this.deliveryExecuted = false;
     }
 
     public boolean isFullyCompensated() {

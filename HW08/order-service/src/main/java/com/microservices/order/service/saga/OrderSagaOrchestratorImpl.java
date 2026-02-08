@@ -89,7 +89,7 @@ public class OrderSagaOrchestratorImpl implements OrderSagaOrchestrator {
 
     @KafkaListener(
             id = "deliveryListener",
-            topics = "#{@kafkaTopicProperties.getDeliveryResponse()}",
+            topics = "#{@kafkaTopicProperties.getDeliveryReservationResponse()}",
             groupId = "order-service")
     @Transactional
     public void handleDeliveryResponse(String message) {
@@ -123,7 +123,7 @@ public class OrderSagaOrchestratorImpl implements OrderSagaOrchestrator {
 
     @KafkaListener(
             id = "deliveryCompensationListener",
-            topics = "#{@kafkaTopicProperties.getDeliveryCompensationResponse()}",
+            topics = "#{@kafkaTopicProperties.getDeliveryReservationCompensationResponse()}",
             groupId = "order-service")
     @Transactional
     public void handleDeliveryCompensationResponse(String message) {

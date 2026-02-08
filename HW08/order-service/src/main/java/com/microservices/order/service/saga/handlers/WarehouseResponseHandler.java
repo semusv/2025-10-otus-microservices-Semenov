@@ -22,23 +22,34 @@ public class WarehouseResponseHandler {
     private final SagaStateMachine stateMachine;
 
     public void processWarehouseResponse(WarehouseReservationResponseEvent event, OrderSaga saga) {
+        // нужно проверить, что не было обработано ранее
+        if (saga.getState() != OrderSaga.SagaState.WAREHOUSE_RESERVING) {
+            log.info(
+                    "Warehouse reservation response received for saga {}, but saga is not in WAREHOUSE_RESERVING state",
+                    saga.getSagaId());
+            return;
+        }
         if (event.isSuccess()) {
-            Order order = orderRepository
-                    .findById(saga.getOrderId())
-                    .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
-            order.setStatus(Order.Status.RESERVED);
-            orderRepository.save(order);
-            saga.markWarehouseExecuted();
-            saga.setState(OrderSaga.SagaState.WAREHOUSE_RESERVED);
-            sagaRepository.save(saga);
-
-            stateMachine.process(saga, order);
-            sagaRepository.save(saga);
-            log.info("Warehouse reservation successful, saga {} moved to delivery scheduling", saga.getSagaId());
+            processSuccessEvent(saga);
         } else {
             saga.setState(OrderSaga.SagaState.WAREHOUSE_FAILED);
             saga.setErrorMessage("Warehouse reservation failed: " + event.getErrorMessage());
             sagaRepository.save(saga);
         }
+    }
+
+    private void processSuccessEvent(OrderSaga saga) {
+        Order order = orderRepository
+                .findById(saga.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
+        order.setStatus(Order.Status.RESERVED);
+        orderRepository.save(order);
+        saga.markWarehouseExecuted();
+        saga.setState(OrderSaga.SagaState.WAREHOUSE_RESERVED);
+        sagaRepository.save(saga);
+
+        stateMachine.process(saga, order);
+        sagaRepository.save(saga);
+        log.info("Warehouse reservation successful, saga {} moved to delivery scheduling", saga.getSagaId());
     }
 }

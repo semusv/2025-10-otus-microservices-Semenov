@@ -271,4 +271,41 @@ public class SagaEvents {
 
         private LocalDateTime timestamp = LocalDateTime.now();
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class DeliveryReservationRequestEvent {
+        private UUID sagaId;
+
+        private UUID orderId;
+
+        private UUID userId;
+
+        @Builder.Default
+        private LocalDateTime timestamp = LocalDateTime.now();
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class DeliveryReservationResponseEvent {
+
+        private UUID sagaId;
+
+        private UUID orderId;
+
+        private UUID reservationId;
+
+        private boolean success;
+
+        private String errorMessage;
+
+        @Builder.Default
+        private LocalDateTime timestamp = LocalDateTime.now();
+    }
 }

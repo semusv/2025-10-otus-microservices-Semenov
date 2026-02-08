@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class DeliveryStepHandler implements SagaStepHandler {
 
-    private static final OrderSaga.SagaState SAGA_STATE = OrderSaga.SagaState.DELIVERY_SCHEDULING;
+    private static final OrderSaga.SagaState SAGA_STATE = OrderSaga.SagaState.DELIVERY_RESERVING;
 
     private static final EventType EVENT_TYPE = EventType.DELIVERY_RESERVATION_REQUESTED;
 
@@ -29,26 +29,19 @@ public class DeliveryStepHandler implements SagaStepHandler {
     public void execute(OrderSaga saga, Order order) {
         saga.setState(SAGA_STATE);
 
-        SagaEvents.WarehouseReservationRequestEvent warehouseEvent =
-                SagaEvents.WarehouseReservationRequestEvent.builder()
-                        .sagaId(saga.getSagaId())
-                        .orderId(saga.getOrderId())
-                        .userId(order.getUserId())
-                        .items(order.getPositions().stream()
-                                .map(p -> SagaEvents.WarehouseReservationRequestEvent.ReservationItem.builder()
-                                        .catalogItemId(p.getCatalogItemId())
-                                        .quantity(p.getQuantity())
-                                        .build())
-                                .toList())
-                        .build();
+        SagaEvents.DeliveryReservationRequestEvent deliveryEvent = SagaEvents.DeliveryReservationRequestEvent.builder()
+                .sagaId(saga.getSagaId())
+                .orderId(saga.getOrderId())
+                .userId(order.getUserId())
+                .build();
         outboxService.saveEvent(
                 EVENT_TYPE,
                 saga.getSagaId().toString(),
                 "Saga",
-                warehouseEvent,
+                deliveryEvent,
                 kafkaTopicProperties.getRequestTopic(saga.getState()));
 
-        log.info("Warehouse requested for order {} via saga {}", order.getId(), saga.getSagaId());
+        log.info("Delivery requested for order {} via saga {}", order.getId(), saga.getSagaId());
     }
 
     @Override
@@ -65,7 +58,7 @@ public class DeliveryStepHandler implements SagaStepHandler {
                 order.getId().toString(),
                 "saga",
                 failedEvent,
-                kafkaTopicProperties.getWarehouseReservationCompensationRequest());
+                kafkaTopicProperties.getDeliveryReservationCompensationRequest());
     }
 
     @Override

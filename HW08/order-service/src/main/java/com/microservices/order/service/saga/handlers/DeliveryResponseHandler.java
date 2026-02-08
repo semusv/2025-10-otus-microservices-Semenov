@@ -22,23 +22,34 @@ public class DeliveryResponseHandler {
     private final SagaStateMachine stateMachine;
 
     public void processDeliveryResponse(DeliveryResponseEvent event, OrderSaga saga) {
+        // нужно проверить, что не было обработано ранее
+        if (saga.getState() != OrderSaga.SagaState.DELIVERY_RESERVING) {
+            log.info(
+                    "Delivery response received for saga {}, but saga is not in DELIVERY_RESERVED state",
+                    saga.getSagaId());
+            return;
+        }
         if (event.isSuccess()) {
-            Order order = orderRepository
-                    .findById(saga.getOrderId())
-                    .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
-            order.setStatus(Order.Status.DELIVERED);
-            orderRepository.save(order);
-            saga.markDeliveryExecuted();
-            saga.setState(OrderSaga.SagaState.DELIVERY_SCHEDULED);
-            sagaRepository.save(saga);
-
-            stateMachine.process(saga, order);
-            sagaRepository.save(saga);
-            log.info("Delivery successful, saga {} moved to completed", saga.getSagaId());
+            processSuccessEvent(saga);
         } else {
             saga.setState(OrderSaga.SagaState.DELIVERY_FAILED);
             saga.setErrorMessage("Delivery failed: " + event.getErrorMessage());
             sagaRepository.save(saga);
         }
+    }
+
+    private void processSuccessEvent(OrderSaga saga) {
+        Order order = orderRepository
+                .findById(saga.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
+        order.setStatus(Order.Status.PROCESSING);
+        orderRepository.save(order);
+        saga.markDeliveryExecuted();
+        saga.setState(OrderSaga.SagaState.DELIVERY_RESERVED);
+        sagaRepository.save(saga);
+
+        stateMachine.process(saga, order);
+        sagaRepository.save(saga);
+        log.info("Delivery successful, saga {} moved to completed", saga.getSagaId());
     }
 }

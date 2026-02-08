@@ -22,23 +22,34 @@ public class PaymentResponseHandler {
     private final SagaStateMachine stateMachine;
 
     public void processPaymentResponse(PaymentResponseEvent event, OrderSaga saga) {
+        // нужно проверить, что не было обработано ранее
+        if (saga.getState() != OrderSaga.SagaState.PAYMENT_PROCESSING) {
+            log.info(
+                    "Payment response received for saga {}, but saga is not in PAYMENT_PROCESSING state",
+                    saga.getSagaId());
+            return;
+        }
         if (event.isSuccess()) {
-            Order order = orderRepository
-                    .findById(saga.getOrderId())
-                    .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
-            order.setStatus(Order.Status.PAID);
-            orderRepository.save(order);
-            saga.markPaymentExecuted();
-            saga.setState(OrderSaga.SagaState.PAYMENT_COMPLETED);
-            sagaRepository.save(saga);
-
-            stateMachine.process(saga, order);
-            sagaRepository.save(saga);
-            log.info("Payment successful, saga {} moved to warehouse reservation", saga.getSagaId());
+            processSuccessEvent(saga);
         } else {
             saga.setState(OrderSaga.SagaState.PAYMENT_FAILED);
             saga.setErrorMessage("Payment failed: " + event.getErrorMessage());
             sagaRepository.save(saga);
         }
+    }
+
+    private void processSuccessEvent(OrderSaga saga) {
+        Order order = orderRepository
+                .findById(saga.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
+        order.setStatus(Order.Status.PAID);
+        orderRepository.save(order);
+        saga.markPaymentExecuted();
+        saga.setState(OrderSaga.SagaState.PAYMENT_COMPLETED);
+        sagaRepository.save(saga);
+
+        stateMachine.process(saga, order);
+        sagaRepository.save(saga);
+        log.info("Payment successful, saga {} moved to warehouse reservation", saga.getSagaId());
     }
 }

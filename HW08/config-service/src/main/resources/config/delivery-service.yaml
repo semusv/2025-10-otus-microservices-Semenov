@@ -1,9 +1,9 @@
 server:
-  port: 8084
+  port: 8087
 
 spring:
   application:
-    name: order-service
+    name: delivery-service
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
     username: ${DB_USER:postgres}
@@ -14,33 +14,35 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
-    #    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        default_schema: order_service
-  #        format_sql: true
+        default_schema: delivery_service
 
   liquibase:
-    change-log: classpath:db/changelog/order-service.db.changelog-master.xml
-    default-schema: order_service
+    change-log: classpath:db/changelog/delivery-service.db.changelog-master.xml
+    default-schema: delivery_service
     liquibase-schema: public
 
   kafka:
+    client-id: ${spring.application.name}
     bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
-    client-id: order-service-producer
 
     properties:
       security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
       sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
       sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
 
+    consumer:
+      group-id: delivery-service
+
 springwolf:
   docket:
-    base-package: com.microservices.order
+    base-package: com.microservices.delivery
     info:
       title: ${spring.application.name}
-      version: 1.0.0
-      description: AsyncAPI Documentation using Springwolf
+      version : 1.0.0
+      description : AsyncAPI Documentation using Springwolf
     servers:
       kafka-server:
         protocol: kafka
@@ -50,28 +52,12 @@ app:
   kafka:
     topics:
       # Основные топики
-      payment-request: "payment.request.v1"
-      payment-response: "payment.response.v1"
-      warehouse-reservation-request: "warehouse.reservation.request.v1"
-      warehouse-reservation-response: "warehouse.reservation.response.v1"
       delivery-reservation-request: "delivery.reservation.request.v1"
       delivery-reservation-response: "delivery.reservation.response.v1"
 
-
       # Компенсационные топики
-      payment-compensation-request: "payment.compensation.request.v1"
-      payment-compensation-response: "payment.compensation.response.v1"
-      warehouse-reservation-compensation-request: "warehouse.reservation.compensation.request.v1"
-      warehouse-reservation-compensation-response: "warehouse.reservation.compensation.response.v1"
-      delivery-reservation-compensation-request: "warehouse.reservation.compensation.request.v1"
-      delivery-reservation-compensation-response: "warehouse.reservation.compensation.response.v1"
-
+      delivery-reservation-compensation-request: "delivery.reservation.compensation.request.v1"
+      delivery-reservation-compensation-response: "delivery.reservation.compensation.response.v1"
 
     # Топики для Заказа
     order-cancelling: "order.cancelling.v1"
-
-  saga:
-    delay_threshold: 10000
-    polling_delay: 5000
-    max_retries: 3
-

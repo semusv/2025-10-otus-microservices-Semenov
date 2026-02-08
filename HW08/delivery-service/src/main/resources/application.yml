@@ -1,9 +1,9 @@
 server:
-  port: 8086
+  port: 8087
 
 spring:
   application:
-    name: warehouse-service
+    name: delivery-service
   config:
     import: optional:configserver:http://${CONFIG_SERVICE_HOST:config-service}:${CONFIG_SERVICE_PORT:8888}
   cloud:

@@ -31,9 +31,8 @@ public class Order {
         PAID,
         RESERVED,
         PROCESSING,
-        DELIVERED,
         CANCELLING,
-        CANCELLED;
+        CANCELLED
     }
 
     @Id
