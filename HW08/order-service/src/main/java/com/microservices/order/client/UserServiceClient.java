@@ -5,7 +5,6 @@ import com.microservices.order.resolver.EndpointResolver;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -32,7 +31,8 @@ public class UserServiceClient {
                     .get()
                     .uri(endpointResolver.getUserServiceUrl("me"))
                     .header(securityProperties.getUserIdHeader(), userId.toString())
-                    .header(securityProperties.getRequestIdHeader(), MDC.get(securityProperties.getRequestIdHeader()))
+                    //                    .header(securityProperties.getRequestIdHeader(),
+                    // MDC.get(securityProperties.getRequestIdHeader()))
                     .header(securityProperties.getServiceNameHeader(), serviceName)
                     .header(securityProperties.getServiceSecretHeader(), securityProperties.getSecret())
                     .retrieve()

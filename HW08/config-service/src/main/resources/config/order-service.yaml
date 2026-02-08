@@ -57,18 +57,19 @@ app:
       delivery-reservation-request: "delivery.reservation.request.v1"
       delivery-reservation-response: "delivery.reservation.response.v1"
 
-
       # Компенсационные топики
       payment-compensation-request: "payment.compensation.request.v1"
       payment-compensation-response: "payment.compensation.response.v1"
       warehouse-reservation-compensation-request: "warehouse.reservation.compensation.request.v1"
       warehouse-reservation-compensation-response: "warehouse.reservation.compensation.response.v1"
-      delivery-reservation-compensation-request: "warehouse.reservation.compensation.request.v1"
-      delivery-reservation-compensation-response: "warehouse.reservation.compensation.response.v1"
+      delivery-reservation-compensation-request: "delivery.reservation.compensation.request.v1"
+      delivery-reservation-compensation-response: "delivery.reservation.compensation.response.v1"
 
+      # Топики для уведомлений
+      notification-request: "notification.request.v1"
 
-    # Топики для Заказа
-    order-cancelling: "order.cancelling.v1"
+      # Топики для Заказа
+      order-cancelling: "order.cancelling.v1"
 
   saga:
     delay_threshold: 10000

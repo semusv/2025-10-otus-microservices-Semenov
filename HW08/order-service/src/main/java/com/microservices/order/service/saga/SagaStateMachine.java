@@ -81,14 +81,12 @@ public class SagaStateMachine {
     private void executeStep(OrderSaga saga, Order order, OrderSaga.SagaState nexState) {
         SagaStepHandler handler = handlers.get(nexState);
 
-        if (getConfig(nexState).finalState()) {
-            log.info("Sagа {} has reached FINAL state: {}", saga.getSagaId(), nexState);
-            saga.setState(nexState);
-            return;
-        }
-
         if (handler == null) {
             throw new IllegalStateException("No handler for nexState: " + nexState);
+        }
+
+        if (getConfig(nexState).finalState()) {
+            log.info("Sagа {} has reached FINAL state: {}", saga.getSagaId(), nexState);
         }
 
         log.debug("Executing {} for saga {}", nexState, saga.getSagaId());

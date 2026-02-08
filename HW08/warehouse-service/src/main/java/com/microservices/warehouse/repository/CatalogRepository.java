@@ -2,6 +2,7 @@ package com.microservices.warehouse.repository;
 
 import com.microservices.warehouse.model.Catalog;
 import jakarta.persistence.LockModeType;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,6 +13,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface CatalogRepository extends JpaRepository<Catalog, UUID> {
+
+    List<Catalog> findByIdIn(Collection<UUID> ids);
 
     List<Catalog> findByShopIdOrderByProductNameAsc(UUID shopId);
 

@@ -90,18 +90,18 @@ public class OrderSaga {
     private Integer version;
 
     // Методы для управления флагами
-    public void markPaymentExecuted() {
-        this.paymentExecuted = !this.paymentExecuted;
+    public void markPaymentExecuted(boolean flagExecuted) {
+        this.paymentExecuted = flagExecuted;
         this.paymentChangedAt = LocalDateTime.now();
     }
 
-    public void markWarehouseExecuted() {
-        this.warehouseExecuted = !this.warehouseExecuted;
+    public void markWarehouseExecuted(boolean flagExecuted) {
+        this.warehouseExecuted = flagExecuted;
         this.warehouseChangedAt = LocalDateTime.now();
     }
 
-    public void markDeliveryExecuted() {
-        this.deliveryExecuted = !this.deliveryExecuted;
+    public void markDeliveryExecuted(boolean flagExecuted) {
+        this.deliveryExecuted = flagExecuted;
         this.deliveryChangedAt = LocalDateTime.now();
     }
 

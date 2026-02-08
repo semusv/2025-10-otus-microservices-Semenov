@@ -14,7 +14,10 @@ public interface CatalogMapper {
 
     @Mapping(target = "createdAt", expression = "java(toOffsetDateTime(catalog.getCreatedAt()))")
     @Mapping(target = "updatedAt", expression = "java(toOffsetDateTime(catalog.getCreatedAt()))")
-    WarehouseCatalogResponse toWarehouseCatalogRespon(Catalog catalog);
+    @Mapping(target = "productId", source = "product.id")
+    @Mapping(target = "productName", source = "product.name")
+    @Mapping(target = "productSku", source = "product.sku")
+    WarehouseCatalogResponse toWarehouseCatalogResponse(Catalog catalog);
 
     default OffsetDateTime toOffsetDateTime(java.time.LocalDateTime localDateTime) {
         if (localDateTime == null) {

@@ -27,7 +27,7 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = new Notification();
         notification.setUserId(event.getUserId());
         notification.setEmail(event.getEmail());
-        boolean success = event.getStatus() == OrderEventDto.Status.PAID;
+        boolean success = event.getStatus() == OrderEventDto.Status.PROCESSING;
         notification.setSubject(success ? "Order success" : "Order failed");
         notification.setMessage(event.getMessage());
         notification.setStatus(Notification.Status.valueOf(event.getStatus().name()));

@@ -52,5 +52,6 @@ springwolf:
 app:
   kafka:
     topics:
-      order-events: order.events
+      notification-request: "notification.request.v1"
+
 

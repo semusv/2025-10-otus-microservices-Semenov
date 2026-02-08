@@ -44,7 +44,7 @@ public class WarehouseResponseHandler {
                 .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
         order.setStatus(Order.Status.RESERVED);
         orderRepository.save(order);
-        saga.markWarehouseExecuted();
+        saga.markWarehouseExecuted(true);
         saga.setState(OrderSaga.SagaState.WAREHOUSE_RESERVED);
         sagaRepository.save(saga);
 

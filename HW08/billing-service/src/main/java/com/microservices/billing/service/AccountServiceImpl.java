@@ -40,17 +40,12 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     @Override
     public BillingBalanceResponse deposit(UUID userId, BigDecimal amount) {
-        Account account = getAccount(userId);
+        Account account = getAccountAndLock(userId);
         return depositToAccount(amount, account);
     }
 
-    private BillingBalanceResponse depositToAccount(BigDecimal amount, Account account) {
-        account.setBalance(account.getBalance().add(amount));
-        accountRepository.save(account);
-        return new BillingBalanceResponse().userId(account.getUserId()).balance(account.getBalance());
-    }
-
     @Override
+    @Transactional
     public void deposit(Account account, BigDecimal amount) {
         depositToAccount(amount, account);
     }
@@ -58,13 +53,39 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     @Override
     public BillingBalanceResponse withdraw(UUID userId, BigDecimal amount) {
-        Account account = getAccount(userId);
+        Account account = getAccountAndLock(userId);
         return withdrawFromAccount(amount, account);
     }
 
     @Override
+    @Transactional
     public void withdraw(Account account, BigDecimal amount) {
         withdrawFromAccount(amount, account);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public BillingBalanceResponse balance(UUID userId) {
+        Account account = getAccount(userId);
+        return new BillingBalanceResponse().userId(userId).balance(account.getBalance());
+    }
+
+    private Account getAccountAndLock(UUID userId) {
+        return accountRepository
+                .findByUserIdAndLock(userId)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found for user " + userId));
+    }
+
+    private Account getAccount(UUID userId) {
+        return accountRepository
+                .findByUserId(userId)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found for user " + userId));
+    }
+
+    private BillingBalanceResponse depositToAccount(BigDecimal amount, Account account) {
+        account.setBalance(account.getBalance().add(amount));
+        accountRepository.save(account);
+        return new BillingBalanceResponse().userId(account.getUserId()).balance(account.getBalance());
     }
 
     private BillingBalanceResponse withdrawFromAccount(BigDecimal amount, Account account) {
@@ -75,34 +96,4 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.save(account);
         return new BillingBalanceResponse().userId(account.getUserId()).balance(account.getBalance());
     }
-
-    @Transactional(readOnly = true)
-    @Override
-    public BillingBalanceResponse balance(UUID userId) {
-        Account account = getAccount(userId);
-        return new BillingBalanceResponse().userId(userId).balance(account.getBalance());
-    }
-
-    @Override
-    public Account getAccountForUser(UUID userId) {
-        return getAccount(userId);
-    }
-
-    private Account getAccount(UUID userId) {
-        return accountRepository
-                .findByUserIdAndLock(userId)
-                .orElseThrow(() -> new AccountNotFoundException("Account not found for user " + userId));
-    }
-
-    //    @Override
-    //    public BillingBalanceResponse orderPayment(UUID userId, @Valid BillingOrderRequest orderRequest) {
-    //        BigDecimal amount = orderRequest.getPrice();
-    //        Account account = getAccount(userId);
-    //        if (account.getBalance().compareTo(amount) < 0) {
-    //            throw new InsufficientFundsException("Not enough funds");
-    //        }
-    //        account.setBalance(account.getBalance().subtract(amount));
-    //        accountRepository.save(account);
-    //        return new BillingBalanceResponse().userId(userId).balance(account.getBalance());
-    //    }
 }

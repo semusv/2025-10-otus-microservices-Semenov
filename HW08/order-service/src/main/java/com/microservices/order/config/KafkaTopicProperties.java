@@ -37,6 +37,9 @@ public class KafkaTopicProperties {
 
     private String deliveryReservationCompensationResponse;
 
+    // Нотификация о заказе
+    private String notificationRequest;
+
     // Отмена заказа
     private String orderCancellingRequest;
 

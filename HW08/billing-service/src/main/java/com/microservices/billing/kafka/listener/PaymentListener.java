@@ -54,24 +54,29 @@ public class PaymentListener {
             @Payload Map<String, Object> payload,
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(KafkaHeaders.RECEIVED_KEY) String key) {
+        PaymentRequestEvent event = convertToDto(payload);
         try {
             log.debug("Received  event. Key: {}, Topic: {}", key, topic);
-            PaymentRequestEvent event = convertToDto(payload);
+
             validateEvent(event);
             PaymentResponseEvent eventResponse = paymentService.processPayment(event);
-            outboxService.saveEvent(
-                    eventResponse.isSuccess() ? EventType.PAYMENT_COMPLETED : EventType.PAYMENT_FAILED,
-                    event.getSagaId().toString(),
-                    "Saga",
-                    eventResponse,
-                    kafkaTopicProperties.getPaymentResponse());
-
+            outboxSave(eventResponse, event);
             log.info("Successfully processed payment.request event. UserId: {}", event.getUserId());
         } catch (Exception e) {
             log.error(
                     "Error processing payment.request event. Payload: {}, Key: {}, Topic: {}", payload, key, topic, e);
-            throw e;
+            PaymentResponseEvent eventResponse = paymentService.createFailedOperation(event, e.getMessage());
+            outboxSave(eventResponse, event);
         }
+    }
+
+    private void outboxSave(PaymentResponseEvent eventResponse, PaymentRequestEvent event) {
+        outboxService.saveEvent(
+                eventResponse.isSuccess() ? EventType.PAYMENT_COMPLETED : EventType.PAYMENT_FAILED,
+                event.getSagaId().toString(),
+                "Saga",
+                eventResponse,
+                kafkaTopicProperties.getPaymentResponse());
     }
 
     private PaymentRequestEvent convertToDto(Map<String, Object> payload) {

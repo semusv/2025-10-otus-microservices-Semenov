@@ -18,6 +18,4 @@ public interface AccountService {
     void deposit(Account account, BigDecimal amount);
 
     BillingBalanceResponse balance(UUID userId);
-
-    Account getAccountForUser(UUID userId);
 }

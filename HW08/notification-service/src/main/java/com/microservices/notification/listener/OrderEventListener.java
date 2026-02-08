@@ -32,14 +32,14 @@ public class OrderEventListener {
     private final Validator validator;
 
     @KafkaListener(
-            topics = "${app.kafka.topics.order-events:order.events}",
+            topics = "${app.kafka.topics.notification-request:notification.request.v1}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory")
     @AsyncListener(
             operation =
                     @AsyncOperation(
                             payloadType = OrderEventDto.class,
-                            channelName = "${app.kafka.topics.order-events:order.events}",
+                            channelName = "${app.kafka.topics.notification-request:notification.request.v1}",
                             description = "Listener user order created event"))
     @KafkaAsyncOperationBinding(clientId = "${spring.kafka.client-id}")
     public void handleUserCreated(

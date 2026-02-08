@@ -28,7 +28,8 @@ public class CompensationResponseHandler {
             Order order = orderRepository
                     .findById(saga.getOrderId())
                     .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
-            compensationExecutor.compensatePayment(saga);
+            order.setStatus(Order.Status.CANCELLING);
+            compensationExecutor.compensatePayment(saga, order);
             sagaRepository.save(saga);
 
             markOrder(order, saga.getState());
@@ -45,11 +46,10 @@ public class CompensationResponseHandler {
             Order order = orderRepository
                     .findById(saga.getOrderId())
                     .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
-            compensationExecutor.compensateWarehouse(saga);
+            order.setStatus(Order.Status.CANCELLING);
+            compensationExecutor.compensateWarehouse(saga, order);
             sagaRepository.save(saga);
-
             markOrder(order, saga.getState());
-
             log.info("Warehouse compensation successful, saga {} moved to {}", saga.getSagaId(), saga.getState());
         } else {
             log.warn("Warehouse compensation failed: {}", saga.getSagaId());
@@ -62,10 +62,10 @@ public class CompensationResponseHandler {
             Order order = orderRepository
                     .findById(saga.getOrderId())
                     .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
-            compensationExecutor.compensateDelivery(saga);
+            order.setStatus(Order.Status.CANCELLING);
+            compensationExecutor.compensateDelivery(saga, order);
             sagaRepository.save(saga);
             markOrder(order, saga.getState());
-
             log.info("Delivery compensation successful, saga {} moved to {}", saga.getSagaId(), saga.getState());
         } else {
             log.warn("Delivery compensation failed: {}", saga.getSagaId());

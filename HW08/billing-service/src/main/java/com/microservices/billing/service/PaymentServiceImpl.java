@@ -43,12 +43,33 @@ public class PaymentServiceImpl implements PaymentService {
             return getAlreadyDonePaymentResponseEvent(event, existingOp.get());
         }
         // Создаем новую операцию
-        try {
-            return createNewPaymentOperation(event);
-        } catch (Exception e) {
-            log.error("Payment processing failed for sagaId: {}", event.getSagaId(), e);
-            return createFailedOperation(event, e.getMessage());
-        }
+        return createNewPaymentOperation(event);
+    }
+
+    @Override
+    @Transactional
+    public PaymentResponseEvent createFailedOperation(PaymentRequestEvent event, String error) {
+        // Сохраняем информацию о неудачной операции для идемпотентности
+        Optional<Account> account = accountRepository.findByUserId(event.getUserId());
+
+        Operation failedOperation = Operation.builder()
+                .id(UUID.randomUUID())
+                .sagaId(event.getSagaId())
+                .orderId(event.getOrderId())
+                .sagaStep(PAYMENT)
+                .account(account.orElse(null))
+                .amount(event.getAmount())
+                .status(Operation.Status.FAILED)
+                .build();
+
+        operationRepository.save(failedOperation);
+
+        return PaymentResponseEvent.builder()
+                .sagaId(event.getSagaId())
+                .orderId(event.getOrderId())
+                .success(false)
+                .errorMessage(error)
+                .build();
     }
 
     private PaymentResponseEvent createNewPaymentOperation(PaymentRequestEvent event) {
@@ -101,30 +122,5 @@ public class PaymentServiceImpl implements PaymentService {
         return accountRepository
                 .findByUserIdAndLock(userId)
                 .orElseThrow(() -> new RuntimeException("Account not found for user: " + userId));
-    }
-
-    private PaymentResponseEvent createFailedOperation(PaymentRequestEvent event, String error) {
-
-        // Сохраняем информацию о неудачной операции для идемпотентности
-        Optional<Account> account = accountRepository.findByUserId(event.getUserId());
-
-        Operation failedOperation = Operation.builder()
-                .id(UUID.randomUUID())
-                .sagaId(event.getSagaId())
-                .orderId(event.getOrderId())
-                .sagaStep(PAYMENT)
-                .account(account.orElse(null))
-                .amount(event.getAmount())
-                .status(Operation.Status.FAILED)
-                .build();
-
-        operationRepository.save(failedOperation);
-
-        return PaymentResponseEvent.builder()
-                .sagaId(event.getSagaId())
-                .orderId(event.getOrderId())
-                .success(false)
-                .errorMessage(error)
-                .build();
     }
 }

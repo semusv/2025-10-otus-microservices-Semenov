@@ -44,7 +44,7 @@ public class DeliveryResponseHandler {
                 .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
         order.setStatus(Order.Status.PROCESSING);
         orderRepository.save(order);
-        saga.markDeliveryExecuted();
+        saga.markDeliveryExecuted(true);
         saga.setState(OrderSaga.SagaState.DELIVERY_RESERVED);
         sagaRepository.save(saga);
 

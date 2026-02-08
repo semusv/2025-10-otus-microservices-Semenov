@@ -44,7 +44,7 @@ public class PaymentResponseHandler {
                 .orElseThrow(() -> new RuntimeException("Order not found: " + saga.getOrderId()));
         order.setStatus(Order.Status.PAID);
         orderRepository.save(order);
-        saga.markPaymentExecuted();
+        saga.markPaymentExecuted(true);
         saga.setState(OrderSaga.SagaState.PAYMENT_COMPLETED);
         sagaRepository.save(saga);
 

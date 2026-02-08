@@ -64,8 +64,11 @@ public class Notification {
     private Integer version;
 
     public enum Status {
+        CREATED,
         PAID,
-        FAILED,
-        PENDING
+        RESERVED,
+        PROCESSING,
+        CANCELLING,
+        CANCELLED
     }
 }

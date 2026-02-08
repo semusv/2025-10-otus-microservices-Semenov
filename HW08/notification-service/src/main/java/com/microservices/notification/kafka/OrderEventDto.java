@@ -42,8 +42,11 @@ public class OrderEventDto {
     private String message; // Опционально - для дополнительной информации
 
     public enum Status {
+        CREATED,
         PAID,
-        FAILED,
-        PENDING
+        RESERVED,
+        PROCESSING,
+        CANCELLING,
+        CANCELLED
     }
 }
