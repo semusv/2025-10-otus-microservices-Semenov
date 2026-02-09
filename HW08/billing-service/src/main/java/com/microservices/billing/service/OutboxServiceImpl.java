@@ -53,7 +53,7 @@ public class OutboxServiceImpl implements OutboxService {
         }
     }
 
-    @Scheduled(fixedDelayString = "${outbox.polling-interval:5000}")
+    @Scheduled(fixedDelayString = "${app.outbox.polling-interval:5000}")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void processOutbox() {

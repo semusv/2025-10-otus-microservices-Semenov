@@ -71,6 +71,9 @@ app:
       # Топики для Заказа
       order-cancelling: "order.cancelling.v1"
 
+  outbox:
+    polling-interval: 100
+
   saga:
     delay_threshold: 10000
     polling_delay: 5000

@@ -61,3 +61,6 @@ app:
 
     # Топики для Заказа
     order-cancelling: "order.cancelling.v1"
+
+  outbox:
+    polling-interval: 100

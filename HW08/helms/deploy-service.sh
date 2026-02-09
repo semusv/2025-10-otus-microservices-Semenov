@@ -6,11 +6,11 @@
 #   ./deploy-service.sh [ACTION] [SERVICE_NAME] [NAMESPACE]
 #
 # Примеры:
-#   ./deploy-service.sh install api-gateway hw07
-#   ./deploy-service.sh upgrade user-service hw07
-#   ./deploy-service.sh uninstall auth-service hw07
+#   ./deploy-service.sh install api-gateway hw08
+#   ./deploy-service.sh upgrade user-service hw08
+#   ./deploy-service.sh uninstall auth-service hw08
 #
-# Все чарты ожидаются в ./hw07.<service-name>
+# Все чарты ожидаются в ./hw08.<service-name>
 # Секреты — в ./secrets/secret-<namespace>.yaml
 
 
@@ -24,7 +24,7 @@ SERVICE_NAME="${2:-}"
 NAMESPACE="${3:-$DEFAULT_NAMESPACE}"
 
 # === Пути ===
-CHART_PATH="./hw07-$SERVICE_NAME"
+CHART_PATH="./hw08-$SERVICE_NAME"
 SECRETS_FILE="./secrets/secret-pg.yaml"
 SERVICES_FILE="./properties/services.yaml"
 ENV_SERVICES_FILE="./properties/env.services.yaml"
@@ -36,14 +36,14 @@ ENV_KAFKA_CONN_FILE="./properties/env.kafka-connection.yaml"
 if [[ -z "$SERVICE_NAME" ]]; then
   echo "❌ Ошибка: Не указано имя сервиса."
   echo "Использование: $0 [action] <service-name> [namespace]"
-  echo "Пример: $0 upgrade api-gateway hw07"
+  echo "Пример: $0 upgrade api-gateway hw08"
   exit 1
 fi
 
 # Проверим, существует ли чарт
 if [[ ! -d "$CHART_PATH" ]]; then
   echo "❌ Ошибка: Директория чарта не найдена: $CHART_PATH"
-  echo "Убедитесь, что чарт называется 'hw07-$SERVICE_NAME'"
+  echo "Убедитесь, что чарт называется 'hw08-$SERVICE_NAME'"
   exit 1
 fi
 
@@ -104,7 +104,7 @@ else
   ENV_KAFKA_CONN_FLAG="--values $ENV_KAFKA_CONN_FILE"
 fi
 
-RELEASE_NAME="hw07-$SERVICE_NAME"
+RELEASE_NAME="hw08-$SERVICE_NAME"
 REVISION="${4:-1}"  # для rollback
 
 # === Создаём namespace, если нужно ===
