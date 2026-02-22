@@ -1,0 +1,226 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8082
+  description: Generated server url
+paths:
+  /users/me:
+    get:
+      tags:
+      - user-controller
+      operationId: getMyProfile
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+    put:
+      tags:
+      - user-controller
+      operationId: updateMyProfile
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateProfileRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+    delete:
+      tags:
+      - user-controller
+      operationId: deactivateMyProfile
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+  /internal/profile:
+    post:
+      tags:
+      - internal-controller
+      operationId: createProfileInternal
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreateProfileRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+  /users/{userId}:
+    get:
+      tags:
+      - user-controller
+      operationId: getProfile
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+  /users/username/{username}:
+    get:
+      tags:
+      - user-controller
+      operationId: getProfileByUsername
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+  /internal/me:
+    get:
+      tags:
+      - internal-controller
+      operationId: getMyProfile_1
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+components:
+  schemas:
+    UserUpdateProfileRequest:
+      type: object
+      description: Запрос обновления профиля
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+    UserProfileResponse:
+      type: object
+      description: Ответ с профилем пользователя
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - SUSPENDED
+    UserCreateProfileRequest:
+      type: object
+      description: Запрос создания профиля
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+          maxLength: 2147483647
+          minLength: 1
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+          maxLength: 2147483647
+          minLength: 1
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+      required:
+      - email
+      - userId
+      - username

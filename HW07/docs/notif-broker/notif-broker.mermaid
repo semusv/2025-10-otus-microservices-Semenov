@@ -1,0 +1,34 @@
+sequenceDiagram
+    participant Client
+    participant Gateway
+    participant OrderService
+    participant BillingService
+    participant UserService
+    participant Kafka
+    participant NotificationService
+
+    Client->>Gateway: POST /orders
+    Gateway->>Gateway: Validate token
+    Gateway->>OrderService: POST /orders (X-User-Id)
+    
+    OrderService->>OrderService: Save order (PENDING)
+    OrderService->>BillingService: POST /internal/order
+    BillingService-->>OrderService: Payment result
+    
+    alt Payment successful
+        OrderService->>OrderService: Update to PAID
+    else Payment failed
+        OrderService->>OrderService: Update to FAILED
+    end
+    
+    OrderService-->>Gateway: Order response
+    Gateway-->>Client: 201 Created
+    
+    OrderService->>UserService: GET /internal/me
+    UserService-->>OrderService: UserProfileResponse
+    
+    OrderService->>Kafka: Publish OrderEventDto
+    Note over OrderService,Kafka: With email from user profile
+    
+    Kafka->>NotificationService: OrderEventDto
+    NotificationService->>NotificationService: Send email/save

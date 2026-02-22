@@ -1,0 +1,52 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: order_service
+
+  liquibase:
+    change-log: classpath:db/changelog/order-service.db.changelog-master.xml
+    default-schema: order_service
+    liquibase-schema: public
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+    client-id: order-service-producer
+
+    properties:
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
+
+springwolf:
+  docket:
+    base-package: com.microservices.order
+    info:
+      title: ${spring.application.name}
+      version : 1.0.0
+      description : AsyncAPI Documentation using Springwolf
+    servers:
+      kafka-server:
+        protocol: kafka
+        host: ${spring.kafka.bootstrap-servers}
+
+app:
+  kafka:
+    topics:
+      order-events: order.events
+

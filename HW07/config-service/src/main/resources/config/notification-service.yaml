@@ -1,0 +1,56 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: notification_service
+
+  liquibase:
+    change-log: classpath:db/changelog/notification-service.db.changelog-master.xml
+    default-schema: notification_service
+    liquibase-schema: public
+
+  kafka:
+    client-id: ${spring.application.name}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+
+    properties:
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
+
+    consumer:
+      group-id: notification-service
+
+
+springwolf:
+  docket:
+    base-package: com.microservices.notification
+    info:
+      title: ${spring.application.name}
+      version : 1.0.0
+      description : AsyncAPI Documentation using Springwolf
+    servers:
+      kafka-server:
+        protocol: kafka
+        host: ${spring.kafka.bootstrap-servers}
+
+app:
+  kafka:
+    topics:
+      order-events: order.events
+
