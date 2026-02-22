@@ -1,0 +1,181 @@
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+
+server:
+  error:
+    whitelabel:
+      enabled: false
+
+
+# Настройки сервисов
+app:
+  services:
+    user-service:
+      url: http://${USER_SERVICE_HOST:localhost}:${USER_SERVICE_PORT:8082}
+      endpoints:
+        profile: /internal/profile
+        me: /internal/me
+
+    auth-service:
+      url: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
+      endpoints:
+        validate: /internal/validate
+
+    billing-service:
+      url: http://${BILLING_SERVICE_HOST:localhost}:${BILLING_SERVICE_PORT:8083}
+      endpoints:
+        order: /internal/order
+
+
+    order-service:
+      url: http://${ORDER_SERVICE_HOST:localhost}:${ORDER_SERVICE_PORT:8084}
+
+    notification-service:
+      url: http://${NOTIFICATION_SERVICE_HOST:localhost}:${NOTIFICATION_SERVICE_PORT:8085}
+
+  security:
+    inter-service:
+      secret: ${INTER_SERVICE_SECRET:inter-service-secret-1gas+1!sda2ga52111}
+      user-id-header: X-User-Id
+      roles-header: X-Roles
+      service-secret-header: X-Service-Secret
+      service-name-header: X-Service-Name
+      request-id-header: X-Request-Id
+      token-header: Authorization
+      token-prefix: "Bearer "
+
+rest:
+  client:
+    connect-timeout: 5s
+    read-timeout: 10s
+
+
+# Actuator конфигурация
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+  endpoint:
+    env:
+      show-values: ALWAYS
+    configprops:
+      access: read-only
+      show-values: ALWAYS
+    health:
+      access: read-only
+      probes:
+        enabled: true
+      show-details: ALWAYS
+      show-components: ALWAYS
+    metrics:
+      access: read-only
+    logfile:
+      access: read-only
+    prometheus:
+      access: read-only
+    refresh:
+      access: read-only
+    gateway:
+      access: read-only
+
+
+  endpoints:
+    web:
+      exposure:
+        include:
+        - configprops
+        - health
+        - info
+        - logfile
+        - liquibase
+        - metrics
+        - prometheus
+        - refresh
+        - gateway
+        - env
+      base-path: /actuator
+
+  # Экспорт метрик в Prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+        step: 1m
+        descriptions: true
+
+  observations:
+    http:
+      server:
+        requests:
+          name: http.server.requests
+
+  # Метрики конфигурация
+  metrics:
+    enable:
+      http: true
+      jvm: true
+      logback: true
+      processor: true
+      system: true
+    distribution:
+      slo:
+        http.server.requests: 10ms, 50ms, 100ms, 200ms, 300ms, 400ms, 500ms, 600ms, 800ms
+      percentiles-histogram:
+        http.server.requests: true
+
+    # Тэги для метрик
+    tags:
+      application: ${spring.application.name}
+      region: local
+
+
+# SpringDoc (OpenAPI) конфигурация - исправленный путь
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  messages:
+    baseName: messages
+    encoding: UTF-8
+    fallbackToSystemLocale: false
+    use-code-as-default-message: true
+  enable-hateoas: false
+  show-actuator: false
+  paths-to-exclude:
+    - /springwolf/**
+
+logging:
+  level:
+#    com.microservices.auth.filter.MdcFilter: DEBUG
+
+    # Spring Security логгирование
+    org.springframework.security: INFO
+    org.springframework.security.web: INFO
+    org.springframework.security.config: INFO
+    org.springframework.security.web.FilterChainProxy: INFO
+
+#    # HTTP запросы
+#    org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
+#    org.apache.coyote.http11: DEBUG
+#    org.springframework.web: INFO
+
+#     Фильтры
+#    com.microservices.user.filter: DEBUG
+
+    # Hibernate/SQL
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+    # Мои пакеты
+    com.microservices: DEBUG
+
+    liquibase: INFO
+
+    org.apache.coyote.http11.Http11InputBuffer: TRACE
+#    # или для embedded Tomcat:
+#    tomcat.util.http.parser: DEBUG

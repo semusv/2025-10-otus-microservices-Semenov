@@ -1,0 +1,39 @@
+sequenceDiagram
+    participant Client
+    participant Gateway
+    participant OrderService
+    participant BillingService
+    participant DomainEvents
+    participant EventHandler
+    participant UserService
+    participant Kafka
+    participant NotificationService
+
+    Client->>Gateway: POST /orders
+    Gateway->>Gateway: Validate token
+    Gateway->>OrderService: POST /orders
+    
+    OrderService->>OrderService: Save order (PENDING)
+    
+    OrderService->>BillingService: POST /internal/order
+    BillingService-->>OrderService: Payment result
+    
+    alt Payment successful
+        OrderService->>OrderService: Update to PAID
+    else Payment failed
+        OrderService->>OrderService: Update to FAILED
+    end
+    
+    OrderService->>DomainEvents: Publish OrderCreatedEvent
+    Note over OrderService,DomainEvents: Domain Event (инверсия зависимостей)
+    
+    OrderService-->>Gateway: Order response (со статусом)
+    Gateway-->>Client: 201 Created
+    
+    DomainEvents->>EventHandler: Handle OrderCreatedEvent
+    EventHandler->>UserService: GET /internal/me
+    UserService-->>EventHandler: UserProfileResponse
+    
+    EventHandler->>Kafka: Publish OrderEventDto (с email)
+    Kafka->>NotificationService: OrderEventDto
+    NotificationService->>NotificationService: Send email/save

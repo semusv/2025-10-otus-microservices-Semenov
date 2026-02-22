@@ -1,0 +1,17 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: order-service
+  config:
+    import: optional:configserver:http://${CONFIG_SERVICE_HOST:config-service}:${CONFIG_SERVICE_PORT:8888}
+  cloud:
+    config:
+      enabled: ${CONFIG_SERVICE_ENABLED:true}
+      fail-fast: true
+
+logging:
+  level:
+    com.microservices: DEBUG
+
