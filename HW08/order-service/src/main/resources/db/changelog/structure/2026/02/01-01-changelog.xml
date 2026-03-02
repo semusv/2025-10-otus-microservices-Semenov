@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1769968621745-1" author="semva (generated)" context="order-service">
+        <addColumn tableName="order_sagas">
+            <column name="delivery_changed_at" type="DATETIME"/>
+            <column name="delivery_executed" type="BOOLEAN"/>
+            <column name="payment_changed_at" type="DATETIME"/>
+            <column name="payment_executed" type="BOOLEAN"/>
+            <column name="warehouse_changed_at" type="DATETIME"/>
+            <column name="warehouse_executed" type="BOOLEAN"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1769968621745-2" author="semva (generated)" context="order-service">
+        <addNotNullConstraint columnName="delivery_executed" tableName="order_sagas"/>
+    </changeSet>
+    <changeSet id="1769968621745-3" author="semva (generated)" context="order-service">
+        <addNotNullConstraint columnName="payment_executed" tableName="order_sagas"/>
+    </changeSet>
+    <changeSet id="1769968621745-4" author="semva (generated)" context="order-service">
+        <addNotNullConstraint columnName="warehouse_executed" tableName="order_sagas"/>
+    </changeSet>
+
+</databaseChangeLog>

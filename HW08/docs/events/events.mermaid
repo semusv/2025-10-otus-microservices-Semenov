@@ -1,0 +1,40 @@
+sequenceDiagram
+    participant Client
+    participant Gateway
+    participant OrderService
+    participant Kafka
+    participant BillingService
+    participant UserService
+    participant NotificationService
+
+    Client->>Gateway: POST /orders
+    Gateway->>Gateway: Validate token
+    Gateway->>OrderService: POST /orders (X-User-Id)
+    
+    OrderService->>OrderService: Save order (PENDING)
+    OrderService->>Kafka: Publish OrderCreatedEvent
+    
+    OrderService-->>Gateway: Order accepted (202)
+    Gateway-->>Client: 202 Accepted
+    
+    Kafka->>BillingService: OrderCreatedEvent
+    BillingService->>BillingService: Process payment
+    
+    alt Payment successful
+        BillingService->>Kafka: Publish PaymentSucceededEvent
+    else Payment failed
+        BillingService->>Kafka: Publish PaymentFailedEvent
+    end
+    
+    Kafka->>OrderService: Payment event
+    OrderService->>OrderService: Update order status
+    
+    OrderService->>UserService: GET /internal/me
+    UserService-->>OrderService: UserProfileResponse
+    
+    OrderService->>Kafka: Publish OrderStatusChangedEvent
+    
+    par Параллельная обработка
+        Kafka->>NotificationService: OrderStatusChangedEvent
+        NotificationService->>NotificationService: Send notification
+    end

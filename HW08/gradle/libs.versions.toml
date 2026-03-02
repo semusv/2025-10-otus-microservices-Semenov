@@ -1,0 +1,6 @@
+[versions]
+lombok = "1.18.42"
+# другие версии...
+
+[libraries]
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
