@@ -1,0 +1,58 @@
+sequenceDiagram
+    participant Client
+    participant OrderService as Order Service (Оркестратор)
+    participant Outbox
+    participant Kafka
+    participant Billing as Биллинг
+    participant Warehouse as Склад
+    participant Delivery as Доставка
+
+    Client->>OrderService: POST /orders
+    
+    activate OrderService
+    OrderService->>OrderService: Создать заказ и сагу (STARTED)
+    
+    %% Шаг 1: Оплата
+    OrderService->>Outbox: Сохранить PaymentRequest (Outbox)
+    Outbox-->>Kafka: Отправить payment.request.v1
+    Kafka->>Billing: PaymentRequest
+    Billing-->>Kafka: payment.response.v1 (success/fail)
+    Kafka-->>OrderService: PaymentResponse
+    
+    alt Payment Success
+        OrderService->>OrderService: Обновить сагу (PAYMENT_COMPLETED)
+        
+        %% Шаг 2: Склад
+        OrderService->>Outbox: Сохранить WarehouseRequest
+        Outbox-->>Kafka: warehouse.reservation.request.v1
+        Kafka->>Warehouse: WarehouseRequest
+        Warehouse-->>Kafka: warehouse.response.v1
+        Kafka-->>OrderService: WarehouseResponse
+        
+        alt Warehouse Success
+            OrderService->>OrderService: Обновить сагу (WAREHOUSE_RESERVED)
+            
+            %% Шаг 3: Доставка
+            OrderService->>Outbox: Сохранить DeliveryRequest
+            Outbox-->>Kafka: delivery.reservation.request.v1
+            Kafka->>Delivery: DeliveryRequest
+            Delivery-->>Kafka: delivery.response.v1
+            Kafka-->>OrderService: DeliveryResponse
+            
+            alt Delivery Success
+                OrderService->>OrderService: Сага COMPLETED, заказ PROCESSING
+                OrderService-->>Client: 201 Created
+            else Delivery Failed
+                OrderService->>OrderService: Запуск компенсации
+                OrderService->>Kafka: compensation.request (откат склада и платежа)
+            end
+        else Warehouse Failed
+            OrderService->>OrderService: Запуск компенсации
+            OrderService->>Kafka: payment.compensation.request.v1 (возврат денег)
+        end
+    else Payment Failed
+        OrderService->>OrderService: Сага PAYMENT_FAILED
+        OrderService-->>Client: 400 Bad Request
+    end
+    
+    deactivate OrderService

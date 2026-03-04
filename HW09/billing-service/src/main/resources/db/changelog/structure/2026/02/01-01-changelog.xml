@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1769974867645-1" author="semva (generated)" context="billing-service">
+        <createTable tableName="operations">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_operations"/>
+            </column>
+            <column name="account_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="saga_step" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="compensated_by" type="UUID"/>
+            <column name="compensates" type="UUID"/>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" name="updated_at"
+                    type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1769974867645-2" author="semva (generated)" context="billing-service">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="operations"
+                                 constraintName="FK_OPERATIONS_ON_ACCOUNT" referencedColumnNames="user_id"
+                                 referencedTableName="accounts"/>
+    </changeSet>
+    <changeSet id="1769974867645-3" author="semva (generated)" context="billing-service">
+        <modifyDataType columnName="balance" newDataType="DECIMAL" tableName="accounts"/>
+    </changeSet>
+
+</databaseChangeLog>

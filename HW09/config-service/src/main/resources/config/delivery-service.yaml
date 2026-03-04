@@ -1,0 +1,66 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: delivery-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: delivery_service
+
+  liquibase:
+    change-log: classpath:db/changelog/delivery-service.db.changelog-master.xml
+    default-schema: delivery_service
+    liquibase-schema: public
+
+  kafka:
+    client-id: ${spring.application.name}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+
+    properties:
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
+
+    consumer:
+      group-id: delivery-service
+
+springwolf:
+  docket:
+    base-package: com.microservices.delivery
+    info:
+      title: ${spring.application.name}
+      version : 1.0.0
+      description : AsyncAPI Documentation using Springwolf
+    servers:
+      kafka-server:
+        protocol: kafka
+        host: ${spring.kafka.bootstrap-servers}
+
+app:
+  kafka:
+    topics:
+      # Основные топики
+      delivery-reservation-request: "delivery.reservation.request.v1"
+      delivery-reservation-response: "delivery.reservation.response.v1"
+
+      # Компенсационные топики
+      delivery-reservation-compensation-request: "delivery.reservation.compensation.request.v1"
+      delivery-reservation-compensation-response: "delivery.reservation.compensation.response.v1"
+
+    # Топики для Заказа
+    order-cancelling: "order.cancelling.v1"
+
+  outbox:
+    polling-interval: 100

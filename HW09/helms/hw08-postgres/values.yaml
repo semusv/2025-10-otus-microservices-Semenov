@@ -1,0 +1,18 @@
+nameOverride: ""
+
+fullnameOverride: ""
+
+postgresql:
+  enabled: true
+  fullnameOverride: hw08-postgresql
+  auth:
+    username: app_user
+    database: microservices_db
+    existingSecret: postgresql-secret
+    secretKeys:
+      adminPasswordKey: postgres-admin-password
+      userPasswordKey: postgres-password
+
+secrets:
+  postgresAdminPassword: ""
+  postgresPassword: ""
