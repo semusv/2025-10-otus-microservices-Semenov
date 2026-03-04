@@ -6,7 +6,7 @@ import ru.vvsem.shared.dto.shared_api_dto.OrderCreateOrderRequest;
 import ru.vvsem.shared.dto.shared_api_dto.OrderResponse;
 
 public interface OrderService {
-    OrderResponse createOrder(UUID userId, OrderCreateOrderRequest orderRequest);
+    OrderResponse createOrder(UUID userId, UUID idempotencyKey, OrderCreateOrderRequest orderRequest);
 
     OrderResponse get(UUID orderId, UUID userId);
 

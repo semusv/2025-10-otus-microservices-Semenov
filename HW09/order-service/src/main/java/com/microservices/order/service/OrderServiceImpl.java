@@ -4,13 +4,18 @@ import com.microservices.order.client.BillingServiceClient;
 import com.microservices.order.mapper.OrderMapper;
 import com.microservices.order.model.Order;
 import com.microservices.order.model.Position;
+import com.microservices.order.model.RequestTracker;
 import com.microservices.order.repository.OrderRepository;
+import com.microservices.order.repository.RequestTrackerRepository;
 import com.microservices.order.service.saga.OrderSagaOrchestrator;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +37,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
 
+    private final RequestTrackerRepository requestTrackerRepository;
+
     private final OrderMapper orderMapper;
 
     private final BillingServiceClient billingClient;
@@ -42,11 +49,37 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderResponse createOrder(UUID userId, OrderCreateOrderRequest orderRequest) {
+    public OrderResponse createOrder(UUID userId, UUID idempotencyKey, OrderCreateOrderRequest orderRequest) {
+        // Проверяем, был ли уже этот запрос обработан (идемпотентность)
+        Optional<RequestTracker> existingTracker = requestTrackerRepository.findByIdempotencyKey(idempotencyKey);
+        if (existingTracker.isPresent()) {
+            return getOrderResponseForExistTracker(idempotencyKey, existingTracker);
+        }
+
         // 1. Создаем заказ в статусе PENDING
         Order order = createNewOrder(userId, orderRequest);
+
+        // Сохраняем информацию о запросе и связываем с заказом
+        RequestTracker tracker = new RequestTracker();
+        tracker.setIdempotencyKey(idempotencyKey);
+        tracker.setUserId(userId);
+        tracker.setOrderId(order.getId());
+        tracker.setStatus(RequestTracker.Status.PENDING);
+        requestTrackerRepository.save(tracker);
+
+        // Запускаем saga
         orderSagaOrchestrator.startOrderSaga(order);
 
+        return orderMapper.toOrderResponse(order);
+    }
+
+    private OrderResponse getOrderResponseForExistTracker(UUID idempotencyKey, Optional<RequestTracker> existingTracker) {
+        RequestTracker tracker = existingTracker.get();
+        log.info("Idempotent request detected for key: {}", idempotencyKey);
+        log.info("Request already being processed for key: {}", idempotencyKey);
+        Order order = orderRepository
+                .findById(tracker.getOrderId())
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
         return orderMapper.toOrderResponse(order);
     }
 
