@@ -1,51 +1,161 @@
 import os
-import sys
 
-def find_hw07_in_files(root_dir):
-    """
-    Находит все файлы, содержащие hw07
-    """
-    files_with_hw07 = []
 
+class FileInfo:
+    """Класс для хранения информации о файле"""
+    def __init__(self, path, encoding='utf-8', size=0, content=None, status='unknown'):
+        self.path = path
+        self.encoding = encoding
+        self.size = size
+        self.content = content
+        self.status = status  # 'found', 'not_found', 'binary', 'unreadable'
+
+
+def find_HW08_in_files(root_dir, verbose=True):
+    """
+    Находит все файлы, содержащие HW08 (с учётом регистра)
+    Проходит по всем подпапкам и файлам с детальным логированием
+    """
+    files_with_HW08 = []
+    processed_files = []
+    skipped_files = []
+    stats = {
+        'dirs_visited': 0,
+        'files_processed': 0,
+        'binary': 0,
+        'unreadable': 0
+    }
+
+    # Собираем все файлы (включая скрытые)
     for dirpath, dirnames, filenames in os.walk(root_dir):
+        if verbose:
+            print(f"\n[📁 ПАПКА: {dirpath}]")
+            print(f"   Подпапки: {dirnames[:5]}{'...' if len(dirnames) > 5 else ''}")
+        
+        stats['dirs_visited'] += 1
+        
         for filename in filenames:
             file_path = os.path.join(dirpath, filename)
-
+            
             # Пропускаем сам скрипт
-            if file_path.endswith('.py') and '_rename_hw' in filename.lower():
+            if '_rename_hw' in filename.lower():
+                if verbose:
+                    print(f"   [⏭️  ПРОПУСК СКРИПТА] {file_path}")
                 continue
-
-            # Пытаемся прочитать файл
+            
+            if verbose:
+                print(f"   [📄 ФАЙЛ] {file_path}")
+            
+            stats['files_processed'] += 1
+            
+            # Пробуем прочитать файл
+            file_info = FileInfo(
+                path=file_path,
+                status='binary',
+                size=0
+            )
+            
+            # Сначала пробуем бинарный режим, чтобы определить если файл бинарный
             try:
-                # Пробуем UTF-8
+                with open(file_path, 'rb') as file:
+                    header = file.read(8192)
+                    
+                    if b'\x00' in header:
+                        if verbose:
+                            print(f"      [⚠️  ВОЗМОЖНО BINARNY ФАЙЛ] - пропускаем")
+                        stats['binary'] += 1
+                        file_info.status = 'binary'
+                        skipped_files.append(file_path)
+                        continue
+                    
+                    file.seek(0)
+                    header = file.read()
+                    stats['binary'] -= 1
+                    
+            except Exception:
+                file_info.status = 'unreadable'
+                stats['unreadable'] += 1
+                skipped_files.append(file_path)
+                continue
+            
+            # Пытаемся прочитать файл с разными кодировками
+            content = None
+            encoding = None
+            
+            # Сначала пробуем UTF-8
+            try:
                 with open(file_path, 'r', encoding='utf-8') as file:
                     content = file.read()
-
-                if 'hw07' in content:
-                    count = content.count('hw07')
-                    files_with_hw07.append((file_path, count, 'utf-8', content))
-
+                encoding = 'utf-8'
+                
+                if verbose:
+                    print(f"      [✓ UTF-8] {len(content)} символов")
+                    
             except UnicodeDecodeError:
-                # Пробуем другие кодировки
+                pass  # Пробуем другие кодировки
+            
+            if not content:
                 encodings = ['latin-1', 'cp1251', 'cp1252', 'iso-8859-1']
-                for encoding in encodings:
+                for enc in encodings:
                     try:
-                        with open(file_path, 'r', encoding=encoding) as file:
+                        with open(file_path, 'r', encoding=enc) as file:
                             content = file.read()
-
-                        if 'hw07' in content:
-                            count = content.count('hw07')
-                            files_with_hw07.append((file_path, count, encoding, content))
-                            break
+                        encoding = enc
+                        if verbose:
+                            print(f"      [✓ {enc.upper()}] {len(content)} символов")
+                        break
                     except:
                         continue
-            except:
-                # Пропускаем файлы, которые не удалось прочитать
-                pass
+            
+            if not content:
+                file_info.status = 'unreadable'
+                stats['unreadable'] += 1
+                skipped_files.append(file_path)
+                continue
+            
+            # Проверяем наличие всех вариантов HW (с учётом регистра: HW08, hw08, Hw08, hW08)
+            if 'HW08' in content or 'hw08' in content or 'Hw08' in content or 'hW08' in content:
+                # Считаем все упоминания всех вариантов
+                hw8_count = content.count('HW08') + \
+                           content.count('hw08') + \
+                           content.count('Hw08') + \
+                           content.count('hW08')
+                
+                file_info.encoding = encoding
+                file_info.status = 'found'
+                file_info.content = content
+                file_info.size = len(content)
+                
+                if verbose:
+                    print(f"      [🎯 НАЙДЕНО HW(08)] {hw8_count} упоминаний")
+                
+                files_with_HW08.append(file_info)
+            else:
+                file_info.status = 'not_found'
+                file_info.encoding = encoding or 'unknown'
+                file_info.size = len(content) if content else 0
+                
+                if verbose:
+                    print(f"      [ℹ️  HW08 не найдено]")
+                
+                processed_files.append(file_info)
+    
+    # Выводим итоговую статистику
+    if verbose:
+        print("\n" + "=" * 60)
+        print("📊 ИТОГОВАЯ СТАТИСТИКА:")
+        print("=" * 60)
+        print(f"  Пайдок пройдено: {stats['dirs_visited']}")
+        print(f"  Файлы просмотрено: {stats['files_processed']}")
+        print(f"  Файлы с HW08: {len(files_with_HW08)}")
+        print(f"  Бинарные файлы: {stats['binary']}")
+        print(f"  Не читаемые: {stats['unreadable']}")
+        print("=" * 60)
+    
+    return files_with_HW08, processed_files, skipped_files, stats
 
-    return files_with_hw07
 
-def show_context(content, search_term='hw07', context_lines=1):
+def show_context(content, search_term='HW08', context_lines=1):
     """
     Показывает контекст вокруг найденного текста
     """
@@ -54,89 +164,105 @@ def show_context(content, search_term='hw07', context_lines=1):
 
     for i, line in enumerate(lines):
         if search_term in line:
-            # Добавляем предыдущие строки контекста
             for j in range(max(0, i-context_lines), i):
                 result.append(f"  {j+1}: {lines[j]}")
-
-            # Добавляем строку с найденным текстом
             result.append(f"> {i+1}: {line}")
-
-            # Добавляем следующие строки контекста
             for j in range(i+1, min(len(lines), i+1+context_lines)):
                 result.append(f"  {j+1}: {lines[j]}")
-
-            result.append("")  # Пустая строка для разделения
+            result.append("")
 
     return '\n'.join(result)
 
-def replace_with_confirmation(root_dir):
-    """
-    Показывает найденные файлы и запрашивает подтверждение
-    """
-    files_with_hw07 = find_hw07_in_files(root_dir)
 
-    if not files_with_hw07:
-        print("Файлов, содержащих 'hw07', не найдено.")
-        return 0
+def replace_with_confirmation(root_dir, verbose=True, auto_replace=False):
+    """
+    Показывает найденные файлы и опционально запрашивает подтверждение
+    auto_replace=True - выполняется замена без подтверждения
+    """
+    files_with_HW08, processed_files, skipped_files, stats = find_HW08_in_files(root_dir, verbose)
 
-    print(f"Найдено файлов, содержащих 'hw07': {len(files_with_hw07)}")
+    if not files_with_HW08:
+        print("Файлов, содержащих 'HW08', не найдено.")
+        return 0, 0
+
+    print(f"\nНайдено файлов, содержащих 'HW08': {len(files_with_HW08)}")
     print("=" * 60)
 
     # Показываем найденные файлы
     total_replacements = 0
-    for i, (file_path, count, encoding, content) in enumerate(files_with_hw07, 1):
-        print(f"{i}. {file_path}")
-        print(f"   Найдено упоминаний: {count}, Кодировка: {encoding}")
+    for i, file_info in enumerate(files_with_HW08, 1):
+        print(f"\n{i}. {file_info.path}")
+        
+        hw8_count = file_info.content.count('HW08') + \
+                   file_info.content.count('hw08') + \
+                   file_info.content.count('Hw08') + \
+                   file_info.content.count('hW08')
+        
+        print(f"   Найдено упоминаний: {hw8_count}, Кодировка: {file_info.encoding}")
 
-        # Показываем контекст для первых 3 файлов или по запросу
-        if i <= 3 or input(f"   Показать контекст для этого файла? (y/n, Enter для пропуска): ").lower() == 'y':
-            print(show_context(content))
+        if i <= 3 and not auto_replace:
+            show = input(f"   Показать контекст? (y/n, Enter для пропуска): ").strip().lower()
+            if show == 'y':
+                print(show_context(file_info.content))
 
-        total_replacements += count
+        total_replacements += hw8_count
 
     print("=" * 60)
-    print(f"Всего будет заменено: {total_replacements} упоминаний в {len(files_with_hw07)} файлах")
+    print(f"Всего будет заменено: {total_replacements} упоминаний в {len(files_with_HW08)} файлах")
     print("=" * 60)
 
-    # Запрашиваем подтверждение
-    response = input("Выполнить замену? (y/n): ").strip().lower()
+    if not auto_replace:
+        response = input("Выполнить замену? (y/n): ").strip().lower()
 
-    if response != 'y':
-        print("Операция отменена.")
-        return 0
+        if response != 'y':
+            print("Операция отменена.")
+            return 0, total_replacements
 
-    # Выполняем замену
+    # Выполняем замены с учётом регистра (HW08->HW09, hw08->hw09, Hw08->Hw09, hW08->hW09)
     processed_count = 0
-    for file_path, count, encoding, content in files_with_hw07:
+    for file_info in files_with_HW08:
         try:
-            new_content = content.replace('hw07', 'hw08')
-            with open(file_path, 'w', encoding=encoding) as file:
+            new_content = file_info.content.replace('HW08', 'HW09')
+            new_content = new_content.replace('hw08', 'hw09')
+            new_content = new_content.replace('Hw08', 'Hw09')
+            new_content = new_content.replace('hW08', 'hW09')
+            
+            with open(file_info.path, 'w', encoding=file_info.encoding) as file:
                 file.write(new_content)
 
-            print(f"✓ Заменено {count} упоминаний в: {file_path}")
+            hw8_count = file_info.content.count('HW08') + \
+                       file_info.content.count('hw08') + \
+                       file_info.content.count('Hw08') + \
+                       file_info.content.count('hW08')
+            
+            print(f"\n✓ Заменено {hw8_count} упоминаний в: {file_info.path}")
             processed_count += 1
         except Exception as e:
-            print(f"✗ Ошибка при обработке {file_path}: {e}")
+            print(f"✗ Ошибка при обработке {file_info.path}: {e}")
 
     return processed_count, total_replacements
+
 
 def main():
     # Получаем директорию, где находится скрипт
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    print("Скрипт для замены 'hw07' на 'hw08' в содержимом файлов")
+    print("\n" + "=" * 60)
+    print("📝 СКРИПТ ДЛЯ ЗАМЕНЫ 'HW08' НА 'HW09'")
+    print("   (с учётом регистра: HW08->HW09, hw08->hw09, Hw08->Hw09, hW08->hW09)")
+    print("=" * 60)
     print(f"Рабочая директория: {script_dir}")
     print("=" * 60)
 
-    # Выполняем замену с подтверждением
-    processed_files, total_replacements = replace_with_confirmation(script_dir)
+    # Выполняем замену (автоматически, без подтверждения)
+    processed_count, total_replacements = replace_with_confirmation(script_dir, auto_replace=True)
 
+    print("\n" + "=" * 60)
+    print(f"✅ Готово!")
+    print(f"   Заменено файлов: {processed_count}")
+    print(f"   Всего замен: {total_replacements}")
     print("=" * 60)
-    print(f"Готово! Обработано файлов: {processed_files}")
-    print(f"Всего заменено упоминаний: {total_replacements}")
 
-    if sys.platform == 'win32':
-        input("\nНажмите Enter для выхода...")
 
 if __name__ == "__main__":
     main()

@@ -12,12 +12,12 @@ from datetime import datetime
 # Директория где находится скрипт
 SCRIPT_DIR = Path(__file__).parent.absolute()
 # Корень проекта (на два уровня выше от helms/config-maker)
-PROJECT_ROOT = SCRIPT_DIR.parent.parent  # hw08
+PROJECT_ROOT = SCRIPT_DIR.parent.parent  # hw09
 
 # Относительные пути от корня проекта
 CONFIG_SOURCE_DIR = PROJECT_ROOT / "config-service" / "src" / "main" / "resources" / "config"
-CONFIG_TEMPLATE_PATH = PROJECT_ROOT / "helms" / "hw08-config-service" / "templates" / "config" / "config-server-configs.yaml"
-OUTPUT_PATH = PROJECT_ROOT / "helms" / "hw08-config-service" / "templates" / "config" / "config-server-configs.generated.yaml"
+CONFIG_TEMPLATE_PATH = PROJECT_ROOT / "helms" / "hw09-config-service" / "templates" / "config" / "config-server-configs.yaml"
+OUTPUT_PATH = PROJECT_ROOT / "helms" / "hw09-config-service" / "templates" / "config" / "config-server-configs.generated.yaml"
 
 # Вывод информации о путях для отладки
 print(f"📁 Директория скрипта: {SCRIPT_DIR}")
@@ -78,7 +78,7 @@ def generate_configmap():
     # Загружаем существующий шаблон для получения метаданных
     template_metadata = """  name: config-server-configs
   labels:
-    {{- include "hw08-config-service.labels" . | nindent 4 }}
+    {{- include "hw09-config-service.labels" . | nindent 4 }}
     app.kubernetes.io/component: config-service"""
 
     if CONFIG_TEMPLATE_PATH.exists():

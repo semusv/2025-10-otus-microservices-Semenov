@@ -8,14 +8,12 @@ import com.microservices.order.model.RequestTracker;
 import com.microservices.order.repository.OrderRepository;
 import com.microservices.order.repository.RequestTrackerRepository;
 import com.microservices.order.service.saga.OrderSagaOrchestrator;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,7 +71,8 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toOrderResponse(order);
     }
 
-    private OrderResponse getOrderResponseForExistTracker(UUID idempotencyKey, Optional<RequestTracker> existingTracker) {
+    private OrderResponse getOrderResponseForExistTracker(
+            UUID idempotencyKey, Optional<RequestTracker> existingTracker) {
         RequestTracker tracker = existingTracker.get();
         log.info("Idempotent request detected for key: {}", idempotencyKey);
         log.info("Request already being processed for key: {}", idempotencyKey);

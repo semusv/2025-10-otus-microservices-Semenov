@@ -1,72 +1,81 @@
-# Распределенные транзакции
+# Распределенные транзакции и идемпотентность
 
-## Постновка задачи:
- 
+## Постановка задачи
+
 ### Цель:
-В этом ДЗ вы научитесь реализовывать распределенную транзакцию.
+В этом ДЗ вы научитесь реализовывать распределенную транзакцию и механизм идемпотентности запросов.
 
-
-### Описание/Пошаговая инструкция выполнения домашнего задания:
-Сценарий для интернет-магазина:
+### Сценарий для интернет-магазина:
 Реализовать сервисы "Биллинг", "Склад", "Доставка".
 
-Для сервиса "Заказ", в рамках метода "создание заказа" реализовать механизм распределенной транзакции (на основе Саги или двухфазного коммита).
+Для сервиса "Заказ", в рамках метода "создание заказа" реализовать:
+1. Механизм распределенной транзакции (на основе Саги)
+2. Механизм идемпотентности запросов
+
 Во время создания заказа необходимо:
 1. в сервисе "Биллинг" убедиться, что платеж прошел
 2. в сервисе "Склад" зарезервировать конкретный товар на складе
 3. в сервисе "Доставка" зарезервировать курьера на конкретный слот времени.
 
 Если хотя бы один из пунктов не получилось сделать, необходимо откатить все остальные изменения.
-На выходе должно быть:
-0) описание того, какой паттерн для реализации распределенной транзакции использовался
-1) команда установки приложения (из helm-а или из манифестов). Обязательно указать в каком namespace нужно устанавливать и команду создания namespace, если это важно для сервиса.
-2) тесты в postman
-
-В тестах обязательно
-- использование домена arch.homework в качестве initial значения {{baseUrl}}
-
-# Описание решения
-
-### Обзор системы
-Для реализации распределенной транзакции создания заказа с участием сервисов Биллинг, 
-Склад и Доставка используется комбинация двух ключевых паттернов: Saga (Оркестратор) и Transactional Outbox.
-### Компоненты системы
-### **1. Компоненты оркестратора**
-
-| Компонент | Назначение |
-|-----------|------------|
-| `OrderSagaOrchestrator` | Главный координатор, слушает ответы из Kafka |
-| `SagaStateMachine` | Управляет переходами между состояниями саги |
-| `SagaStepHandler` (Payment, Warehouse, Delivery) | Инкапсулирует логику каждого шага |
-| `SagaCompensationExecutor` | Запускает компенсации в обратном порядке |
-| `SagaRecoveryService` | Восстанавливает "зависшие" саги по таймауту |
-| `OutboxService` | Сохраняет события в БД перед отправкой в Kafka |
 
 ---
 
-### **2. States саги (`OrderSaga.SagaState`)**
+## 0. Описание паттерна для реализации идемпотентности
 
-```java
-// Основные состояния
-STARTED → PAYMENT_PROCESSING → PAYMENT_COMPLETED → 
-WAREHOUSE_RESERVING → WAREHOUSE_RESERVED → 
-DELIVERY_RESERVING → DELIVERY_RESERVED → COMPLETED
+### Использованный паттерн: **Idempotency Key Pattern** 
+#### Принцип работы:
+1. Клиент при отправке запроса на создание заказа передает заголовок `X-Idempotency-Key` с уникальным UUID
+2. Service проверяет запись с этим key в таблице `request_trackers`:
+   - Если запись существует со статусом `PROCESSED` или `PENDING` — возвращает существующий заказ (не создаёт дубликат)
+   - Если записи нет — продолжает обработку и сохраняет новый `RequestTracker` со статусом `PENDING`
+3. После успешного завершения саги статус обновляется до `PROCESSED`
+4. При ошибке статус устанавливается в `FAILED`
 
-// Состояния ошибок
-PAYMENT_FAILED → COMPENSATING → COMPENSATED
-WAREHOUSE_FAILED → COMPENSATING → COMPENSATED
-DELIVERY_FAILED → COMPENSATING → COMPENSATED 
+#### Состояния RequestTracker:
+- `PENDING` — запрос принят и обрабатывается
+- `PROCESSED` — запрос успешно обработан (идемпотентный)
+- `FAILED` — запрос не удался
+
+#### Архитектура:
 ```
-![mermaid_20260214_21e03a.png](docs/saga/mermaid_20260214_21e03a.png)
+Client → X-Idempotency-Key → OrderController → OrderService → RequestTrackerRepository
+                                                        ↓
+                                            saga оркестратор (OrderSagaOrchestrator)
+```
 
+#### Основные компоненты:
+| Компонент | Назначение |
+|-----------|------------|
+| `RequestTracker` | Entity для трекинга обработанных запросов |
+| `RequestTrackerRepository` | Repository для поиска по idempotency key |
+| `OrderServiceImpl.createOrder()` | Логика проверки идемпотентности перед обработкой |
 
-## Результаты тестов:
-![test.png](postman/test.png)
+#### Схема таблицы request_trackers:
+```sql
+CREATE TABLE request_trackers (
+    idempotency_key UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    order_id UUID NOT NULL,
+    status VARCHAR(20) NOT NULL,  -- PENDING, PROCESSED, FAILED
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
 
 ## Скрипты:
 ``` bash
-# открываем терминал в папке с проектом /hw08/helms  
+
+# Важно! 
+кафка устанавливается отдельно независимо. Параметры подключения к Кафка сервисам прописаны внутри файла 
+properties/env.kafka-connection.yaml
+Скорректировать под свое окруженние
+
+# открываем терминал в папке с проектом /HW09/helms  
 cd helms
+
+
 
 
 # Быстрая установка всех компонентов
@@ -82,11 +91,11 @@ services=(
     api-gateway
 )
 for service in postgres config-service ; do
-    ./deploy-service.sh install $service hw08
+    ./deploy-service.sh install $service HW09
 done
 sleep 30 # Даем немного времени для постгре и конфиг сервера
 for service in "${services[@]}"; do
-    ./deploy-service.sh install $service hw08
+    ./deploy-service.sh install $service HW09
     sleep 45  # Небольшая пауза между установками
 done
 
@@ -103,11 +112,11 @@ services=(
     api-gateway
 )
 for service in postgres config-service ; do
-    ./deploy-service.sh upgrade $service hw08
+    ./deploy-service.sh upgrade $service HW09
 done
 sleep 30 # Даем немного времени для постгре и конфиг сервера
 for service in "${services[@]}"; do
-    ./deploy-service.sh upgrade $service hw08
+    ./deploy-service.sh upgrade $service HW09
     sleep 45  # Небольшая пауза между установками
 done
 
@@ -125,39 +134,34 @@ done
         template    - Показать шаблоны
         
 # Последовательность установки сервисов
-./deploy-service.sh install postgres hw08
-./deploy-service.sh install config-service hw08
-./deploy-service.sh install auth-service hw08
-./deploy-service.sh install user-service hw08
-./deploy-service.sh install billing-service hw08
-./deploy-service.sh install notification-service hw08
-./deploy-service.sh install order-service hw08
-./deploy-service.sh install warehouse-service hw08
-./deploy-service.sh install delivery-service hw08
-./deploy-service.sh install api-gateway hw08
+./deploy-service.sh install postgres HW09
+./deploy-service.sh install config-service HW09
+./deploy-service.sh install auth-service HW09
+./deploy-service.sh install user-service HW09
+./deploy-service.sh install billing-service HW09
+./deploy-service.sh install notification-service HW09
+./deploy-service.sh install order-service HW09
+./deploy-service.sh install warehouse-service HW09
+./deploy-service.sh install delivery-service HW09
+./deploy-service.sh install api-gateway HW09
 
 
 
 #дожидаемся всех подов. Должно быть 3 пода сервиса, 1 под БД, 1 завершенный JOB 
-$ kubectl get po -n hw08
-    #kubectl.exe get po -n hw08 
+$ kubectl get po -n HW09
+    #kubectl.exe get po -n HW09 
     #NAME                                   READY   STATUS    RESTARTS        AGE
-    #hw08-api-gateway-6b5b575679-qsgjd      1/1     Running   6 (3m48s ago)   15h
-    #hw08-auth-service-597764d7df-g7vpp     1/1     Running   5 (6m13s ago)   15h
-    #hw08-config-service-5f55649d55-hgfk7   1/1     Running   3 (5m56s ago)   15h
-    #hw08-postgresql-0                      1/1     Running   2 (11m ago)     8d
-    #hw08-user-service-55c66746db-l8zcj     1/1     Running   5 (6m29s ago)   15
+    #HW09-api-gateway-6b5b575679-qsgjd      1/1     Running   6 (3m48s ago)   15h
+    #HW09-auth-service-597764d7df-g7vpp     1/1     Running   5 (6m13s ago)   15h
+    #HW09-config-service-5f55649d55-hgfk7   1/1     Running   3 (5m56s ago)   15h
+    #HW09-postgresql-0                      1/1     Running   2 (11m ago)     8d
+    #HW09-user-service-55c66746db-l8zcj     1/1     Running   5 (6m29s ago)   15
 
 #Запускаем тесты
-$ newman run ../postman/otus-hw08.postman_collection.json
+$ newman run ../postman/otus-HW09.postman_collection.json
  
-#Чистим за собой Chart
-$ for service in postgres config-service auth-service user-service api-gateway; do
-    ./deploy-service.sh uninstall $service hw08
-    sleep 1  # Небольшая пауза между установками
-done
   
 #Удаляем неймспейс
-$ kubectl delete ns hw08
+$ kubectl delete ns HW09
 
 ```

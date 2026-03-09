@@ -1,5 +1,5 @@
 postgresql:
-  fullnameOverride: hw08-postgresql
+  fullnameOverride: hw09-postgresql
   auth:
     username: app_user
     database: microservices_db
