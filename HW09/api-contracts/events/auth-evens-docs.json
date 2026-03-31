@@ -1,0 +1,193 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "auth-service",
+    "version": "1.0.0",
+    "description": "AsyncAPI Documentation using Springwolf",
+    "x-generator": "springwolf"
+  },
+  "defaultContentType": "application/json",
+  "servers": {
+    "kafka-server": {
+      "host": "localhost:9092",
+      "protocol": "kafka"
+    }
+  },
+  "channels": {
+    "user.created": {
+      "address": "user.created",
+      "messages": {
+        "com.microservices.auth.kafka.UserEventDto": {
+          "$ref": "#/components/messages/com.microservices.auth.kafka.UserEventDto"
+        }
+      },
+      "bindings": {
+
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "KafkaHeadersDto": {
+        "title": "KafkaHeadersDto",
+        "type": "object",
+        "properties": {
+          "X-Event-Id": {
+            "type": "string",
+            "description": "Unique event ID",
+            "enum": [
+              "550e8400-e29b-41d4-a716-446655440000"
+            ],
+            "examples": [
+              "550e8400-e29b-41d4-a716-446655440000"
+            ]
+          },
+          "X-Event-Type": {
+            "type": "string",
+            "description": "Type of the event",
+            "enum": [
+              "USER_CREATED"
+            ],
+            "examples": [
+              "USER_CREATED"
+            ]
+          },
+          "X-Request-Id": {
+            "type": "string",
+            "description": "Request ID for tracing",
+            "enum": [
+              "123e4567-e89b-12d3-a456-426614174000"
+            ],
+            "examples": [
+              "123e4567-e89b-12d3-a456-426614174000"
+            ]
+          },
+          "X-Source": {
+            "type": "string",
+            "description": "Service name that produced the message",
+            "enum": [
+              "auth-service"
+            ],
+            "examples": [
+              "auth-service"
+            ]
+          },
+          "X-Timestamp": {
+            "type": "string",
+            "description": "Event timestamp in ISO format",
+            "enum": [
+              "2024-01-13T22:45:48.399Z"
+            ],
+            "examples": [
+              "2024-01-13T22:45:48.399Z"
+            ]
+          },
+          "__TypeId__": {
+            "type": "string",
+            "description": "Spring Type Event",
+            "enum": [
+              "com.microservices.auth.kafka.UserEventDto"
+            ],
+            "examples": [
+              "com.microservices.auth.kafka.UserEventDto"
+            ]
+          }
+        },
+        "examples": [
+          {
+            "X-Event-Id": "550e8400-e29b-41d4-a716-446655440000",
+            "X-Event-Type": "USER_CREATED",
+            "X-Request-Id": "123e4567-e89b-12d3-a456-426614174000",
+            "X-Source": "auth-service",
+            "X-Timestamp": "2024-01-13T22:45:48.399Z",
+            "__TypeId__": "com.microservices.auth.kafka.UserEventDto"
+          }
+        ]
+      },
+      "com.microservices.auth.kafka.UserEventDto": {
+        "title": "UserEventDto",
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50
+          }
+        },
+        "examples": [
+          {
+            "email": "example@example.com",
+            "source": "string",
+            "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "username": "string"
+          }
+        ],
+        "required": [
+          "email",
+          "source",
+          "userId",
+          "username"
+        ]
+      }
+    },
+    "messages": {
+      "com.microservices.auth.kafka.UserEventDto": {
+        "headers": {
+          "$ref": "#/components/schemas/KafkaHeadersDto"
+        },
+        "payload": {
+          "schemaFormat": "application/vnd.aai.asyncapi+json;version=3.0.0",
+          "schema": {
+            "$ref": "#/components/schemas/com.microservices.auth.kafka.UserEventDto"
+          }
+        },
+        "name": "com.microservices.auth.kafka.UserEventDto",
+        "title": "UserEventDto",
+        "bindings": {
+          "kafka": {
+            "bindingVersion": "0.5.0"
+          }
+        }
+      }
+    }
+  },
+  "operations": {
+    "user.created_send_sendUserCreatedEvent": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/user.created"
+      },
+      "title": "user.created_send",
+      "description": "Publishes user created event",
+      "bindings": {
+        "kafka": {
+          "clientId": {
+            "type": "string",
+            "enum": [
+              "auth-service"
+            ]
+          },
+          "bindingVersion": "0.5.0"
+        }
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/user.created/messages/com.microservices.auth.kafka.UserEventDto"
+        }
+      ]
+    }
+  }
+}

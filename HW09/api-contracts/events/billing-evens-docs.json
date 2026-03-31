@@ -1,0 +1,220 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "billing-service",
+    "version": "1.0.0",
+    "description": "AsyncAPI Documentation using Springwolf",
+    "x-generator": "springwolf"
+  },
+  "defaultContentType": "application/json",
+  "servers": {
+    "kafka-server": {
+      "host": "localhost:9092",
+      "protocol": "kafka"
+    }
+  },
+  "channels": {
+    "user.created": {
+      "address": "user.created",
+      "messages": {
+        "com.microservices.billing.kafka.UserEventDto": {
+          "$ref": "#/components/messages/com.microservices.billing.kafka.UserEventDto"
+        },
+        "java.util.MapJava.lang.StringJava.lang.Object": {
+          "$ref": "#/components/messages/java.util.MapJava.lang.StringJava.lang.Object"
+        }
+      },
+      "bindings": {
+        "kafka": {
+          "bindingVersion": "0.5.0"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HeadersNotDocumented": {
+        "title": "HeadersNotDocumented",
+        "type": "object",
+        "properties": {
+
+        },
+        "description": "There can be headers, but they are not explicitly documented.",
+        "examples": [
+          {
+
+          }
+        ]
+      },
+      "SpringKafkaDefaultHeaders-MapStringObject-1657343921": {
+        "title": "SpringKafkaDefaultHeaders-MapStringObject-1657343921",
+        "type": "object",
+        "properties": {
+          "__TypeId__": {
+            "type": "string",
+            "description": "Spring Type Id Header",
+            "enum": [
+              "java.util.MapJava.lang.StringJava.lang.Object"
+            ],
+            "examples": [
+              "java.util.MapJava.lang.StringJava.lang.Object"
+            ]
+          },
+          "kafka_receivedMessageKey": {
+            "type": "string",
+            "examples": [
+              "\"string\""
+            ]
+          },
+          "kafka_receivedTopic": {
+            "type": "string",
+            "examples": [
+              "\"string\""
+            ]
+          }
+        },
+        "examples": [
+          {
+            "__TypeId__": "java.util.MapJava.lang.StringJava.lang.Object",
+            "kafka_receivedMessageKey": "string",
+            "kafka_receivedTopic": "string"
+          }
+        ]
+      },
+      "com.microservices.billing.kafka.UserEventDto": {
+        "title": "UserEventDto",
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50
+          }
+        },
+        "examples": [
+          {
+            "email": "example@example.com",
+            "source": "string",
+            "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "username": "string"
+          }
+        ],
+        "required": [
+          "email",
+          "source",
+          "userId",
+          "username"
+        ]
+      },
+      "java.util.MapJava.lang.StringJava.lang.Object": {
+        "type": "object",
+        "examples": [
+          {
+            "key": {
+
+            }
+          }
+        ],
+        "additionalProperties": {
+          "type": "object"
+        }
+      }
+    },
+    "messages": {
+      "com.microservices.billing.kafka.UserEventDto": {
+        "headers": {
+          "$ref": "#/components/schemas/HeadersNotDocumented"
+        },
+        "payload": {
+          "schemaFormat": "application/vnd.aai.asyncapi+json;version=3.0.0",
+          "schema": {
+            "$ref": "#/components/schemas/com.microservices.billing.kafka.UserEventDto"
+          }
+        },
+        "name": "com.microservices.billing.kafka.UserEventDto",
+        "title": "UserEventDto",
+        "bindings": {
+          "kafka": {
+            "bindingVersion": "0.5.0"
+          }
+        }
+      },
+      "java.util.MapJava.lang.StringJava.lang.Object": {
+        "headers": {
+          "$ref": "#/components/schemas/SpringKafkaDefaultHeaders-MapStringObject-1657343921"
+        },
+        "payload": {
+          "schemaFormat": "application/vnd.aai.asyncapi+json;version=3.0.0",
+          "schema": {
+            "type": "object",
+            "examples": [
+              {
+                "key": {
+
+                }
+              }
+            ],
+            "additionalProperties": {
+              "type": "object"
+            }
+          }
+        },
+        "name": "java.util.MapJava.lang.StringJava.lang.Object",
+        "title": "MapStringObject",
+        "bindings": {
+          "kafka": {
+            "key": {
+              "type": "string",
+              "examples": [
+                "\"string\""
+              ]
+            },
+            "bindingVersion": "0.5.0"
+          }
+        }
+      }
+    }
+  },
+  "operations": {
+    "user.created_receive_handleUserCreated": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/user.created"
+      },
+      "title": "user.created_receive",
+      "description": "Listener user created event",
+      "bindings": {
+        "kafka": {
+          "clientId": {
+            "type": "string",
+            "enum": [
+              "billing-service"
+            ]
+          },
+          "bindingVersion": "0.5.0"
+        }
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/user.created/messages/com.microservices.billing.kafka.UserEventDto"
+        },
+        {
+          "$ref": "#/channels/user.created/messages/java.util.MapJava.lang.StringJava.lang.Object"
+        }
+      ]
+    }
+  }
+}

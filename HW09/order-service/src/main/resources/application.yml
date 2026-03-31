@@ -1,0 +1,21 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: order-service
+  config:
+    import: optional:configserver:http://${CONFIG_SERVICE_HOST:config-service}:${CONFIG_SERVICE_PORT:8888}
+  cloud:
+    config:
+      enabled: ${CONFIG_SERVICE_ENABLED:true}
+      fail-fast: true
+  kafka:
+    consumer:
+      group-id: order-id
+    bootstrap-servers: localhost:9092
+
+logging:
+  level:
+    com.microservices: DEBUG
+

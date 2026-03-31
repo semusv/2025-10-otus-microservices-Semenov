@@ -1,0 +1,63 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: billing-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:microservices_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: billing_service
+
+  liquibase:
+    change-log: classpath:db/changelog/billing-service.db.changelog-master.xml
+    default-schema: billing_service
+    liquibase-schema: public
+
+  kafka:
+    client-id: ${spring.application.name}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka.kafka:9092}
+
+    properties:
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_PLAINTEXT}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: ${KAFKA_JAAS_CONFIG:org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:user1}" password="${KAFKA_PASSWORD}";}
+
+    consumer:
+      group-id: billing-service
+
+springwolf:
+  docket:
+    base-package: com.microservices.billing
+    info:
+      title: ${spring.application.name}
+      version : 1.0.0
+      description : AsyncAPI Documentation using Springwolf
+    servers:
+      kafka-server:
+        protocol: kafka
+        host: ${spring.kafka.bootstrap-servers}
+
+
+
+app:
+  kafka:
+    topics:
+      user-created: user.created
+      payment-request: "payment.request.v1"
+      payment-response: "payment.response.v1"
+      payment-compensation-request: "payment.compensation.request.v1"
+      payment-compensation-response: "payment.compensation.response.v1"
+
+  outbox:
+    polling-interval: 100
